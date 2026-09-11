@@ -158,13 +158,12 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: |
-            examples/web/package-lock.json
-            examples/node/package-lock.json
+          cache-dependency-path: examples/web/package-lock.json
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
       - uses: actions/setup-java@v5
+        if: hashFiles('examples/android/gradlew') != ''
         with:
           distribution: temurin
           java-version: "21"
@@ -323,6 +322,8 @@ jobs:
 
   node:
     name: Node - Lint, Test
+    needs: stack-presence
+    if: needs.stack-presence.outputs.node == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -351,6 +352,7 @@ jobs:
   android-structure:
     name: Android - Structure Validation
     runs-on: ubuntu-latest
+    if: hashFiles('examples/android/gradlew') != ''
     steps:
       - uses: actions/checkout@v7
       - name: Validate FOSS compliance markers
@@ -392,6 +394,7 @@ jobs:
   android-build:
     name: Android - assembleDebug
     runs-on: ubuntu-latest
+    if: hashFiles('examples/android/gradlew') != ''
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
@@ -547,6 +550,7 @@ jobs:
   upgrade-simulation:
     name: Template Upgrade Simulation
     runs-on: ubuntu-latest
+    if: github.repository == 'edwardlthompson/agent-project-bootstrap'
     steps:
       - uses: actions/checkout@v7
       - name: Simulate child-repo upgrade path
@@ -558,6 +562,7 @@ jobs:
   upgrade-simulation-windows:
     name: Template Upgrade Simulation (Windows)
     runs-on: windows-latest
+    if: github.repository == 'edwardlthompson/agent-project-bootstrap'
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -596,6 +601,7 @@ jobs:
   android-release:
     name: Android - assembleRelease
     runs-on: ubuntu-latest
+    if: hashFiles('examples/android/gradlew') != ''
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
@@ -730,7 +736,7 @@ jobs:
           failed=()
           [ "$RH" = "success" ] || failed+=("Repo Hygiene ($RH)")
           [ "$FG" = "success" ] || failed+=("Feature Gate ($FG)")
-          [ "$UW" = "success" ] || failed+=("Template Upgrade Simulation (Windows) ($UW)")
+          [ "$UW" = "success" ] || [ "$UW" = "skipped" ] || failed+=("Template Upgrade Simulation (Windows) ($UW)")
           [ "$VB" = "success" ] || failed+=("Validate Bootstrap ($VB)")
           [ "$SF" = "success" ] || failed+=("Sanitizer fixture parity ($SF)")
           {

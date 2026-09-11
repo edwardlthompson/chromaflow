@@ -9,6 +9,7 @@ default-members = [
   "crates/chromaflow-core",
   "crates/chromaflow-cli",
 ]
+exclude = ["examples/rust"]
 
 [workspace.package]
 version = "0.1.0"
