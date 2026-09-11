@@ -1,0 +1,19 @@
+---
+description: ChromaFlow hardware-safety invariants
+alwaysApply: false
+globs:
+  - crates/**
+  - apps/**
+  - scripts/install-support.sh
+  - data/**
+---
+
+# ChromaFlow safety
+
+- Do not write sysfs `pwm*` or `pwm*_enable`. There is no PWM write API in this milestone.
+- Do not add `set_pwm` or equivalent. Failsafe + watchdog + daemon must exist first.
+- Do not run or document the GUI/`chromaflow` CLI as root. Polkit helper only.
+- `modprobe` names come only from YAML allowlist matching `^[a-zA-Z0-9_-]+$`. Never DMI/lspci → modprobe.
+- Do not bundle `.ko` files. Do not copy Fan Control or OpenRGB source trees.
+- OpenRGB: `127.0.0.1` only. Do not fake Windows-only devices.
+- Warn if CoolerControl, fancontrol, or fan2go is already running.

@@ -1,0 +1,6 @@
+{
+  "identifier": "default",
+  "description": "Unprivileged inventory UI and support dry-run",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "apply": false,
+  "would_install": ["lm-sensors", "i2c-tools"],
+  "would_load": ["nct6775", "i2c-dev"],
+  "skipped_experimental": ["i2c-nvidia-gpu"],
+  "skipped_not_installed": ["zenpower"],
+  "udev_path": "/etc/udev/rules.d/60-chromaflow.rules",
+  "logout_required": true,
+  "reboot_required": false,
+  "warnings": ["Large download for linux-modules-extra-$(uname -r)"]
+}

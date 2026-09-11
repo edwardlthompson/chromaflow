@@ -1,0 +1,15 @@
+[package]
+name = "chromaflow-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Read-only inventory and support planning for ChromaFlow"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml.workspace = true
+
+[lib]
+path = "src/lib.rs"

@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+title: ChromaFlow
+message: If you use this software, please cite it using these metadata.
+type: software
+authors:
+  - name: Edward L. Thompson
+repository-code: https://github.com/edwardlthompson/chromaflow
+url: https://github.com/edwardlthompson/chromaflow
+abstract: >-
+  Linux Mint desktop app for fan/pump curves and RGB/LED control, with
+  hwmon inventory, an OpenRGB localhost SDK probe, and a polkit
+  install-support path. Does not ship kernel modules.
+keywords:
+  - linux
+  - mint
+  - fans
+  - rgb
+  - openrgb
+  - hwmon
+license: MIT
+version: 1.4.0
+date-released: 2026-09-11

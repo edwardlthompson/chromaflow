@@ -1,0 +1,17 @@
+# Experimental: GUI Advanced checkbox / --advanced only. Never DMI → modprobe.
+items:
+  - name: i2c-nct6775
+    modprobe: i2c-nct6775
+    unlocks: Nuvoton SMBus for RGB
+    risk: experimental
+  - name: i2c-nvidia-gpu
+    modprobe: i2c-nvidia-gpu
+    unlocks: NVIDIA GPU I2C if the module exists
+    risk: experimental
+    match_lspci: NVIDIA
+  - name: nouveau
+    modprobe: nouveau
+    unlocks: NVIDIA open kernel hwmon only if already the running driver
+    risk: experimental
+    match_lspci: NVIDIA
+    warning: Do not unload proprietary nvidia; skip if nvidia is loaded

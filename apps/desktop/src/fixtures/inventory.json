@@ -1,0 +1,29 @@
+{
+  "hwmon": [
+    {
+      "name": "nct6775",
+      "path": "/sys/class/hwmon/hwmon0",
+      "temps": [{ "label": "temp1_input", "value": "45000" }],
+      "fans": [{ "label": "fan1_input", "value": "1200" }],
+      "pwms": [
+        {
+          "name": "pwm1",
+          "value": "128",
+          "enable_exists": true,
+          "writable": false
+        }
+      ]
+    }
+  ],
+  "hidraw": [],
+  "i2c": [],
+  "liquidctl": { "available": false, "detail": "not on PATH" },
+  "openrgb": { "status": "unreachable", "detail": "127.0.0.1:6742 timeout" },
+  "gaps": [
+    {
+      "id": "udev_hidraw",
+      "detail": "No readable hidraw nodes. Use Install detection support."
+    }
+  ],
+  "conflicts": []
+}

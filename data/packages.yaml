@@ -1,0 +1,29 @@
+# Apt packages ChromaFlow may recommend. Names: ^[a-zA-Z0-9._+-]+$
+items:
+  - name: lm-sensors
+    apt: lm-sensors
+    unlocks: hwmon userspace tools
+    risk: safe
+  - name: i2c-tools
+    apt: i2c-tools
+    unlocks: i2c detection userspace
+    risk: safe
+  - name: libusb
+    apt: libusb-1.0-0
+    unlocks: USB HID userspace
+    risk: safe
+  - name: hidapi
+    apt: libhidapi-hidraw0
+    unlocks: hidraw userspace
+    risk: safe
+  - name: linux-modules-extra
+    apt: linux-modules-extra
+    apt_kernel_flavor: true
+    unlocks: extra in-tree modules for this kernel
+    risk: safe
+    warning: Large download for linux-modules-extra-$(uname -r)
+  - name: openrgb-udev
+    apt: openrgb
+    unlocks: distro OpenRGB udev rules if packaged
+    risk: safe
+    optional_package: true

@@ -1,0 +1,5 @@
+schema: 1
+packages: packages.yaml
+modules_safe: modules-safe.yaml
+modules_experimental: modules-experimental.yaml
+udev: udev.yaml

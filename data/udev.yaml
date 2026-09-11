@@ -1,0 +1,6 @@
+# Written as /etc/udev/rules.d/60-chromaflow.rules — does not delete OpenRGB rules.
+rules:
+  - comment: hidraw uaccess for plugdev
+    line: 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0660", GROUP="plugdev", TAG+="uaccess"'
+  - comment: i2c device nodes
+    line: 'KERNEL=="i2c-[0-9]*", GROUP="i2c", MODE="0660", TAG+="uaccess"'

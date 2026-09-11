@@ -1,0 +1,92 @@
+# Safe in-tree (or already packaged) modules. Names: ^[a-zA-Z0-9_-]+$
+# Probe strings only select rows; they are never passed to modprobe.
+items:
+  - name: nct6775
+    modprobe: nct6775
+    unlocks: Nuvoton Super I/O fans and temps
+    risk: safe
+  - name: nct6779
+    modprobe: nct6779
+    unlocks: Nuvoton Super I/O variant
+    risk: safe
+  - name: it87
+    modprobe: it87
+    unlocks: ITE Super I/O hwmon
+    risk: safe
+  - name: it8686
+    modprobe: it8686
+    unlocks: ITE IT8686 hwmon
+    risk: safe
+  - name: it8688
+    modprobe: it8688
+    unlocks: ITE IT8688 hwmon
+    risk: safe
+  - name: it8689
+    modprobe: it8689
+    unlocks: ITE IT8689 hwmon
+    risk: safe
+  - name: it8792
+    modprobe: it8792
+    unlocks: ITE IT8792 hwmon
+    risk: safe
+  - name: coretemp
+    modprobe: coretemp
+    unlocks: Intel CPU package temps
+    risk: safe
+  - name: k10temp
+    modprobe: k10temp
+    unlocks: AMD CPU temps
+    risk: safe
+  - name: zenpower
+    modprobe: zenpower
+    unlocks: AMD Zen temps via packaged module
+    risk: safe
+    require_dpkg: zenpower
+  - name: asus-nb-wmi
+    modprobe: asus-nb-wmi
+    unlocks: ASUS notebook WMI
+    risk: safe
+    match_dmi: ASUS
+  - name: asus-wmi
+    modprobe: asus-wmi
+    unlocks: ASUS WMI
+    risk: safe
+    match_dmi: ASUS
+  - name: thinkpad_acpi
+    modprobe: thinkpad_acpi
+    unlocks: ThinkPad EC/fan when the driver exposes hwmon
+    risk: safe
+    match_dmi: ThinkPad
+  - name: hp-wmi
+    modprobe: hp-wmi
+    unlocks: HP WMI
+    risk: safe
+    match_dmi: HP
+  - name: dell-smm-hwmon
+    modprobe: dell-smm-hwmon
+    unlocks: Dell SMM hwmon
+    risk: safe
+    match_dmi: Dell
+  - name: nvme
+    modprobe: nvme
+    unlocks: NVMe hwmon when the kernel exposes it
+    risk: safe
+  - name: amdgpu
+    modprobe: amdgpu
+    unlocks: AMD GPU hwmon PWM when already the running driver
+    risk: safe
+    match_lspci: AMD
+  - name: i2c-dev
+    modprobe: i2c-dev
+    unlocks: /dev/i2c-* userspace
+    risk: safe
+  - name: i2c-i801
+    modprobe: i2c-i801
+    unlocks: Intel SMBus
+    risk: safe
+    match_lspci: SMBus
+  - name: i2c-piix4
+    modprobe: i2c-piix4
+    unlocks: AMD/ATI SMBus
+    risk: safe
+    match_lspci: SMBus

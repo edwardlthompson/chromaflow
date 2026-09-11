@@ -1,0 +1,37 @@
+{
+  "stack": "web",
+  "pruned": true,
+  "active_modules": [
+    "web",
+    "rust"
+  ],
+  "parallel_scope_note": "Product: crates/ and apps/desktop; Golden Path web remains examples/web",
+  "selected_at": "2026-09-11T12:55:29+00:00",
+  "distribution_tier": "foss",
+  "cursor_features_enabled": [
+    "rules",
+    "commands",
+    "hooks",
+    "skills",
+    "subagents",
+    "modes",
+    "worktrees",
+    "permissions",
+    "parallel_scope",
+    "build_automation",
+    "feature_radar",
+    "plugin_pack",
+    "cli_example",
+    "codex_review_example",
+    "mcp_foss_example"
+  ],
+  "cursor_features_hidden": [
+    "cloud_agents",
+    "bugbot",
+    "automations",
+    "approval_agents",
+    "mcp_commercial_example",
+    "android_commercial_patterns"
+  ],
+  "cursor_features_synced_at": "2026-09-11T12:55:29+00:00"
+}

@@ -1,0 +1,41 @@
+{
+  "mode": "product",
+  "name": "ChromaFlow",
+  "short_name": "ChromaFlow",
+  "tagline": "Fans, pumps, and lighting in one Linux Mint app",
+  "pitch": "ChromaFlow is an independent Linux-native desktop app for cooling (fans, pumps, AIO) and RGB/LED control. It discovers what the kernel actually exposes, explains the usual Linux gaps versus Windows OpenRGB, and offers one-click Install detection support plus rescan — without shipping kernel modules or running the GUI as root.",
+  "features": [
+    "Read-only inventory of hwmon, hidraw, i2c, optional liquidctl, and a localhost OpenRGB SDK probe",
+    "Support page: curated modules/udev/apt checklist with dry-run JSON; live apply only via polkit",
+    "Never bundles .ko files; never modprobe names that are not on the YAML allowlist",
+    "GUI and CLI refuse to run as root; PWM writes are not implemented until a watchdog daemon exists",
+    "Detects CoolerControl, fancontrol, and fan2go so we do not fight them silently"
+  ],
+  "quick_start": [
+    "On Linux Mint 21/22: install Rust (stable) and Node 22, then `cargo test --workspace --exclude chromaflow-desktop` in the repo root (product crates) and `cd apps/desktop && npm ci`.",
+    "Run `cargo run -p chromaflow-cli -- sensors` and `bash scripts/install-support.sh --dry-run` (no root, no modprobe).",
+    "Missing fans or LEDs: open the Support tab and use Install detection support + rescan. Log out of Cinnamon after udev/group changes.",
+    "Read `NOTICE`, `docs/HARDWARE.md`, and `docs/SUPPORT-SCRIPT.md` before enabling experimental modules."
+  ],
+  "install": "Primary test target is Linux Mint 21/22 (Cinnamon). We do not ship kernel modules. Inventory (`chromaflow sensors|devices|rescan`) works offline as an unprivileged user. The polkit helper (`/usr/libexec/chromaflow/install-support.sh`) is installed by a future .deb; the repo copy is `scripts/install-support.sh`. After udev or group changes (i2c, plugdev), log out. AppImage (later) will not install polkit — use the .deb for the helper.",
+  "usage": "Do not run the GUI or `chromaflow` with sudo. Use Support → Install detection support for modules/udev (polkit prompt). Never set PWM to 0% without an explicit action and a failsafe — this release cannot write PWM at all. If CoolerControl or fancontrol is already running, ChromaFlow warns and does not take over. Lighting talks to OpenRGB on 127.0.0.1:6742 only; devices with no Linux backend are labeled, not faked. Config lives in `~/.config/chromaflow/`.",
+  "urls": {
+    "docs": "docs/START_HERE.md",
+    "contributing": "CONTRIBUTING.md",
+    "security": "SECURITY.md",
+    "license": "LICENSE",
+    "design": "docs/DESIGN_GUIDE.md",
+    "branding": "branding/BRANDING.md",
+    "github_repo": "edwardlthompson/chromaflow"
+  },
+  "badge": {
+    "primary": "14B8A6",
+    "secondary": "7C3AED",
+    "license": "2ea043",
+    "foss": "656d76"
+  },
+  "stacks": [
+    "web",
+    "rust"
+  ]
+}
