@@ -71,6 +71,17 @@ class AboutLegoCliTests(unittest.TestCase):
                 (root / "examples/go/about.go").read_text(encoding="utf-8"),
             )
 
+    def test_strip_skips_pruned_cli_stacks(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            rust = root / "examples/rust/src"
+            rust.mkdir(parents=True)
+            (rust / "lib.rs").write_text("pub mod about;\npub mod crash;\n", encoding="utf-8")
+            (rust / "main.rs").write_text("fn main() {}\n", encoding="utf-8")
+            (rust / "log.rs").write_text("", encoding="utf-8")
+            strip(root)
+            self.assertNotIn("pub mod about", (rust / "lib.rs").read_text(encoding="utf-8"))
+
 
 if __name__ == "__main__":
     unittest.main()
