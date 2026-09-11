@@ -8,7 +8,7 @@
 | Layer | Technology | Version | Notes |
 |-------|-----------|---------|-------|
 | Product | ChromaFlow | 0.1.0-unreleased | Linux Mint cooling + lighting |
-| GUI | Tauri 2 + Svelte | 2.x | Real `apps/desktop/src-tauri` host; Vite preview for browser; `cargo test` skips GUI |
+| GUI | Tauri 2 + Svelte | 2.x | Real `apps/desktop/src-tauri` host; Vite preview for browser; `cargo test` skips GUI; GitHub `edwardlthompson/chromaflow` |
 | Core | Rust | stable | `crates/chromaflow-core`, `chromaflow-cli` |
 | Helper | bash + polkit | - | dry-run only this milestone |
 | License | MIT + NOTICE | - | No OpenRGB/Fan Control source |

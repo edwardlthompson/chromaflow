@@ -1,7 +1,7 @@
 # Build Plan
 
 <!-- remaining-tally -->
-**Remaining:** AGENT 0 · AUTO 1 · HUMAN 2 · ADB 0 · **3 open**
+**Remaining:** AGENT 0 · AUTO 1 · HUMAN 0 · ADB 0 · **1 open**
 <!-- /remaining-tally -->
 
 Live board for ChromaFlow. Finished work: [`COMPLETED_TASKS.md`](COMPLETED_TASKS.md).
@@ -31,10 +31,10 @@ python3 scripts/agent-run.py smoke-sprint --require
 
 1. ✅ [AGENT] Run `scripts/init-project.sh` (web, FOSS, MIT, ChromaFlow)
 2. ✅ [AGENT] Fill `branding/product.json` (`mode: product`); NOTICE; product docs
-3. 🔲 [HUMAN] Create GitHub repo and run `scripts/setup-github-repo.sh` (`gh` admin)
+3. ✅ [HUMAN] Create GitHub repo and run `scripts/setup-github-repo.sh` (`gh` admin)
 4. 🔲 [AUTO] Sprint 0 sign-off on `main` after first push: `validate-bootstrap --quick` · `feature-gate --stack web` · `check-github-ci --wait 300`
 5. ✅ [HUMAN] FOSS tier chosen at init
-6. 🔲 [HUMAN] Enable Dependabot alerts and private vulnerability reporting
+6. ✅ [HUMAN] Enable Dependabot alerts and private vulnerability reporting
 7. ✅ [HUMAN] Bookmark `docs/help/BATCH_COMMANDS.md`
 
 ### Sprint 1 — Inventory and Support dry-run
