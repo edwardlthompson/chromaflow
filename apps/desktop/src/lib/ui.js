@@ -1,6 +1,19 @@
 /** Shared UI flags. No hardware I/O. */
 
-import { writable } from "svelte/store";
+function writable(value) {
+  const subs = new Set();
+  return {
+    set(v) {
+      value = v;
+      subs.forEach((fn) => fn(v));
+    },
+    subscribe(fn) {
+      subs.add(fn);
+      fn(value);
+      return () => subs.delete(fn);
+    },
+  };
+}
 
 export const pwmOn = writable(false);
 

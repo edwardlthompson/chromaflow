@@ -76,6 +76,7 @@ Bootstrapped from [agent-project-bootstrap](https://github.com/edwardlthompson/a
 ### Fixed
 
 - Cooling hydrates `curves.json` after this-machine inventory arrives, so Quiet **Apply to all** is not overwritten by the sample fixture and survives quit/relaunch
+- Lighting helper tests import `ui.js` without `svelte/store` so CI Node can load host-effect modules
 - Cooling no longer always shows that take-over is blocked; that line is only when a live competitor is present. Fan/pump/temp/curve tiles are `22rem` so AIO and %/RPM stay on the card.
 - Inventory lists IT87952 `pwm4`/`pwm5` even when duty reads ENODATA until `pwm*_enable=1`, pairs `fanN` with `pwmN`, and `chromaflowd` passes `DISPLAY=:0` to `nvidia-settings` so GPU fans stay under the watchdog after the GUI closes.
 - Cooling hides fan/pump cards with no tach (Hidden row; NVIDIA GPU cards stay on the board even at idle 0 RPM).
