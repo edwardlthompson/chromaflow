@@ -1,0 +1,15 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=ChromaFlow
+GenericName=Fan and RGB control
+Comment=Fans, pumps, and lighting on Linux Mint
+Exec=chromaflow-gui
+TryExec=chromaflow-gui
+Icon=chromaflow
+Terminal=false
+Categories=System;Settings;HardwareSettings;
+StartupNotify=true
+SingleMainWindow=true
+StartupWMClass=chromaflow-gui
+Keywords=fan;pwm;rgb;openrgb;cooling;

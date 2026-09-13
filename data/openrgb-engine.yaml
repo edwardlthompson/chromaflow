@@ -1,0 +1,5 @@
+# Official OpenRGB Linux x86_64 AppImage (GPL). Separate process; not vendored.
+host: codeberg.org
+url: https://codeberg.org/OpenRGB/OpenRGB/releases/download/release_1.0/OpenRGB_1.0_x86_64_81bbe18.AppImage
+sha256: a77d9fea9ab1e59e5ec2b5cec4ab22d50f0433594c4e83eb13de4e5c3cfadebf
+max_bytes: 83886080

@@ -18,12 +18,16 @@
   "hidraw": [],
   "i2c": [],
   "liquidctl": { "available": false, "detail": "not on PATH" },
-  "openrgb": { "status": "unreachable", "detail": "127.0.0.1:6742 timeout" },
+  "liquidctl_devices": [],
+  "hid_rgb": [],
+  "openrgb": { "status": "unreachable", "detail": "127.0.0.1:6742 timeout", "controllers": [], "sandboxed": false, "engine_missing": false },
+  "kernel_release": "7.0.0-test",
   "gaps": [
     {
       "id": "udev_hidraw",
       "detail": "No readable hidraw nodes. Use Install detection support."
     }
   ],
-  "conflicts": []
+  "conflicts": [],
+  "gpu_fans": []
 }

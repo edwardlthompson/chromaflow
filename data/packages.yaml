@@ -22,6 +22,11 @@ items:
     unlocks: extra in-tree modules for this kernel
     risk: safe
     warning: Large download for linux-modules-extra-$(uname -r)
+  - name: liquidctl
+    apt: liquidctl
+    unlocks: USB AIO pump/fan status (CoolerControl uses this; ChromaFlow does not vendor it)
+    risk: safe
+    optional_package: true
   - name: openrgb-udev
     apt: openrgb
     unlocks: distro OpenRGB udev rules if packaged

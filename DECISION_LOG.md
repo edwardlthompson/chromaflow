@@ -17,6 +17,265 @@
 
 ## Entries
 
+### 2026-09-13 — Ship with Vite 5.4 / Svelte 4 despite GHSA High on `vite`
+- **Status:** Accepted
+- **Context:** `/ship` local `upd audit --check` fails on GHSA-fx2h-pf6j-xcff (High, Vite `server.fs.deny` bypass on Windows ADS/8.3). Patch is Vite `6.4.3` / `7.3.5` / `8.0.16`. Desktop is Svelte 4 + `@sveltejs/vite-plugin-svelte` 3 (Vite 5). Golden Path `examples/web` already uses Vite 8.3. Svelte SSR GHSAs fix only in Svelte 5.51+.
+- **Decision:** Keep desktop on Vite `^5.4.21` and Svelte 4 for this 0.1.0. Production `chromaflow-gui` embeds a Vite **build**, not the dev server. `vite.config.js` binds `127.0.0.1` only. The High is Windows-dev-server + `--host`/LAN. Track Vite 6+/Svelte 5 on the Windows port plan.
+- **Alternatives considered:** Vite 6.4.3 + plugin/Svelte 5 rewrite in this ship (too large, untested on Mint). `--no-fail` on audit (disables the gate).
+- **Consequences:** Local `pre-release-gate.sh --local` stays red on `upd audit --check` until the Windows/Vite major. `npm audit --audit-level=high` in Golden Path is clean. Do not expose `vite --host` on Windows until that bump.
+
+### 2026-09-13 — Locked app mark and color taskbar icon
+- **Status:** Accepted
+- **Context:** The Golden Path red triangle was still the `.deb` / Tauri icon. The chosen mark is a navy rounded square, full hue ring, and gold three-blade fan with motion trails, plus a photorealistic glass-floor hero.
+- **Decision:** PNG is canonical (`branding/assets/chromaflow-icon.png` and `chromaflow-icon-hero-glass.png`). Linux ships hicolor 16–512 plus SVG. The GUI sets a color window icon at runtime. `icon.ico` (16–256, 32-bpp PNG frames) is the Windows taskbar/Start icon for a future packager. README hero is the glass render; Demo is the 2D mark.
+- **Alternatives considered:** Pure SVG trails (cannot match the locked raster). Monochrome/symbolic panel icon (user asked for color). Skip `.ico` until a Windows PWM port exists (then the first Windows build would still ship the triangle).
+- **Consequences:** `tauri` enables `image-png` / `image-ico`. Windows PWM/hwmon is still out of scope. GitHub social PNG stays uncommitted (over the 500 KB hygiene cap); SVG social preview is the tracked fallback.
+
+### 2026-09-13 — Single-instance installed GUI
+- **Status:** Accepted
+- **Context:** Multiple `tauri dev` / `cargo run` windows stacked. Product launch should be the Mint `.deb`, one window.
+- **Decision:** `chromaflow-gui` binds `$XDG_RUNTIME_DIR/chromaflow-gui.sock`. A second process connects, the first focuses `main`, the second exits 0. `.desktop` sets `SingleMainWindow=true`. Install via `chromaflow_*.deb`.
+- **Alternatives considered:** `tauri-plugin-single-instance` (extra crate + capability). Kill-other-PIDs (racy, can hit the watchdog).
+- **Consequences:** Stale sockets after a crash are removed when connect fails. Dev `tauri dev` and the installed binary share the same socket name, so only one GUI runs.
+
+### 2026-09-13 — Board Auto-calibrate, short equal cards
+- **Status:** Accepted
+- **Context:** Per-card Tune and Auto-calibrate made fan/pump tiles tall and duplicated the same sweep. Temp cards no longer matched after Tune was collapsed.
+- **Decision:** One Cooling toolbar Auto-calibrate takes over writable ITE headers and sweeps fans then pumps (existing `pwm_calibrate`, 20–100%, never silent 0%). NVIDIA GPU fans stay skipped. Fan/pump/temp tiles share `min-height: 15.5rem`; curve cards stay graph-sized.
+- **Alternatives considered:** Keep per-card Tune behind a disclosure (Sprint 24) — still added height. A new bulk Rust `sweep_all` — unnecessary; sequential IPC matches Fan Control’s one-header-at-a-time dwell.
+- **Consequences:** Recipe min%/hysteresis stay at schema defaults unless loaded from `curves.json`. Live board sweep is HUMAN (fans spin through 100%).
+
+### 2026-09-13 — Curve fit + unmount idle tabs
+- **Status:** Accepted
+- **Context:** Curve °C/% labels sat in HTML overlays outside the SVG and were clipped by `contain: content` / `content-visibility` plus 33rem tiles. Cooling still felt laggy because Lighting stayed mounted (`display: none`) with the 108-key board, and the 15 s inventory poll called `ensure_sdk` + full OpenRGB/hid/liquidctl while the user was on Cooling.
+- **Decision:** Draw axis and point labels inside a padded SVG (`xMidYMid meet`, 7.25rem). Unmount Lighting/Profiles/Support off-tab. Cooling `inventory({ light: false })` uses `collect_cooling` (hwmon + GPU fans + cooling gaps only). Collapse fan Tune fields. Temps poll `hardware_gauges` at 2 s while Cooling is mounted.
+- **Alternatives considered:** Keep Lighting mounted and pause ticks (Sprint 23) — still paid for a hidden 108-key DOM. Equal-height 33rem tiles — caused crop and huge paint. Electron/iced rewrite — does not remove sysfs/OpenRGB IPC.
+- **Consequences:** Host lighting animations stay frozen while Cooling is open (same as Sprint 23) and the Lighting tree is rebuilt on return. Cooling RPM poll no longer starts OpenRGB.
+
+### 2026-09-12 — Cooling scroll vs hidden Lighting ticks
+- **Status:** Accepted
+- **Context:** Cooling still juddered while scrolling: Lighting stays mounted, so a 10 Hz OpenRGB/HID tick plus 1 s gauge SVG updates ran during Cooling scroll. Inventory updates also rebuilt the 108-key Lighting tree.
+- **Decision:** Pause OpenRGB/HID and Lighting inventory while `ui.page !== Lighting` or `ui.scrolling`. Freeze Lighting's inventory prop on other tabs. Skip Temps hist while scrolling. `content-visibility: auto` on cooling tiles. Keep Tauri+Svelte (WebKit) — rewriting to Electron/iced does not remove sysfs/OpenRGB IPC.
+- **Alternatives considered:** Unmount Lighting (would stop host effects even when you want them after returning). Electron (heavier). Native GTK rewrite (same WebKit paint if we keep HTML cards).
+- **Consequences:** Host lighting animations freeze while the Cooling tab is open, then resume on Lighting. Clone copies a preset; Quiet/Balanced/Performance stay locked.
+
+### 2026-09-12 — One-password Install all + Cooling board polish
+- **Status:** Accepted
+- **Context:** Install all was already one helper script, but polkit `auth_admin` re-prompted. Kernel extras cannot ship as `.ko`. Cooling 1 s gauge/`pwm_tick` rebuilt every fan card and stuttered while scrolling. Mix checkboxes sat under temp cards. Curves were presets only. Temp graphs were short and had no scale.
+- **Decision:** `auth_admin_keep` on install-support. Ship `60-chromaflow.rules` in the `.deb` (`/usr/lib/udev/rules.d`) and Recommends `liquidctl`, `i2c-tools`, `lm-sensors`. Never vendor `.ko`. Move 1 s hist into Temps; pass stable mix ids to fan dropdowns; stop GUI `pwm_tick`; skip inventory poll while Cooling scrolls. Equal-height temp/fan tiles; spark wireframe 0–100% / 30–90 °C with a vertical bar every 15 s. Temps **+** for mixes; Curves **+** for named custom points (`points_for` in the watchdog).
+- **Alternatives considered:** Nested pkexec per extra (rejected: extra passwords). Bundling frankcrawford `it87.ko` (rejected: AGENTS.md). GUI `pwm_tick` alongside `chromaflowd` (rejected: double `nvidia-settings`).
+- **Consequences:** Deb install covers udev/helpers; remaining extras still need one Install all password. Custom curves persist in `curves.json` and apply on the next daemon tick.
+
+### 2026-09-12 — First Balanced scheme + bulletproof extras
+- **Status:** Accepted
+- **Context:** Kernel extra Install re-ran DKMS/modprobe on present items and failed loudly. liquidctl was optional apt only. Temp cards had no usage history. Page chrome scrolled away. Live PWM apply refused `/sys/class/hwmon` device symlinks as path escapes. User confirmed take-over.
+- **Decision:** Skip extras already present. Extra `liquidctl` (apt). Temp cards show usage % plus 60 s usage (green→red) and temp (blue→red, 30–90 °C) graphs. Lock top bar and tab rail. Resolve PWM paths inside the canonical chip dir. `chromaflow cooling --takeover` writes Balanced (min 20%), calibrates spinning headers, enables `chromaflowd`.
+- **Alternatives considered:** CoolerControl apt for liquidctl (rejected). Sweep 0 RPM headers in bulk take-over (skipped; per-card calibrate still can). NVML (rejected: closed SDK).
+- **Consequences:** This host: all extras present including liquidctl (Fusion only). Watchdog owns 8 ITE PWM + 2 NVIDIA fans. `chromaflowd` is the user unit; failsafe is `pwm*_enable=2` when that unit stops.
+
+### 2026-09-12 — Support extras stay green; Cooling temp cards
+- **Status:** Accepted
+- **Context:** PWM sysfs Install dumped pwm-acl stdout + JSON into Support. Uncontrolled devices copy was long. Cooling temp dropdowns overflowed cards; AIO checkbox only on some rows. CoolerControl uses hwmon, liquidctl, NVML, nvidia-settings/smi.
+- **Decision:** Parse apply JSON after helper banners; hide extra errors when present. Temps are CPU/GPU/RAM/Disk/Combined/mix cards. AIO checkbox on every control card. Optional apt `liquidctl`. No NVML. No CoolerControl apt.
+- **Alternatives considered:** NVML GPU fans (rejected: closed SDK). Root sensors-detect `/dev/port` (rejected: GUI never root).
+- **Consequences:** USB CPU AIO fans stay undetected until `liquidctl` is installed and lists speeds.
+
+### 2026-09-12 — Support extra it87-dkms first
+- **Status:** Accepted
+- **Context:** In-tree `it87` binds IT87952E only on this X570S. Host `it87-dkms` (frankcrawford, already in CoolerControl apt) binds IT8689. Support listed in-tree ITE as present and had no DKMS row. PWM sysfs stayed `644 root:root`.
+- **Decision:** Extra kernel support lists `it87-dkms` first. Present is live `srcversion` vs `/lib/modules/$(uname -r)/updates/dkms/it87.ko*`. Apply `apt-get install it87-dkms` only if the package is already in apt; write `chromaflow-it87.conf`; reload `it87`. Never add CoolerControl apt. Never `modprobe it87-dkms`. Smoke `pwm_acl` on the pinned helper so plugdev gets `0660` on `pwm*` / `pwm*_enable`.
+- **Alternatives considered:** Treat YAML `it8689` as a `.ko` (rejected). Auto-add CoolerControl apt (rejected: competitor). Count any loaded `it87` as DKMS (rejected: hides in-tree).
+- **Consequences:** Dual-ITE hosts still need a frankcrawford package in apt. ChromaFlow does not vendor `.ko`. Helper must ship `chromaflow_it87.py` and `pwm-acl.sh`.
+
+### 2026-09-12 — Detect NVIDIA fans + dual-ITE gap
+- **Status:** Accepted
+- **Context:** This host has two case fans, a 3-fan CPU AIO, a 2-fan GPU hybrid AIO, and a 4090 card fan. In-tree `it87` only binds IT87952E (three headers). `nvidia-settings` already lists two GPU fans at idle 0%.
+- **Decision:** Inventory `gpu_fans` from `nvidia-settings` (not NVML, not sysfs `pwm*`). Default ITE names FAN4/FAN5_PUMP/FAN6_PUMP. AIO unit take-over shares one recipe across pump headers + GPU fans. Gap `ite_primary_missing` is honest: ChromaFlow does not ship frankcrawford it87 DKMS.
+- **Alternatives considered:** Userspace ISA Super I/O (rejected: root + reimplementing it87). `modprobe it8689` from YAML (rejected: not a real `.ko`). Invent RPM for 0-tach headers (rejected).
+- **Consequences:** Five software controls on this machine when NVIDIA query works. Extra SYS_FAN/CPU_FAN stay missing until HUMAN DKMS. GPU take-over may need Coolbits.
+
+### 2026-09-12 — Sprint 17 Fan Control cooling board
+- **Status:** Accepted
+- **Context:** Cooling was one Controls list plus a display curve. This host has three ITE PWM/tach channels, Lighting CPU/GPU gauges, and no sysfs pump node.
+- **Decision:** Schema 2 recipes (control + named Quiet/Balanced/Performance + temp id, including mix and Lighting gauges). Names/mixes/calibration persist in `curves.json` plus `cooling.json`. Auto-calibrate sweeps duty 20–100% (never silent 0%) and pauses the watchdog via a lock file. Public Fan Control docs only; no vendored source.
+- **Alternatives considered:** Voltage-style calibration (rejected: Super I/O is duty 0–255). Invent RPM for 0-tach headers (rejected: empty table). File `.sensor` mixes (deferred: plugin-style).
+- **Consequences:** Vite still cannot write sysfs. Live RPM/calibrate smoke stays HUMAN. Time-average mix is the mean of sources this sprint, not a rolling window.
+
+### 2026-09-12 — Live cooling: conflicts, PWM ACL, chromaflowd
+- **Status:** Accepted
+- **Context:** Cooling listed leftover `fancontrol`/`coolercontrold` unit files while Support showed none. Duty also died when the GUI closed because failsafe always ran.
+- **Decision:** Conflicts are live `systemctl is-active`/`is-enabled` or `pidof` only. Support extra `pwm_acl` chmods Super I/O `pwm*` to plugdev 0660. Cooling take-over `enable --now`s user `chromaflowd`; GUI close skips failsafe while that unit is active. `/build` will not write live PWM.
+- **Alternatives considered:** Treat leftover `.service` files as conflicts (rejected: blocks take-over after purge). Auto-run `chromaflow daemon --watchdog` against live `/sys` from HUMAN automation (rejected: needs confirm + RPM check).
+- **Consequences:** Vite still cannot write sysfs. Live RPM smoke stays HUMAN. Failsafe still restores `pwm*_enable=2` when the daemon is not running.
+
+### 2026-09-12 — PWM watchdog and firmware failsafe (ADR-0018)
+- **Status:** Accepted
+- **Context:** ADR-0010 blocked all duty writes. User asked for the watchdog + failsafe so Cooling can take PWM, and for Report not to be spam-clicked.
+- **Decision:** `chromaflow daemon --watchdog` and GUI `pwm_takeover` write `pwm*_enable=1` and duty after confirm. Failsafe (GUI close, `ExecStopPost`, `--failsafe`) writes enable 2 for owned `hwmonN/pwmN` only. 0% needs a second confirm. Conflicts still refuse. Device Report confirms, then dims that VID:PID.
+- **Alternatives considered:** Root `chromaflow` CLI (rejected: `refuse_if_root`). Failsafe to 100% duty (rejected: firmware enable 2).
+- **Consequences:** Take-over stays disabled while fancontrol/coolercontrold run. Vite preview cannot write sysfs. Tests use a fake hwmon tree.
+
+### 2026-09-12 — Live Support extras + competitor uninstall smoke
+- **Status:** Accepted
+- **Context:** Live Install all returned `ok: false` with empty `errors`: this kernel has no `linux-modules-extra-$(uname -r)` apt package, and `nct6775` fails with “No such device” on ITE. Cooling listed `coolercontrold` from a leftover `systemctl mask` (`symlink → /dev/null`) that Uninstall did not see. `fancontrol` was the only real competitor package.
+- **Decision:** Treat ITE/Nuvoton Super I/O as one sibling (like RGB I2C). `linux-modules-extra` is present when `modinfo nct6775-i2c` works. Ignore masked units in inventory conflicts. Live `fancontrol` purge succeeded; OpenRGB untouched.
+- **Alternatives considered:** Fail Install all until the extra metapackage exists (rejected: modules are already in-tree). Unmask leftover CoolerControl (rejected: already deinstalled).
+- **Consequences:** Support shows notes for missing apt names. Still no PWM.
+
+### 2026-09-12 — Support extra-kernel one-stop (nct6775-i2c + fans)
+- **Status:** Accepted
+- **Context:** Support Install for `i2c-nct6775` always failed. There is no kernel module by that name; in-tree is `nct6775-i2c`. This host already has `i2c-nvidia-gpu` loaded. Fan hwmon (`it87`, `nct6775`, `k10temp`, SMBus, DIMM SPD) was only in YAML `would_load`, not the Support extras checklist.
+- **Decision:** Map extra id `i2c-nct6775` → `modprobe nct6775-i2c`. If either RGB I2C module is in `/sys/module`, both extras are present. Checklist adds `it87`, `nct6775`, `k10temp`, `i2c-piix4`, `jc42`, `spd5118`. Do not treat Super I/O siblings as interchangeable. Do not set `acpi_enforce_resources=lax`.
+- **Alternatives considered:** Keep probing `i2c-nct6775` (rejected: module does not exist). Mark every extra green when NVIDIA I2C is up (rejected: `linux-modules-extra` and DIMM SPD stay honest). Auto-apply `acpi_enforce_resources=lax` for RAM °C (rejected: reboot + `[HUMAN]`).
+- **Consequences:** Pinned helper must be rebuilt for live `--only it87`. `nct6775` may stay empty on ITE boards. Still no PWM.
+
+### 2026-09-12 — Support uninstall of competing fan/RGB daemons
+- **Status:** Accepted
+- **Context:** This host runs `fancontrol` + `coolercontrold`. Users need a Support action to remove those and other fan/RGB stacks that fight ChromaFlow, without touching OpenRGB (lighting path) or NVIDIA drivers.
+- **Decision:** Allowlisted `manage-competitors.sh` via polkit `org.chromaflow.remove-competitors`; Support shows detected names, confirms, then `systemctl disable --now` + `apt-get remove --purge`. Extra names: thinkfan, NBFC, OpenRazer/polychromatic, ckb-next.
+- **Alternatives considered:** Stop-only (kept as polkit `--stop-apply` but UI is uninstall). Uninstall distro OpenRGB (rejected: ADR-0013 lighting engine). Generic `apt purge` from UI strings (rejected: allowlist only).
+- **Consequences:** Needs the helper/deb that installs `/usr/libexec/chromaflow/manage-competitors.sh`. PWM still not written.
+
+### 2026-09-12 — Persist last tab and per-device host effects
+- **Status:** Accepted
+- **Context:** Returning to the app (or leaving Lighting) always showed Cooling and Solid Color. `lastMode` lived only in memory; Lighting unmounted on tab change so the host tick stopped and lamps fell back to firmware Direct.
+- **Decision:** Separate `session.json` (not `window.json`) plus `localStorage`; keep pages mounted with `.tab-hidden`; EffectList `selected` follows applied `d.mode` without snapping while the user is choosing.
+- **Alternatives considered:** Mixing session maps into window-geom resize saves (rejected: a resize would wipe effects). Unmount Lighting and only restore dropdown (rejected: lamps would still go solid).
+- **Consequences:** Support dry-run still runs at startup. Host effects keep USB traffic while another tab is visible.
+
+### 2026-09-12 — Per-metric gauges, nvidia-smi GPU, Lighting poll skip
+- **Status:** Accepted
+- **Context:** Cinnamon still hitching while the app was open because Lighting rebuilt OpenRGB LED arrays on a 4 s inventory poll and stamped identical host frames. GPU °C was missing (no nvidia hwmon). User wanted separate CPU/GPU/combined/RAM/disk graphs and device routing.
+- **Decision:** Inventory poll 15 s and skipped on Lighting; skip identical `lastPaint`; five GaugeMeter rows; `Hardware gauges` routes Aorus=CPU, 4090 AIO=GPU, Keychron+Arena=combined; cached `nvidia-smi` (2 s) only on `hardware_gauges` (ADR-0017).
+- **Alternatives considered:** Uncached smi per frame (rejected). OpenRGB Hardware Sync plugin (rejected). Strip `led_colors` from inventory JSON (deferred; poll skip is enough now).
+- **Consequences:** GPU °C can lag 2 s. Lighting inventory is stale until the user leaves the tab. Still no PWM.
+
+### 2026-09-12 — Calm host USB after OS jitter
+- **Status:** Accepted
+- **Context:** 33 Hz `UPDATE_LEDS` on the Keychron (same USB as typing) plus a 144 Hz Lighting `requestAnimationFrame` loop made the whole desktop hitch. Gauges also spawned `df` and walked every hwmon PWM node at 2 Hz.
+- **Decision:** Motion effects at 10 Hz; gauges/solid skip unchanged frames (2 Hz max); Lighting idle uses a 1 s timer; `hardware_gauges` uses `scan_temps` and a 30 s disk cache; push IPC returns `[]` so WebKit does not parse 177 LED hexes per frame. Live CPU/GPU/combined readout plus green→yellow→red spectrum and sparkline on Lighting.
+- **Alternatives considered:** Keep 33 Hz for smoother chevron (rejected; OS jitter). nvidia-smi (still rejected).
+- **Consequences:** Chevron is a bit coarser. Disk used% can lag 30 s. PWM unchanged.
+
+### 2026-09-12 — Host hardware gauges and hitching fix
+- **Status:** Accepted
+- **Context:** Inventory OpenRGB DATA (~790 ms / 4 s) froze host animations on keys and layout together. Users wanted Hardware Sync-style meters without the GPL plugin.
+- **Decision:** 33 Hz local paint + SDK push; 15 s probe/`liquidctl` cache with try_lock; gauges from hwmon + meminfo + `df -P /` as host Direct fills (ADR-0017).
+- **Alternatives considered:** OpenRGB Hardware Sync plugin (rejected). nvidia-smi (hitch). Spatial LED bar (rejected for 1-LED AIO).
+- **Consequences:** PWM unchanged. Device list may lag 15 s after unplug.
+
+### 2026-09-12 — Host-effect apply was black in-app / white on keys
+- **Status:** Accepted
+- **Context:** Apply effect looked like a no-op: layout went black (VIA GET_COLOR store / empty SDK DATA) while the Q6 HE stayed white. Lighting remount/HMR dropped `lastMode`, so `lighting_sync([])` never sent `UPDATE_LEDS`. Chromatic frames also used the live LED hex, so black/white pickers collapsed the rainbow.
+- **Decision:** Persist `lastMode`/`lastColor` on `ui`, kill stale rAF with `tickId`, stamp written host pixels onto the preview, skip SDK DATA while pushing, and force sat/value for chromatic kinds when the picker is near black or white.
+- **Alternatives considered:** Trust HID overlay during host frames (rejected; it is the stored color). Keep 80 ms preview I/O (too tight for 108 LEDs plus pull).
+- **Consequences:** Layout matches the frame just written. PWM unchanged. Live smoke: 16 Rainbow Moving Chevron frames at speed 32 then 255 on Keychron Q6 HE via `SET_CUSTOM` + `UPDATE_LEDS`.
+
+### 2026-09-12 — Host Direct effects for every device
+- **Status:** Accepted
+- **Context:** Firmware effects do not dump per-LED animation RAM. Keychron GET_COLOR is the stored color. A UI rainbow did not match QMK math. Apply effect skipped devices that lacked that firmware mode.
+- **Decision:** Host-render QMK RGB-matrix formulas and `UPDATE_LEDS` every OpenRGB controller (ADR-0016). Same `HOST_EFFECTS` catalog on all devices. Skip HID overlay while frames stream. Arena/Prime/liquidctl use LED 0 at ~30 Hz.
+- **Alternatives considered:** Firmware `UPDATE_MODE` (skipped devices, no LED truth). Keychron-only stream (rejected).
+- **Consequences:** Apply color stops the engine (Direct). PWM unchanged.
+
+### 2026-09-12 — Keychron LED HID readback at display refresh
+- **Status:** Accepted
+- **Context:** Simulated Rainbow Wave on the layout did not match the keyboard. OpenRGB DATA is the last Direct buffer. Q6 HE VIA GET_COLOR (`0xA8`/`0x09`) returns real per-key HSV (108 LEDs, 9 per report) but not firmware animation RAM.
+- **Decision:** Poll every Keychron LED on hidraw `0xFF60`. While the board is expanded, Direct-stream a host frame and paint the HID readback. GUI uses `requestAnimationFrame` (monitor Hz, including 144). ADR-0015.
+- **Alternatives considered:** Faster SDK polling (stale). Per-LED HID at 144 Hz (USB cannot). Keep UI simulation (rejected).
+- **Consequences:** Expanding the Keychron card takes Direct. PWM unchanged.
+
+### 2026-09-12 — Firmware effect handshake + LED layout simulation
+- **Status:** Accepted
+- **Context:** Apply effect on Keychron Q6 HE needed two clicks (first flash white, then Rainbow Wave). The expanded LED layout stayed solid green while the keyboard ran rainbow. OpenRGB `REQUEST_CONTROLLER_DATA` reports the last Direct buffer, not the firmware animation.
+- **Decision:** Drop the preview TCP session before apply. Send `UPDATE_MODE` twice with a DATA re-read. Do not paint mode colors onto rainbow/wave/cycle blobs. ColorFrame includes `active_mode` + mode name. The layout simulates the announced effect unless polled pixels already vary; Direct/Custom still use live `led_colors`.
+- **Alternatives considered:** Faster LED polling (rejected: SDK pixels are stale). Client-side OpenRGB Direct streaming of firmware effects (rejected: fights the device animation).
+- **Consequences:** Layout is a faithful preview of named firmware modes, not a camera of the keyboard. PWM unchanged.
+
+### 2026-09-12 — Picker wrap + window size + Prime Neo HID
+- **Status:** Accepted
+- **Context:** Lighting controls were one tall column; the window reset to 1280×800 every launch. Prime Neo (`1038:1856`) is controllable in SteelSeries GG; OpenRGB does not list it.
+- **Decision:** Color wheel, sliders, hex/swatches, and effect are separate `.picker-card` objects in a wrapping flex row. Persist inner size (and maximized) to `window.json`. Prime Neo vendor hidraw uses rivalcfg-documented output `0x62` plus save `0x59` (ADR-0014); no rivalcfg spawn.
+- **Alternatives considered:** CSS `display:contents` (inheritance risk). Tauri window plugin (unnecessary). Vendoring rivalcfg (GPL; rejected).
+- **Consequences:** Remaining research HID is still no-Apply. PWM unchanged.
+
+### 2026-09-12 — Bundled OpenRGB engine + Mint .deb
+- **Status:** Accepted
+- **Context:** Lighting needs a localhost SDK after uninstalling the OpenRGB desktop app. ChromaFlow cannot vendor GPL C++. Users install via Cinnamon menu, not an AppImage.
+- **Decision:** One `chromaflow_*.deb` with `.desktop`. Sibling OpenRGB AppImage (ADR-0013) spawned unprivileged on 127.0.0.1. Research HID list (cap 32). Support GitHub device form; serial opt-in.
+- **Alternatives considered:** GUI AppImage (withdrawn). In-process OpenRGB (ADR-0007). OpenRGB Start-menu entry (rejected).
+- **Consequences:** Tests cover hash reject, `CHROMAFLOW_NO_SPAWN`, no OpenRGB.desktop. User systemd unit is a follow-up. PWM unchanged.
+
+### 2026-09-12 — OpenRGB modes + per-LED matrix + Kelvin
+- **Status:** Accepted
+- **Context:** Lighting needed firmware effects and a keyboard layout like OpenRGB, plus CCT for matching room lamps. Slider labels were smaller than page body text.
+- **Decision:** Parse protocol-0 `modes[]` and zone `matrix_map` from SDK DATA. `UPDATE_MODE` (1101) and `UPDATE_SINGLE_LED` (1052) on localhost. UI lists that device’s modes (OpenRGB Common Modes names, not a hardcoded enum). Kelvin slider uses Tanner CCT→RGB. Slider row font inherits body size.
+- **Alternatives considered:** Hardcoded global effect list (rejected: each controller reports its own modes). Vendored OpenRGB key maps (rejected: ADR-0007). Protocol 3+ brightness fields (rejected: stay on protocol 0).
+- **Consequences:** Arena HID has no SDK modes. Direct/Custom still use `SET_CUSTOM` + `UPDATE_LEDS`. PWM unchanged.
+
+### 2026-09-11 — One-click Support apply via pkexec
+- **Status:** Accepted
+- **Context:** Detection support was dry-run in the GUI. The user needs one click for linux-modules-extra, i2c-dev, Gigabyte WMI, udev, groups, and experimental RGB I2C.
+- **Decision:** Tauri `support_apply` and `chromaflow support --apply` run `pkexec` of the pinned helper. `--advanced` is a second polkit action. Optional apt (`openrgb`) failures are warnings. `nouveau` is never loaded.
+- **Alternatives considered:** GUI as root (rejected). In-process apt from Tauri (rejected: pinned helper only).
+- **Consequences:** Password dialog is the Cinnamon polkit agent. Log out after group/udev changes. PWM still off.
+
+### 2026-09-11 — Arena 7 HID + Fusion D_LED radiator headers
+- **Status:** Accepted
+- **Context:** OpenRGB does not list Arena 7 (`1038:1a00`). Fusion `D_LED1`/`D_LED2` were size 0 so chassis radiator ARGB never received `UPDATE_LEDS`.
+- **Decision:** Arena 7 vendor hidraw output report `0x06` (ADR-0012). Fusion apply resizes D_LED zones to 32 and sends `UPDATE_ZONE_LEDS`. Prime Neo stays display-only.
+- **Alternatives considered:** OpenRGB Arena controller (not in git2478; do not vendor C++). GPU I2C extra LEDs (card already works; radiator is motherboard ARGB).
+- **Consequences:** Apply All paints speakers + D_LED headers. Wrong header length is a follow-up if 32 is too short/long.
+
+### 2026-09-11 — UPDATE_LEDS data_size must equal pkt_size
+- **Status:** Accepted
+- **Context:** OpenRGB git2478 logged `UpdateLEDs packet has invalid size` (10/22/438). ChromaFlow set `data_size = 2+4*n` (excluding the u32 field). The server requires `header.pkt_size == first u32`.
+- **Decision:** `data_size` is `body.len()` (`4+2+4*n`). TCP close is write-only FIN. Aorus/Fusion also runs `liquidctl` after the SDK write on this 5702.
+- **Alternatives considered:** `data_size == 0` protocol-≤4 workaround (rejected: this server is newer). OpenRGB CLI as the only writer (rejected: keep SDK packets).
+- **Consequences:** Apply no longer reports success on a dropped packet. Inventory polls still log `recv_select failed receiving magic` on disconnect.
+
+### 2026-09-11 — Localhost OpenRGB SDK color writes (ADR-0011)
+- **Status:** Accepted
+- **Context:** After per-VID udev, hidraw is `0660` plugdev. Native OpenRGB AppImage on `127.0.0.1:6742` lists Fusion (`X570S AORUS MASTER`), the 4090 AIO, and Keychron Q6 HE. Distro apt has no `openrgb` package.
+- **Decision:** Lighting may send documented SDK packets (50 / 1100 / 1050) with a 200ms timeout. Fusion fallback is `liquidctl` subprocess only. No hidraw SET_REPORT, no PWM, no Flatpak server as the primary path.
+- **Alternatives considered:** crates.io OpenRGB client (rejected: copyleft stop-and-ask). Direct hidraw for Arena 7 / Prime (deferred).
+- **Consequences:** SteelSeries stays “No Linux backend”. Keychron can use SDK when listed, plus VIA copy. PWM remains ADR-0010.
+
+### 2026-09-11 — USB/ARGB inventory is sysfs names, not OpenRGB control
+- **Status:** Accepted
+- **Context:** OpenRGB SDK on this Gigabyte X570S listed only the MSI 4090 Suprim Liquid X. USB hidraw is root-only; liquidctl sees RGB Fusion 2.0; Keychron Q6 HE, SteelSeries mouse/Arena 7, and ITE 048d:5702 are present.
+- **Decision:** Inventory adds `hid_rgb` + `liquidctl_devices` from sysfs uevent/liquidctl list (no hidraw open). Lighting prompts Install detection support with Advanced experimental I2C RGB (`i2c-nct6775`, `i2c-nvidia-gpu`; never `nouveau`). `gigabyte_wmi` is a safe DMI match. Apply may install `linux-modules-extra`. No LED or PWM writes.
+- **Alternatives considered:** Claim OpenRGB control of USB devices now (rejected: hidraw 600 root). Auto-load `nouveau` with Advanced (rejected: proprietary NVIDIA). Widen DMI matching so probe strings become modprobe names (forbidden).
+- **Consequences:** Users see motherboard/keyboard/mouse/speakers/radiator candidates and a dry-run module list. Live pkexec apply remains HUMAN.
+
+### 2026-09-11 — Fan Control Home chrome; PWM take-over declined
+- **Status:** Accepted
+- **Context:** This host runs `coolercontrold` and `fancontrol`; `it87952` PWM is writable. User asked for Fan Control-like UX and live HUMAN items.
+- **Decision:** Cooling is a navy Controls + Curves card grid (yellow graph points, disabled take-over toggle). Do **not** take PWM while those daemons run. OpenRGB `--server` on `127.0.0.1:6742` is live. Merge Dependabot #1; close #3/#4. Helper `.deb` apply stays HUMAN until pkexec installs the pinned path.
+- **Alternatives considered:** CoolerControl-style left sensor tree (rejected: not Fan Control). Enable PWM take-over now (rejected: conflicts + ADR-0010). Pull GitHub main Svelte 5 bump into this tree (rejected: would break Svelte 4 UI).
+- **Consequences:** Native `chromaflow-gui` and Vite smoke the card UI read-only. Next HUMAN is `pkexec dpkg -i` of `target/deb/chromaflow-helper_0.1.0_all.deb`.
+
+### 2026-09-11 — chromaflowd is watch-only until HUMAN take-over
+- **Status:** Accepted
+- **Context:** This host has writable `it87952` PWM and live `fancontrol` + `coolercontrold`.
+- **Decision:** Ship `chromaflow daemon --dry-run`, systemd unit, and `ExecStopPost` that **logs** firmware `pwm*_enable=2` and never writes sysfs. Silent 0% remains forbidden.
+- **Alternatives considered:** Write `pwm*_enable` now (rejected: conflicts + no HUMAN confirm). Skip the unit until apply exists (rejected: G-SAFE needs the failsafe contract in-tree).
+- **Consequences:** PWM writes stay absent. HUMAN must confirm take-over before any enable/duty sysfs write.
+
+### 2026-09-11 — Support dry-run is machine-specific; profiles are names only
+- **Status:** Accepted
+- **Context:** Full allowlist dump was not this-machine detection. Profiles were placeholder copy.
+- **Decision:** Select YAML rows by lspci/DMI/lsusb, already-loaded modules, or `i2c-dev`. Emit modules-load.d **plan** with `apply: false`. Store `~/.config/chromaflow/profiles.json` schema 1 (`name`, `curve_set`, `rgb` tokens). No PWM apply.
+- **Alternatives considered:** Keep dumping the whole allowlist (rejected: G-DET). Write `/etc/modules-load.d` from the GUI (rejected: polkit `--apply` only after `.deb`).
+- **Consequences:** Tests must set `CHROMAFLOW_LOADED_MODULES`. Live pkexec `--apply` stays HUMAN until the pinned helper exists.
+
+### 2026-09-11 — Product launch is a native window, not a browser
+- **Status:** Accepted
+- **Context:** Original brief is a standalone Mint app (Fan Control + OpenRGB UX). First-run opened Vite preview in Cursor/Chrome because this host lacks WebKit/GTK **dev** packages.
+- **Decision:** Keep Tauri 2 (ADR-0006). Treat `vite preview` as developer-only. Gap catalog is `docs/PRODUCT_GAPS.md`; BUILD_PLAN Sprint 2+ is the native window, then cooling/lighting UX, then polkit `.deb` and `chromaflowd`.
+- **Alternatives considered:** Rewrite in Avalonia/Qt to “look more native” (rejected: no Fan Control source; ADR-0006). Ship the PWA as the app (rejected: not a Cinnamon `.desktop` product).
+- **Consequences:** `[HUMAN]` apt of `libwebkit2gtk-4.1-dev` and GTK **dev** is required before `chromaflow-gui` runs on this machine. PWM remains forbidden until Sprint 6.
+
 ### 2026-09-11 — HUMAN rows automated on Mint 22.3
 - **Status:** Accepted
 - **Context:** Five BUILD_PLAN HUMAN leftovers blocked GitHub/security/Mint smoke/`pkexec`.
@@ -551,4 +810,28 @@ _Seed template ADR: `docs/adr/0000-template-baseline.md`. Child repos use `docs/
 ## Autonomous /build approval (2026-09-11T13:28:49+00:00)
 
 - Mint 22 Cinnamon smoke + ADR auto-approval (inventory + dry-run)
+## Autonomous /build approval (2026-09-11T15:22:17+00:00)
 
+- PWM take-over declined; active daemons: coolercontrold
+## Autonomous /build approval (2026-09-11T15:22:17+00:00)
+
+- Started OpenRGB --server on 127.0.0.1
+## Autonomous /build approval (2026-09-12T22:45:54+00:00)
+
+- pkexec install-support.sh --apply succeeded
+## Visible installed GUI (2026-09-13)
+
+- What: Blank `chromaflow-gui` was (1) `cargo --release` without `tauri/custom-protocol` so WebKit opened `127.0.0.1:1420`, (2) Vite `/assets/` absolute paths, (3) NVIDIA DMA-BUF. Fix: `--features custom-protocol`, `base: "./"`, `.deb` `npm run build`, `WEBKIT_DISABLE_DMABUF_RENDERER=1`.
+- Validated: `tests.test_chromaflow_tauri` / packaging; rebuild `.deb`; live window paint.
+- Deferred: compositing-mode off only if DMA-BUF-only still blanks.
+## ITE pwm4 + NVIDIA DISPLAY (2026-09-13)
+
+- What: Auto-calibrate showed 0 RPM on FAN4/FAN5 while it87952 `fan4` ran ~3100 RPM with no card (`pwm4` ENODATA until enable=1). `chromaflowd` applied 8 ITE headers and `gpu 0` because `nvidia-settings` had no DISPLAY.
+- Decision: List unread `pwm*` when the sysfs node exists; pair `fanN`↔`pwmN`; name pwm4 `FAN7_PUMP`; set `DISPLAY=:0` / `XAUTHORITY` on the user unit and in the nvidia-settings helper. Empty SYS_FAN2/3 / CPU_OPT stay 0 RPM (no device). The ~3100 RPM header is a tach; motherboard PWM did not map 1:1 to RPM.
+- Validated: rust hwmon unread-pwm test; cooling UI FAN7/fanN pairing; daemon unit DISPLAY; live takeover after `.deb`.
+- Deferred: 3-pin DC mode (no `pwm_mode` sysfs); USB AIO CLI (liquidctl only lists Fusion RGB).
+## Ship lighting engine (2026-09-13)
+
+- What: Engine was a download button, not in the `.deb`. MIT still cannot vendor OpenRGB C++. Package hashed AppImage at `/usr/libexec/chromaflow/OpenRGB.AppImage`; `chromaflow daemon --sdk` + `APPIMAGE_EXTRACT_AND_RUN=1` (FUSE mount is blocked under the user unit).
+- Validated: `chromaflow devices` listed 3 SDK controllers; unit active; 127.0.0.1:6742 listen.
+- Deferred: in-process OpenRGB still needs a relicense ADR.

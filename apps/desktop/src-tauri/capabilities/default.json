@@ -1,6 +1,34 @@
 {
   "identifier": "default",
-  "description": "Unprivileged inventory UI and support dry-run",
+  "description": "Unprivileged inventory UI, lighting apply, support install",
   "windows": ["main"],
-  "permissions": ["core:default"]
+  "remote": {
+    "urls": [
+      "http://127.0.0.1:1420/*",
+      "http://localhost:1420/*",
+      "http://asset.localhost/*",
+      "https://asset.localhost/*",
+      "tauri://localhost/*"
+    ]
+  },
+  "permissions": [
+    "core:default",
+    "core:event:default",
+    "core:window:default",
+    "core:webview:default",
+    "core:menu:default",
+    "core:tray:default",
+    "allow-inventory",
+    "allow-support-dry-run",
+    "allow-support-apply",
+    "allow-competitors",
+    "allow-lighting-apply",
+    "allow-lighting-engine-install",
+    "allow-lighting-hid-serial",
+    "allow-open-url",
+    "allow-profiles-load",
+    "allow-profiles-save",
+    "allow-session",
+    "allow-pwm"
+  ]
 }

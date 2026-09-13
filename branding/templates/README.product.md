@@ -9,12 +9,22 @@
 <p align="center"><strong>{{tagline}}</strong></p>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/template-1.4.0-656d76?style=flat-square" alt="template-1.4.0" />
   <img src="https://img.shields.io/badge/license-MIT-{{badge_license}}?style=flat-square" alt="MIT" />
   <img src="https://img.shields.io/badge/FOSS-no_tracking-{{badge_foss}}?style=flat-square" alt="FOSS" />
   <img src="https://img.shields.io/badge/status-active-{{badge_primary}}?style=flat-square" alt="status" />
-  <img src="https://img.shields.io/github/actions/workflow/status/{{ci_repo}}/ci.yml?style=flat-square&label=CI" alt="CI" />
+  <a href="https://github.com/{{ci_repo}}/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/{{ci_repo}}/ci.yml?style=flat-square&label=CI" alt="CI" /></a>
   <img src="https://api.securityscorecards.dev/projects/github.com/{{ci_repo}}/badge" alt="OpenSSF Scorecard" />
+  [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/14564/badge)](https://www.bestpractices.dev/projects/14564)
   <a href="https://codespaces.new/{{ci_repo}}"><img src="https://img.shields.io/badge/Codespaces-Open-181717?style=flat-square&logo=github" alt="Open in GitHub Codespaces" /></a>
+  <img src="https://img.shields.io/badge/AGENT-owner-2ea043?style=flat-square" alt="AGENT" />
+  <img src="https://img.shields.io/badge/HUMAN-owner-0969da?style=flat-square" alt="HUMAN" />
+  <img src="https://img.shields.io/badge/ADB-owner-bf8700?style=flat-square" alt="ADB" />
+  <img src="https://img.shields.io/badge/AUTO-owner-656d76?style=flat-square" alt="AUTO" />
+  <img src="https://img.shields.io/badge/web-stack-646cff?style=flat-square" alt="web" />
+  <img src="https://img.shields.io/badge/python-stack-3776AB?style=flat-square" alt="python" />
+  <img src="https://img.shields.io/badge/android-stack-3DDC84?style=flat-square" alt="android" />
+  <img src="https://img.shields.io/badge/Pages-demo-14B8A6?style=flat-square" alt="Pages-demo" />
 {{stack_badges}}
 </p>
 
@@ -25,10 +35,12 @@
 ## Demo
 
 <p align="center">
-  <img src="{{lockup_path}}" alt="{{name}} lockup" width="320" />
+  <img src="{{lockup_path}}" alt="{{name}} app icon" width="256" />
 </p>
 
-> Add screenshots or a short demo GIF under `docs/images/` and link them here when available.
+> Locked mark: navy rounded square, full-spectrum hue ring, gold three-blade fan with motion trails. Linux panel and Windows taskbar use the color PNG/ICO. The banner above is the photorealistic brand shot (glass floor, neon glow, circuitry wall).
+
+> GitHub Pages demo for the `examples/web` Golden Path (not the desktop app): [https://edwardlthompson.github.io/chromaflow/](https://edwardlthompson.github.io/chromaflow/). Add product screenshots under `docs/images/` when available.
 
 ## Features
 
@@ -52,6 +64,7 @@ flowchart TD
   Readme --> Agents[START_HERE]
   Agents --> Tour["/tour or TOUR.md"]
   Tour --> Coach["/coach"]
+
 ```
 
 ## Install

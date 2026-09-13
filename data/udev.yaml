@@ -1,6 +1,16 @@
 # Written as /etc/udev/rules.d/60-chromaflow.rules — does not delete OpenRGB rules.
+# Per-VID hidraw only (not KERNEL=="hidraw*" alone). MODE+GROUP because uaccess-only
+# left nodes at 0600 on this Mint host.
 rules:
-  - comment: hidraw uaccess for plugdev
-    line: 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0660", GROUP="plugdev", TAG+="uaccess"'
+  - comment: Gigabyte RGB Fusion 2.0 5702 motherboard ARGB
+    line: 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="048d", ATTRS{idProduct}=="5702", MODE="0660", GROUP="plugdev", TAG+="uaccess"'
+  - comment: Keychron Q6 HE
+    line: 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3434", ATTRS{idProduct}=="0b60", MODE="0660", GROUP="plugdev", TAG+="uaccess"'
+  - comment: SteelSeries Prime Neo Noir
+    line: 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1038", ATTRS{idProduct}=="1856", MODE="0660", GROUP="plugdev", TAG+="uaccess"'
+  - comment: SteelSeries Arena 7
+    line: 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1038", ATTRS{idProduct}=="1a00", MODE="0660", GROUP="plugdev", TAG+="uaccess"'
   - comment: i2c device nodes
     line: 'KERNEL=="i2c-[0-9]*", GROUP="i2c", MODE="0660", TAG+="uaccess"'
+  - comment: plugdev write on Super I/O PWM
+    line: 'ACTION=="add", SUBSYSTEM=="hwmon", RUN+="/usr/libexec/chromaflow/pwm-acl.sh"'

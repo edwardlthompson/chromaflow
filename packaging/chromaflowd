@@ -1,0 +1,6 @@
+#!/bin/sh
+# Unprivileged chromaflowd entry. Default is the PWM watchdog.
+if [ "$#" -eq 0 ]; then
+  exec chromaflow daemon --watchdog
+fi
+exec chromaflow daemon "$@"

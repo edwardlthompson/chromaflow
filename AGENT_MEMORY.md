@@ -10,9 +10,9 @@
 | Product | ChromaFlow | 0.1.0-unreleased | Linux Mint cooling + lighting |
 | GUI | Tauri 2 + Svelte | 2.x | Real `apps/desktop/src-tauri` host; Vite preview for browser; `cargo test` skips GUI; GitHub `edwardlthompson/chromaflow` |
 | Core | Rust | stable | `crates/chromaflow-core`, `chromaflow-cli` |
-| Helper | bash + polkit | - | dry-run only this milestone |
+| Helper | bash + polkit | - | pinned `install-support.sh` and `manage-competitors.sh`; GUI pkexec only |
 | License | MIT + NOTICE | - | No OpenRGB/Fan Control source |
-| Distribution | future .deb + AppImage | - | helper only via .deb |
+| Distribution | `chromaflow_*.deb` + optional OpenRGB engine file | helper + GUI/CLI; engine is GPL sibling, not in git |
 ## Active Modules
 
 - ✅ Web / PWA (`modules/web/MODULE.md`)
@@ -37,12 +37,12 @@
 
 ### Project Purpose
 
-ChromaFlow: Linux Mint cooling (hwmon) and lighting (OpenRGB SDK localhost) with a polkit install-support path. No bundled kernel modules. GUI never root.
+ChromaFlow: Linux Mint cooling (hwmon + NVIDIA GPU fans) and lighting (OpenRGB SDK localhost color/mode/per-LED apply plus USB/ARGB hidraw names) with a polkit install-support path. No bundled kernel modules. GUI never root. This Gigabyte X570S sees Fusion 2.0, Keychron Q6 HE, SteelSeries mouse/Arena 7, and the 4090 hybrid AIO; hidraw for those VID:PIDs is plugdev `0660` (udev also ships in the `.deb`). Support Extra kernel support lists `it87-dkms` first (DKMS srcversion, not in-tree) and `liquidctl` second. Live host has IT8689 + IT87952 after frankcrawford DKMS; Super I/O `pwm*` is plugdev `0660`. Take-over is live: `chromaflowd --watchdog` owns ITE PWM + NVIDIA fans (min 20%, never silent 0%). Quiet **Apply to all** persists in `curves.json` after this-machine inventory hydrates (not the sample fixture). Login autostart + Cinnamon favorite + color tray. Product GUI is the `chromaflow_*.deb` `chromaflow-gui` (one window per session). Locked brand: `branding/assets/chromaflow-icon.png` and `chromaflow-icon-hero-glass.png`. Lighting engine at `/usr/libexec/chromaflow/OpenRGB.AppImage`; `chromaflow daemon --sdk` keeps `127.0.0.1:6742` up. Desktop stays Vite 5.4 / Svelte 4 until the Windows port (GHSA-fx2h-pf6j-xcff is Windows `vite --host` only).
 
 ### Key Constraints
 
 - Max 300 lines per static data file (UI + i18n), 150 lines per pure logic file
-- No PWM writes until daemon watchdog (ADR-0010)
+- PWM duty only via watchdog + firmware failsafe (ADR-0018); never silent 0%
 - Allowlist-only modprobe names; DMI never becomes a module name
 - Trunk-based development with Conventional Commits
 - Strict type safety and test coverage budgets
@@ -53,9 +53,27 @@ Cline is the first-run agent in Cursor: GitHub sign-in, FREE models, no API keys
 
 Golden Path Settings/About/Feedback are a route stack, not three booleans. Web History API and Android BackHandler pop one level; at home Back stays in the app. Persist key `gp.nav.v1` restores location after theme/crash/share-target (web) and rotation/process death (Android). Home chrome is Settings-only; theme, About, and donate live in sectioned Settings/About menus with dropdowns.
 
-## Session Retrospectives
-
-| 2026-09-11 | ChromaFlow Sprint 0–1 | Bootstrap in-place; MIT+NOTICE; inventory CLI + support dry-run; real Tauri 2 host + WebKit CI; no PWM writes | Do not restore Fan Control source; apply is pkexec-only; keep examples/web for feature-gate; `cargo test --workspace` needs `--exclude chromaflow-desktop` without GTK |
+| 2026-09-13 | ITE pwm4 + GPU DISPLAY | Inventory lists ENODATA pwm4/5; chromaflowd DISPLAY=:0 | Empty SYS_FAN* stay 0 RPM; pump tach is FAN7 |
+| 2026-09-13 | Live Balanced take-over | Watchdog owns hwmon3/hwmon4 enable=1 | Cooling copy is conflict-only; tiles 22rem |
+| 2026-09-12 | Sprint 20 extras green + temp cards | PWM extra stays green; temp CPU/GPU cards; optional liquidctl apt | No NVML; USB AIO still needs liquidctl CLI |
+| 2026-09-12 | Sprint 19 it87-dkms first + pwm_acl smoke | Extra `it87-dkms` is first; present is DKMS srcversion; live pwm* 0660 plugdev | Never add CoolerControl apt; never ship `.ko`; HUMAN take-over smoke still open |
+| 2026-09-12 | Sprint 18 GPU fans + ITE names | nvidia-settings fan:0/1; FAN4/FAN5_PUMP/FAN6_PUMP; AIO unit; `ite_primary_missing` | IT8689 PWM stays HUMAN DKMS; never silent 0%; no `.ko` |
+| 2026-09-12 | Sprint 17 cooling board | Fans/Pumps/Temps/Curves; schema 2 recipes + mix; auto-calibrate 20–100% duty↔RPM | HUMAN RPM smoke still open; never silent 0%; no Fan Control source |
+| 2026-09-12 | PWM watchdog + Report dim | ADR-0018; `--watchdog` + enable=2 failsafe; Report confirm then dim | Live take-over still blocked while fancontrol/coolercontrold show as conflicts |
+| 2026-09-12 | Support extra-kernel one-stop | `i2c-nct6775` → `nct6775-i2c`; NVIDIA GPU I2C marks both RGB extras present; fan extras on Support | DIMM SPD / `linux-modules-extra` stay honest; still no PWM; helper rebuild for live `--only it87` |
+| 2026-09-12 | Compact hardware cube | Picker-sized bars; Temp/Usage LED toggle; CPU/GPU load | Still no PWM writes |
+| 2026-09-12 | Archive Sprint 9–11 | Gauges + hitch rows moved to COMPLETED_TASKS; board origin Sprint 0–1 remains | AGENT board empty; still no PWM writes |
+| 2026-09-12 | Per-metric gauges + Lighting hitch | Five graphs; nvidia-smi 2 s GPU; Aorus=CPU, AIO=GPU, Keychron/Arena=combined; skip Lighting inventory poll | Still no PWM writes |
+| 2026-09-12 | Calm host USB + live gauge graph | 10 Hz motion; skip unchanged gauge USB; 1 Hz temps-only meter + spectrum/sparkline | GPU still missing from hwmon; still no PWM writes |
+| 2026-09-12 | Smooth host Direct + hardware gauges | 33 Hz local paint; OpenRGB probe cache/try_lock; CPU+GPU/RAM/disk meters (ADR-0017) | This host has no nvidia hwmon (GPU meter is CPU-only + note); still no PWM writes |
+| 2026-09-12 | Picker wrap + window size + Prime Neo | Cards wrap; `window.json`; hidraw `0x62`/`0x59` | Remaining unknown HID stays research-only; still no PWM writes |
+| 2026-09-12 | Bundled OpenRGB engine + Mint .deb | Sibling spawn, research HID, GitHub device form | Engine user-unit follow-up; Prime Neo still no protocol; still no PWM writes |
+| 2026-09-12 | Kelvin + OpenRGB modes + per-LED | CCT slider; `UPDATE_MODE`/`UPDATE_SINGLE_LED`; Keychron matrix from SDK | Arena has no SDK modes; Prime Neo still no protocol; still no PWM writes |
+| 2026-09-11 | Arena 7 HID + Fusion D_LED | Arena vendor report 0x06; D_LED1/2 resized to 32 | Prime Neo still no protocol; still no PWM writes |
+| 2026-09-11 | Unblock hidraw + SDK write | Per-VID udev; helper `--apply`; native OpenRGB AppImage; ADR-0011 color apply | Next: Arena 7 hidraw follow-up; Prime Neo upstream; still no PWM writes |
+| 2026-09-11 | Fan Control UX + HUMAN live | OpenRGB server live; PWM take-over declined; Dependabot #1 merged; Cooling is Controls+Curves cards | Next: HUMAN pkexec helper `.deb`; do not pull Svelte 5 main; still no PWM writes |
+| 2026-09-11 | Original-brief gap pivot | Browser first-run was Vite fallback; product is `chromaflow-gui`. Catalog `docs/PRODUCT_GAPS.md`; Sprint 2+ on BUILD_PLAN | Do not treat `xdg-open http://127.0.0.1` as product launch; install WebKit GTK **dev** before native smoke |
+| 2026-09-11 | Sprint 0 AUTO sign-off | validate-bootstrap --quick, feature-gate web, GitHub CI/Security Scan/CodeQL green on 2a6b118 | Do not wait on ChromaFlow Tauri job for Sprint 0 AUTO; required checks are CI + Security Scan + CodeQL |
 | 2026-09-11 | v1.3.0 /push | RP #106 admin-merged; tag+release live; CI green after TBT + instrumented soft skips | Lightroom (#29) stays HUMAN; do not use JUnit Assume on connectedAndroidTest |
 | 2026-09-10 | M58–M61 /build | Espresso 3.7 + agent DX; M58–M61 archived; KB-023 path spaces; Release Please #106 open | Do not fold Unreleased until /push+/ship; merge RP is HUMAN |
 | 2026-09-10 | M58 Espresso + Android 16 | Pin Espresso 3.7; nav Back smoke on phone; Release checkout order; agent-run PATH/micromamba | Do not empty Unreleased mid-sprint; `/push` then `/ship` owns fold; no `/dev/kvm` → use physical device |
@@ -119,6 +137,30 @@ Golden Path Settings/About/Feedback are a route stack, not three booleans. Web H
 - **Source template:** `edwardlthompson/agent-project-bootstrap` (self-maintained)
 - **Template version:** `1.4.0` (see `.template-version`)
 - **Last update check:** See `.template-update.json`
+
+### Retrospective — 2026-09-13 (Sprint 26)
+
+- AGENT row (one `chromaflow-gui` via session socket; product launch is `chromaflow_*.deb`) ✅ and smoked.
+
+### Retrospective — 2026-09-13 (Sprint 25)
+
+- AGENT row (toolbar Auto-calibrate fans then pumps; 15.5rem fan/temp cards) ✅ and smoked. NVIDIA GPU fans are not swept. Recipe Tune fields are load/store only.
+
+### Retrospective — 2026-09-13 (Sprint 24)
+
+- AGENT row (fit curve SVG labels, unmount idle tabs, `collect_cooling`) ✅ and smoked. Host lighting still freezes on Cooling. Software WebKit (`WEBKIT_DISABLE_COMPOSITING_MODE=1`) on the running `tauri dev` still paints slowly until relaunch without it.
+
+### Retrospective — 2026-09-12 (Sprint 21)
+
+- AGENT row (skip present extras, liquidctl, 60s graphs, locked chrome, Balanced take-over) ✅ and smoked. `chromaflowd` is writing duty. Failsafe is `pwm*_enable=2` when the user unit stops.
+
+### Retrospective — 2026-09-12 (Sprint 18)
+
+- AGENT row (NVIDIA fans + ITE names + AIO unit + `ite_primary_missing`) ✅ and smoked. IT8689 PWM stays HUMAN (no shipped `.ko`).
+
+### Retrospective — 2026-09-12 (Sprint 16)
+
+- AGENT rows (live conflicts + PWM ACL/`chromaflowd`) ✅ and smoked. HUMAN live take-over smoke is done (RPM moved; watchdog active).
 
 ### Retrospective — 2026-09-10 (M61)
 

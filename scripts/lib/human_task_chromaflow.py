@@ -97,19 +97,40 @@ def automate_mint_cinnamon_smoke(root: Path, _cfg: dict) -> AttemptResult:
     return AttemptResult(0, "mint-smoke", "Mint Cinnamon dry-run + cargo test passed", False)
 
 
-def automate_pkexec_apply_stub(root: Path, _cfg: dict) -> AttemptResult:
-    code, _tail = run_cmd(root, ["bash", "scripts/install-support.sh", "--apply"])
-    if code == 0:
-        return AttemptResult(1, "pkexec-apply", "apply succeeded without pkexec", True)
-    script = (root / "scripts/install-support.sh").read_text(encoding="utf-8")
-    if "PKEXEC_UID" not in script or "/usr/libexec/chromaflow/install-support.sh" not in script:
-        return AttemptResult(1, "pkexec-apply", "apply stub missing pkexec/path guards", True)
-    tcode, ttail = run_cmd(root, ["python3", "-m", "unittest", "tests.test_chromaflow_support"])
-    if tcode != 0:
-        return AttemptResult(1, "pkexec-apply", ttail or "support tests failed", True)
-    return AttemptResult(
-        0,
-        "pkexec-apply",
-        "apply refuses without pinned polkit helper; live apply waits on .deb",
-        False,
-    )
+def automate_tauri_dev_packages(root: Path, _cfg: dict) -> AttemptResult:
+    pkgs = [
+        "libwebkit2gtk-4.1-dev",
+        "libgtk-3-dev",
+        "libayatana-appindicator3-dev",
+        "librsvg2-dev",
+        "libssl-dev",
+    ]
+    missing = [
+        name
+        for name in pkgs
+        if "install ok installed"
+        not in subprocess.run(
+            ["dpkg-query", "-W", "-f=${Status}", name],
+            capture_output=True,
+            text=True,
+            check=False,
+        ).stdout
+    ]
+    if not missing:
+        return AttemptResult(0, "tauri-dev-apt", "WebKit/GTK dev packages already installed", False)
+    apt = ["apt-get", "install", "-y", "--no-install-recommends", *missing]
+    for wrap in (["sudo", "-n"], ["pkexec"]):
+        code, tail = run_cmd(root, [*wrap, *apt])
+        if code == 0:
+            append_decision_log(root, "Installed Tauri GTK/WebKit dev packages via " + wrap[0])
+            return AttemptResult(0, "tauri-dev-apt", "installed " + " ".join(missing), False)
+    return AttemptResult(1, "tauri-dev-apt", tail or "apt needs polkit/sudo password", True)
+
+
+from human_task_chromaflow_live import (
+    automate_openrgb_server,
+    automate_pkexec_apply_stub,
+    automate_pwm_live_smoke,
+    automate_pwm_takeover,
+)
+

@@ -1,7 +1,5 @@
-use crate::types::{BinaryProbe, OpenRgbProbe};
-use std::net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream};
+use crate::types::BinaryProbe;
 use std::process::Command;
-use std::time::Duration;
 
 pub fn liquidctl() -> BinaryProbe {
     match Command::new("liquidctl").arg("--version").output() {
@@ -20,16 +18,6 @@ pub fn liquidctl() -> BinaryProbe {
     }
 }
 
-pub fn openrgb() -> OpenRgbProbe {
-    let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 6742);
-    match TcpStream::connect_timeout(&addr, Duration::from_millis(200)) {
-        Ok(_) => OpenRgbProbe {
-            status: "reachable".into(),
-            detail: "127.0.0.1:6742 accepted a TCP connection".into(),
-        },
-        Err(err) => OpenRgbProbe {
-            status: "unreachable".into(),
-            detail: err.to_string(),
-        },
-    }
+pub fn openrgb() -> crate::types::OpenRgbProbe {
+    crate::openrgb::probe()
 }

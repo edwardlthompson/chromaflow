@@ -8,5 +8,29 @@
   "udev_path": "/etc/udev/rules.d/60-chromaflow.rules",
   "logout_required": true,
   "reboot_required": false,
-  "warnings": ["Large download for linux-modules-extra-$(uname -r)"]
+  "warnings": ["Large download for linux-modules-extra-$(uname -r)"],
+  "extras": [
+    { "id": "it87-dkms", "label": "ITE Super I/O DKMS", "present": false },
+    { "id": "liquidctl", "label": "liquidctl USB AIO", "present": false },
+    { "id": "linux-modules-extra", "label": "linux-modules-extra", "present": false },
+    { "id": "i2c-dev", "label": "i2c-dev", "present": true },
+    { "id": "i2c-piix4", "label": "AMD SMBus", "present": true },
+    { "id": "it87", "label": "ITE Super I/O fans", "present": true },
+    { "id": "nct6775", "label": "Nuvoton Super I/O fans", "present": false },
+    { "id": "k10temp", "label": "AMD CPU temps", "present": true },
+    { "id": "jc42", "label": "DIMM SPD temps", "present": false },
+    { "id": "spd5118", "label": "DDR5 SPD temps", "present": false },
+    { "id": "gigabyte_wmi", "label": "Gigabyte WMI", "present": true },
+    { "id": "udev", "label": "udev hidraw/i2c rules", "present": true },
+    { "id": "group_i2c", "label": "User in i2c", "present": true },
+    { "id": "group_plugdev", "label": "User in plugdev", "present": true },
+    { "id": "pwm_acl", "label": "PWM sysfs for plugdev", "present": false },
+    { "id": "i2c-nct6775", "label": "NCT6775 I2C", "present": true },
+    { "id": "i2c-nvidia-gpu", "label": "NVIDIA GPU I2C", "present": true }
+  ],
+  "would_modules_load_d": {
+    "path": "/etc/modules-load.d/chromaflow.conf",
+    "names": ["nct6775", "i2c-dev"],
+    "apply": false
+  }
 }

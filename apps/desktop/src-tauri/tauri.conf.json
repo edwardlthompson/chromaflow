@@ -6,8 +6,8 @@
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://127.0.0.1:1420",
-    "beforeDevCommand": "npm --prefix .. run dev",
-    "beforeBuildCommand": "npm --prefix .. run build"
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
   },
   "app": {
     "withGlobalTauri": true,
@@ -15,16 +15,34 @@
       {
         "label": "main",
         "title": "ChromaFlow",
-        "width": 1100,
-        "height": 720
+        "width": 1280,
+        "height": 800,
+        "minWidth": 720,
+        "minHeight": 520,
+        "resizable": true,
+        "maximizable": true,
+        "decorations": true,
+        "transparent": false,
+        "visible": true,
+        "center": true,
+        "focus": true
       }
     ],
     "security": {
-      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost",
+      "csp": "default-src 'self' ipc: http://ipc.localhost http://asset.localhost tauri://localhost http://127.0.0.1:1420; connect-src 'self' ipc: http://ipc.localhost http://asset.localhost tauri://localhost http://127.0.0.1:1420 ws://127.0.0.1:1420 ws://localhost:1420; script-src 'self' 'unsafe-inline' 'unsafe-eval' ipc: http://ipc.localhost http://asset.localhost tauri://localhost http://127.0.0.1:1420; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:",
       "capabilities": ["default"]
     }
   },
   "bundle": {
-    "active": false
+    "active": false,
+    "icon": [
+      "icons/16x16.png",
+      "icons/32x32.png",
+      "icons/48x48.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png",
+      "icons/icon.ico"
+    ]
   }
 }

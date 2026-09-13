@@ -55,6 +55,8 @@ def parse_sprints(text: str) -> list[SmokeSprint]:
             if match:
                 current = SmokeSprint(title=match.group("title").strip())
                 blocks.append(current)
+            elif re.search(r"\b(Sequential|Parallel)\b", line, re.I):
+                continue
             else:
                 current = None
             continue

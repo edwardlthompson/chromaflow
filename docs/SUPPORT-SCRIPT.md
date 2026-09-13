@@ -1,7 +1,7 @@
 # Support script
 
-Polkit action: `org.chromaflow.install-support`  
-Pinned Exec: `/usr/libexec/chromaflow/install-support.sh`  
+Polkit action: `org.chromaflow.install-support`
+Pinned Exec: `/usr/libexec/chromaflow/install-support.sh`
 Repo copy: [`scripts/install-support.sh`](../scripts/install-support.sh)
 
 ## Dry-run (this milestone, CI, default)
@@ -10,24 +10,27 @@ Repo copy: [`scripts/install-support.sh`](../scripts/install-support.sh)
 bash scripts/install-support.sh --dry-run
 # or
 chromaflow support --dry-run
+
 ```
 
-The Support tab in the Tauri GUI calls the same dry-run via `support_dry_run` (never `--apply`). Vite preview uses a fixture so the browser path stays unprivileged.
+The Support tab **Install detection support** button (and Lighting) calls `pkexec /usr/libexec/chromaflow/install-support.sh --apply` (plus `--advanced` when the experimental checkbox is on). Vite preview cannot pkexec; it still uses a fixture.
 
 Must not call `apt-get`, `modprobe`, `usermod`, `udevadm`, or write under `/etc`.
 
 JSON fields (stable):
 
 - `would_install` — apt package names from YAML
-- `would_load` — safe allowlist module names selected for this machine
-- `skipped_experimental` — experimental rows omitted unless `--advanced`
+- `would_load` — YAML ∩ (lspci/DMI/lsusb **or** already-loaded **or** `i2c-dev`)
+- `would_modules_load_d` — `{ path, names, apply:false }` plan for `/etc/modules-load.d/chromaflow.conf` (never written in dry-run)
+- `skipped_experimental` — experimental rows omitted unless `--advanced` (`nct6775-i2c` has no DMI needle so Advanced includes it; the Support extra id stays `i2c-nct6775`; `nouveau` is never auto-loaded)
 - `skipped_not_installed` — e.g. `zenpower` when `dpkg -s` would fail
-- `udev_path` — would write `/etc/udev/rules.d/60-chromaflow.rules` (does not delete OpenRGB rules)
+- `udev_path` — would write `/etc/udev/rules.d/60-chromaflow.rules` (per-VID hidraw + i2c; does not delete OpenRGB rules)
 - `logout_required` — true when groups `i2c`/`plugdev` would be added
 - `reboot_required` — true only for rows marked `reboot-needed`
-- `warnings` — large packages such as `linux-modules-extra-$(uname -r)`
+- `warnings` — large packages such as `linux-modules-extra-$(uname -r)` (Lighting/Support prompt this package so extra in-tree RGB/hwmon modules can load)
+- `extras` — Extra kernel support checklist; `it87-dkms` is first (frankcrawford DKMS srcversion, not in-tree `it87`)
 
-## Apply (stubbed until a .deb installs the pinned path)
+## Apply
 
 `--apply` exits non-zero unless all of:
 

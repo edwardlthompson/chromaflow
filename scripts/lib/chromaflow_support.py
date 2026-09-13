@@ -11,7 +11,9 @@ from shutil import which
 from subprocess import run
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from chromaflow_yaml import ALLOWED_APT, ALLOWED_MODULE, load_index
+from chromaflow_extras import extras_status
+from chromaflow_select import include_safe_module, row_matches
+from chromaflow_yaml import ALLOWED_MODULE, load_index
 
 MODULE_RE = re.compile(ALLOWED_MODULE)
 APT_RE = re.compile(r"[a-zA-Z0-9._+-]+")
@@ -55,14 +57,6 @@ def validate_apt(name: str) -> str | None:
     return None if APT_RE.fullmatch(name) else f"illegal apt name: {name!r}"
 
 
-def row_matches(row: dict, blob: str) -> bool:
-    needles = [str(row[k]) for k in ("match_lspci", "match_lsusb", "match_dmi") if row.get(k)]
-    if not needles:
-        return True
-    lower = blob.lower()
-    return any(n.lower() in lower for n in needles)
-
-
 def build_plan(data_dir: Path, *, advanced: bool) -> dict:
     data = load_index(data_dir)
     blob = "\n".join(
@@ -95,7 +89,7 @@ def build_plan(data_dir: Path, *, advanced: bool) -> dict:
             errors.append(err)
             continue
         name = str(row["modprobe"])
-        if not row_matches(row, blob):
+        if not include_safe_module(row, blob):
             continue
         if row.get("require_dpkg"):
             skipped_not_installed.append(name)
@@ -107,7 +101,9 @@ def build_plan(data_dir: Path, *, advanced: bool) -> dict:
             errors.append(err)
             continue
         name = str(row["modprobe"])
-        if (advanced and row_matches(row, blob)):
+        needles = any(row.get(k) for k in ("match_lspci", "match_lsusb", "match_dmi"))
+        take = advanced and name != "nouveau" and (row_matches(row, blob) if needles else True)
+        if take:
             would_load.append(name)
         else:
             skipped_experimental.append(name)
@@ -117,6 +113,12 @@ def build_plan(data_dir: Path, *, advanced: bool) -> dict:
         "ok": True,
         "would_install": would_install,
         "would_load": would_load,
+        "extras": extras_status(),
+        "would_modules_load_d": {
+            "path": "/etc/modules-load.d/chromaflow.conf",
+            "names": list(would_load),
+            "apply": False,
+        },
         "skipped_experimental": skipped_experimental,
         "skipped_not_installed": skipped_not_installed,
         "udev_path": "/etc/udev/rules.d/60-chromaflow.rules",

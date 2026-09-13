@@ -1,0 +1,18 @@
+[Unit]
+Description=ChromaFlow cooling watchdog (PWM duty + firmware failsafe)
+Documentation=https://github.com/edwardlthompson/chromaflow
+After=default.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/chromaflow daemon --watchdog
+Restart=on-failure
+# nvidia-settings needs the session display; chromaflowd has none by default.
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=%h/.Xauthority
+# Failsafe: restore firmware pwm*_enable (2), never silent 0% duty.
+ExecStopPost=/usr/libexec/chromaflow/pwm-failsafe.sh
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target

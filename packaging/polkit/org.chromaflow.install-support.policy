@@ -11,10 +11,23 @@
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin</allow_active>
+      <allow_active>auth_admin_keep</allow_active>
     </defaults>
     <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/chromaflow/install-support.sh</annotate>
     <annotate key="org.freedesktop.policykit.exec.allow_gui">false</annotate>
     <annotate key="org.freedesktop.policykit.exec.argv1">--apply</annotate>
+  </action>
+  <action id="org.chromaflow.install-support.advanced">
+    <description>Install ChromaFlow detection support including experimental RGB I2C</description>
+    <message>Authentication is required to install detection support for ChromaFlow, including experimental RGB I2C modules.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/chromaflow/install-support.sh</annotate>
+    <annotate key="org.freedesktop.policykit.exec.allow_gui">false</annotate>
+    <annotate key="org.freedesktop.policykit.exec.argv1">--apply</annotate>
+    <annotate key="org.freedesktop.policykit.exec.argv2">--advanced</annotate>
   </action>
 </policyconfig>

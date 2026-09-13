@@ -1,0 +1,12 @@
+[Unit]
+Description=ChromaFlow lighting SDK (localhost OpenRGB sibling)
+Documentation=https://github.com/edwardlthompson/chromaflow
+After=default.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/chromaflow daemon --sdk
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

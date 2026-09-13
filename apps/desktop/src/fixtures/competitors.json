@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "apply": false,
+  "pwm": false,
+  "action": "remove",
+  "detected": [],
+  "would_stop": [],
+  "would_remove": [],
+  "errors": []
+}

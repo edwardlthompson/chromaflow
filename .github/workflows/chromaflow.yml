@@ -81,4 +81,4 @@ jobs:
         working-directory: apps/desktop
         run: npm ci && npm run build
       - name: Compile Tauri 2 GUI
-        run: cargo build -p chromaflow-desktop
+        run: cargo build -p chromaflow-desktop --features custom-protocol

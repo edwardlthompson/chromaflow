@@ -1,0 +1,16 @@
+[Unit]
+Description=ChromaFlow desktop (Cinnamon / user session)
+Documentation=https://github.com/edwardlthompson/chromaflow
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/chromaflow-gui
+Restart=on-failure
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=%h/.Xauthority
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target

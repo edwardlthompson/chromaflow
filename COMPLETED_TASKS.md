@@ -2,6 +2,157 @@
 
 > Archive of finished BUILD_PLAN items.
 
+## Sprint 29 — Equal Cooling cards (2026-09-13)
+
+- ✅ [AGENT] Fans/Pumps/Temps/Curves tiles share fan-card size
+
+## Sprint 28 — Ship lighting engine (2026-09-13)
+
+- ✅ [AGENT] Package OpenRGB AppImage; chromaflow daemon --sdk keeps 6742 up
+
+## Sprint 27 — Visible installed GUI (2026-09-13)
+
+- ✅ [AGENT] Relative Vite bundle + NVIDIA WebKit so chromaflow-gui is not blank
+
+## Sprint 26 — Single-instance .deb GUI (2026-09-13)
+
+- ✅ [AGENT] One chromaflow-gui; ship and launch via chromaflow .deb
+
+## Sprint 25 — Board Auto-calibrate + short cards (2026-09-13)
+
+- ✅ [AGENT] Toolbar Auto-calibrate fans then pumps; match temp card height
+
+## Sprint 24 — Curve fit + Cooling responsiveness (2026-09-13)
+
+- ✅ [AGENT] Fit curve graphs; unmount idle tabs; Cooling inventory skips OpenRGB
+
+## Sprint 23 — Cooling scroll + locked curve clones (2026-09-12)
+
+- ✅ [AGENT] Pause lighting USB on Cooling; curve axis/clone; centered plus
+
+## Sprint 22 — Install-all once + Cooling board polish (2026-09-12)
+
+- ✅ [AGENT] One-password Install all; udev in .deb; Cooling scroll isolation; equal-height temp graphs + 15s wireframe; Temps + mix; Curves + custom
+
+## Sprint 21 — First scheme + bulletproof extras (2026-09-12)
+
+- ✅ [AGENT] Skip present extras; liquidctl extra; temp 60s graphs; locked chrome; Balanced take-over + calibrate
+
+## Sprint 20 — Support extras green + Cooling temp cards (2026-09-12)
+
+- ✅ [AGENT] PWM extra stays green; Uncontrolled empty copy; temp cards; CoolerControl scan
+
+## Sprint 19 — ITE DKMS extra + plugdev PWM ACL (2026-09-12)
+
+- ✅ [AGENT] Extra kernel support lists `it87-dkms` first; smoke `pwm_acl` plugdev 0660
+
+## Sprint 18 — Detect every cooling control (2026-09-12)
+
+- ✅ [AGENT] NVIDIA GPU fans, ITE header names, AIO unit, IT8689 gap
+
+## Sprint 17 — Fan Control cooling board (2026-09-12)
+
+- ✅ [AGENT] Four sections, rename, Lighting temps, mix +, recipe, three presets, schema v2 tick (hysteresis/step)
+- ✅ [AGENT] Auto-calibrate duty%↔RPM sweep for fans and pumps
+
+## Sprint 16 — Live cooling take-over (2026-09-12)
+
+- ✅ [AGENT] Cooling conflicts = actually running competitors (not leftover unit files); match Support
+- ✅ [AGENT] plugdev PWM ACL + Cooling enable of `chromaflowd` so duty survives GUI close / reboot
+- ✅ [HUMAN] Live take-over smoke: confirm, RPM moves, close GUI → firmware failsafe
+
+## Sprint 15 — PWM watchdog (2026-09-12)
+
+- ✅ [AGENT] PWM watchdog + firmware failsafe (ADR-0018); Cooling take-over confirm; device Report confirm+dim
+
+## Sprint 14 — Support kernel extras (2026-09-12)
+
+- ✅ [AGENT] Extra-kernel one-stop: `nct6775-i2c` name, RGB I2C sibling, fan/hwmon extras
+
+## Sprint 13 — Uninstall competing controllers (2026-09-12)
+
+- ✅ [AGENT] Support pkexec uninstall of competing fan/RGB daemons (not OpenRGB)
+
+## Sprint 1 — Inventory and Support dry-run (2026-09-12)
+
+- ✅ [AGENT] Lock inventory/support JSON + ADRs 0001/0006–0010
+- ✅ [AGENT] YAML allowlist + `install-support.sh --dry-run` + polkit stub
+- ✅ [AGENT] `chromaflow` CLI (sensors/devices/rescan/support) with fixture tests
+- ✅ [AGENT] Tauri/Svelte stub pages (display-only curve; Support dry-run)
+- ✅ [HUMAN] Approve ADRs and smoke on a Mint 21/22 Cinnamon machine
+
+## Sprint 0 — Customize (2026-09-12)
+
+- ✅ [AGENT] Run `scripts/init-project.sh` (web, FOSS, MIT, ChromaFlow)
+- ✅ [AGENT] Fill `branding/product.json` (`mode: product`); NOTICE; product docs
+- ✅ [HUMAN] Create GitHub repo and run `scripts/setup-github-repo.sh` (`gh` admin)
+- ✅ [AUTO] Sprint 0 sign-off on `main` after first push: `validate-bootstrap --quick` · `feature-gate --stack web` · `check-github-ci --wait 300`
+- ✅ [HUMAN] FOSS tier chosen at init
+- ✅ [HUMAN] Enable Dependabot alerts and private vulnerability reporting
+- ✅ [HUMAN] Bookmark `docs/help/BATCH_COMMANDS.md`
+
+## Sprint 11 — Per-metric gauges and Lighting hitch (2026-09-12)
+
+- ✅ [AGENT] Skip Lighting inventory poll (15 s elsewhere) and skip identical LED layout paints
+- ✅ [AGENT] Five gauge graphs plus nvidia-smi GPU °C; Hardware gauges route CPU/GPU/combined
+
+## Sprint 10 — Calm host USB and live gauge readout (2026-09-12)
+
+- ✅ [AGENT] Drop host USB/IPC to 10 Hz motion / 2 Hz gauges, idle 1 s timer, temps-only hwmon, 30 s disk cache
+- ✅ [AGENT] Live combined CPU/GPU readout plus green–yellow–red spectrum and sparkline
+
+## Sprint 9 — Smooth host Direct and hardware gauges (2026-09-12)
+
+- ✅ [AGENT] Smooth host Direct: 33 Hz local paint and SDK push, liveBoard pull 500 ms, 15 s OpenRGB/liquidctl cache with try_lock and 2 s negative cache
+- ✅ [AGENT] Host hardware gauges (CPU+GPU max, RAM, disk) green–yellow–red on all devices
+
+## Sprint 8 — Unblock hidraw and reuse Linux RGB stacks (2026-09-11)
+
+- ✅ [AGENT] VID-specific hidraw udev + sandboxed OpenRGB gap (`data/udev.yaml`, `crates/chromaflow-core`, `docs/features/lighting-hid.md`)
+- ✅ [HUMAN] Live pkexec `--apply` of chromaflow-helper, udev trigger, native `openrgb --server --server-host 127.0.0.1` (not Flatpak)
+- ✅ [AGENT] Localhost OpenRGB SDK color/mode apply + liquidctl Fusion fallback (`docs/adr/0011-openrgb-sdk-write.md`, `apps/desktop/src/pages`)
+- ✅ [HUMAN] Live pkexec `--apply` after a `.deb` installs `/usr/libexec/chromaflow/install-support.sh`
+
+## Sprint 7 — USB/ARGB inventory + detection prompt (2026-09-11)
+
+- ✅ [AGENT] HID/liquidctl RGB candidates + Lighting detection-support prompt (`crates/chromaflow-core`, `apps/desktop/src/pages`, `docs/features/lighting-hid.md`)
+
+## Waiting on a person (2026-09-11)
+
+- ✅ [HUMAN] Run `openrgb --server` on this host for a live Lighting smoke
+- ✅ [HUMAN] Confirm take-over vs `fancontrol` / `coolercontrold` on this machine before any PWM write (declined: leave those daemons in control)
+
+## Sprint 6 — chromaflowd PWM failsafe (2026-09-11)
+
+- ✅ [AGENT] `chromaflowd` watchdog + `pwm*_enable` policy + `ExecStopPost` failsafe; still no silent 0%
+
+## Sprint 5 — Support apply, profiles, .deb helper (2026-09-11)
+
+- ✅ [AGENT] Lock machine-specific Support JSON (YAML ∩ lspci/DMI select only) + profile schema in `~/.config/chromaflow/`
+- ✅ [AGENT] Machine-specific Support dry-run + optional modules-load.d plan (`scripts`)
+- ✅ [AGENT] Profiles bind curve set + RGB name; Support shows this-machine checklist (`apps/desktop/src/pages`)
+- ✅ [HUMAN] Live pkexec `--apply` on a VM after `.deb` helper exists (moved to Sprint 5 row 4)
+
+## Sprint 4 — OpenRGB-like lighting UI (2026-09-11)
+
+- ✅ [AGENT] Lock OpenRGB SDK read types + `docs/features/lighting-sdk.md` (device list, modes; timeout; no fake Windows-only devices)
+- ✅ [AGENT] OpenRGB SDK controller list on `127.0.0.1:6742` (`crates/chromaflow-core`)
+- ✅ [AGENT] Lighting page device/mode UI (`apps/desktop/src/pages`)
+
+## Sprint 3 — Fan Control-like cooling UI (2026-09-11)
+
+- ✅ [AGENT] Lock cooling view-model + `docs/features/cooling-ui.md` (°C, hysteresis/min/max fields, conflict banner, liquidctl/GPU grouping)
+- ✅ [AGENT] Cooling cards + live graph + en.json (`apps/desktop/src`)
+- ✅ [AGENT] Cooling UI tests (`tests/test_chromaflow_cooling_ui.py`)
+
+## Sprint 2 — Native standalone window (2026-09-11)
+
+- ✅ [AGENT] Gap catalog `docs/PRODUCT_GAPS.md` + `docs/features/native-desktop.md`
+- ✅ [HUMAN] Install Tauri **dev** packages (sudo): `libwebkit2gtk-4.1-dev` `libgtk-3-dev` `libayatana-appindicator3-dev` `librsvg2-dev` `libssl-dev` — same list as `.github/workflows/chromaflow.yml`
+- ✅ [AGENT] Tauri host: native window only (`apps/desktop/src-tauri`)
+- ✅ [AGENT] Cinnamon launcher `.desktop` + icon (`packaging`)
+- ✅ [AGENT] First-run `cargo run -p chromaflow-desktop` on this Cinnamon session (after HUMAN apt); `watch-agent-gates --once --autofix --scope auto`
+
 ## v1.4.0 release (2026-09-11)
 
 - ✅ [AGENT] Merge release [#107](https://github.com/edwardlthompson/agent-project-bootstrap/pull/107) (chore(main): release 1.4.0)

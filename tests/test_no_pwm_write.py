@@ -20,10 +20,13 @@ class NoPwmWriteTests(unittest.TestCase):
                         hits.append(f"{path.relative_to(ROOT)}:{needle}")
         self.assertEqual(hits, [])
 
-    def test_cli_help_mentions_readonly(self) -> None:
+    def test_cli_help_mentions_watchdog(self) -> None:
         main = (ROOT / "crates/chromaflow-cli/src/main.rs").read_text(encoding="utf-8")
-        self.assertIn("never writes PWM", main)
-        self.assertIn("refusing apply/PWM", main)
+        self.assertIn("never silent 0", main)
+        self.assertIn("--watchdog", main)
+        self.assertIn("--sdk", main)
+        self.assertIn("set-pwm", main)
+        self.assertIn("pkexec", (ROOT / "crates/chromaflow-core/src/support.rs").read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

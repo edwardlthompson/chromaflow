@@ -1,0 +1,12 @@
+# Gigabyte RGB Fusion 2.0 5702 motherboard ARGB
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="048d", ATTRS{idProduct}=="5702", MODE="0660", GROUP="plugdev", TAG+="uaccess"
+# Keychron Q6 HE
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3434", ATTRS{idProduct}=="0b60", MODE="0660", GROUP="plugdev", TAG+="uaccess"
+# SteelSeries Prime Neo Noir
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1038", ATTRS{idProduct}=="1856", MODE="0660", GROUP="plugdev", TAG+="uaccess"
+# SteelSeries Arena 7
+KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1038", ATTRS{idProduct}=="1a00", MODE="0660", GROUP="plugdev", TAG+="uaccess"
+# i2c device nodes
+KERNEL=="i2c-[0-9]*", GROUP="i2c", MODE="0660", TAG+="uaccess"
+# plugdev write on Super I/O PWM
+ACTION=="add", SUBSYSTEM=="hwmon", RUN+="/usr/libexec/chromaflow/pwm-acl.sh"

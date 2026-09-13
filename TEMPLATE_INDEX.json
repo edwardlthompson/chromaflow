@@ -319,6 +319,41 @@
       "owner": "agent+human"
     },
     {
+      "path": "docs/PRODUCT_GAPS.md",
+      "purpose": "Original-brief vs shipped ChromaFlow gap catalog (native app, Fan Control/OpenRGB UX)",
+      "read_when": "session_start",
+      "update_when": "milestone_boundary",
+      "owner": "agent+human"
+    },
+    {
+      "path": "docs/features/native-desktop.md",
+      "purpose": "Sprint 2 feature spec: Cinnamon standalone window, not a browser tab",
+      "read_when": "feature_work",
+      "update_when": "feature_complete",
+      "owner": "agent"
+    },
+    {
+      "path": "docs/features/cooling-ui.md",
+      "purpose": "Sprint 3 feature spec: Fan Control-like read-only cooling UI",
+      "read_when": "feature_work",
+      "update_when": "feature_complete",
+      "owner": "agent"
+    },
+    {
+      "path": "docs/features/first-scheme.md",
+      "purpose": "Sprint 21 feature spec: liquidctl extra, 60s temp graphs, locked chrome, Balanced take-over",
+      "read_when": "feature_work",
+      "update_when": "feature_complete",
+      "owner": "agent"
+    },
+    {
+      "path": "docs/features/chromaflowd.md",
+      "purpose": "Sprint 6 feature spec: chromaflowd dry-run watchdog + ExecStopPost failsafe (no PWM writes)",
+      "read_when": "feature_work",
+      "update_when": "feature_complete",
+      "owner": "agent"
+    },
+    {
       "path": "docs/BEST_PRACTICES.md",
       "purpose": "Why catalog for conventions (coach layer)",
       "read_when": "session_start",
@@ -2978,6 +3013,41 @@
       "read_when": "feature_work",
       "update_when": "milestone_boundary",
       "owner": "maintainer"
+    },
+    {
+      "path": "scripts/manage-competitors.sh",
+      "purpose": "Polkit helper to stop and purge competing fan/RGB daemons (not OpenRGB)",
+      "read_when": "feature_work",
+      "update_when": "milestone_boundary",
+      "owner": "agent"
+    },
+    {
+      "path": "scripts/build-helper-deb.sh",
+      "purpose": "Build chromaflow-helper .deb that pins install-support.sh at /usr/libexec/chromaflow",
+      "read_when": "feature_work",
+      "update_when": "milestone_boundary",
+      "owner": "agent"
+    },
+    {
+      "path": "scripts/build-chromaflow-deb.sh",
+      "purpose": "Build chromaflow amd64 .deb (GUI, CLI, Cinnamon menu, helper). No OpenRGB .desktop",
+      "read_when": "feature_work",
+      "update_when": "milestone_boundary",
+      "owner": "agent"
+    },
+    {
+      "path": "scripts/fetch-openrgb-engine.sh",
+      "purpose": "Download the hashed OpenRGB AppImage sibling for the .deb (not vendored C++)",
+      "read_when": "feature_work",
+      "update_when": "milestone_boundary",
+      "owner": "agent"
+    },
+    {
+      "path": "scripts/zenity-askpass.sh",
+      "purpose": "SUDO_ASKPASS helper using zenity for local HUMAN automation",
+      "read_when": "feature_work",
+      "update_when": "milestone_boundary",
+      "owner": "agent"
     },
     {
       "path": ".github/workflows/chromaflow.yml",

@@ -1,0 +1,59 @@
+[[permission]]
+identifier = "allow-inventory"
+description = "Read hwmon/OpenRGB inventory"
+commands.allow = ["inventory", "hardware_gauges"]
+
+[[permission]]
+identifier = "allow-support-dry-run"
+description = "Support dry-run plan"
+commands.allow = ["support_dry_run"]
+
+[[permission]]
+identifier = "allow-support-apply"
+description = "pkexec pinned install-support.sh --apply"
+commands.allow = ["support_apply"]
+
+[[permission]]
+identifier = "allow-competitors"
+description = "Plan and pkexec uninstall of competing fan/RGB daemons"
+commands.allow = ["competitors_plan", "competitors_remove"]
+
+[[permission]]
+identifier = "allow-lighting-apply"
+description = "OpenRGB/liquidctl color apply and LED color snapshot (no PWM)"
+commands.allow = ["lighting_apply", "lighting_preview", "lighting_sync"]
+
+[[permission]]
+identifier = "allow-profiles-load"
+description = "Load profiles JSON"
+commands.allow = ["profiles_load"]
+
+[[permission]]
+identifier = "allow-profiles-save"
+description = "Save profiles JSON"
+commands.allow = ["profiles_save"]
+
+[[permission]]
+identifier = "allow-session"
+description = "Load and save last tab and per-device host effects"
+commands.allow = ["session_load", "session_save"]
+
+[[permission]]
+identifier = "allow-lighting-engine-install"
+description = "User-space OpenRGB engine download (no pkexec)"
+commands.allow = ["lighting_engine_install"]
+
+[[permission]]
+identifier = "allow-lighting-hid-serial"
+description = "Read USB serial from hidraw sysfs only"
+commands.allow = ["lighting_hid_serial"]
+
+[[permission]]
+identifier = "allow-open-url"
+description = "Open GitHub device issue form"
+commands.allow = ["open_url"]
+
+[[permission]]
+identifier = "allow-pwm"
+description = "PWM watchdog take-over, tick, and firmware failsafe"
+commands.allow = ["pwm_takeover", "pwm_tick", "pwm_release", "pwm_load", "pwm_store", "pwm_calibrate"]

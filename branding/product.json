@@ -8,7 +8,7 @@
     "Read-only inventory of hwmon, hidraw, i2c, optional liquidctl, and a localhost OpenRGB SDK probe",
     "Support page: curated modules/udev/apt checklist with dry-run JSON; live apply only via polkit",
     "Never bundles .ko files; never modprobe names that are not on the YAML allowlist",
-    "GUI and CLI refuse to run as root; PWM writes are not implemented until a watchdog daemon exists",
+    "GUI and CLI refuse to run as root; PWM duty uses a watchdog daemon and a firmware failsafe (never silent 0%)",
     "Detects CoolerControl, fancontrol, and fan2go so we do not fight them silently"
   ],
   "quick_start": [
@@ -17,8 +17,8 @@
     "Missing fans or LEDs: open the Support tab and use Install detection support + rescan. Log out of Cinnamon after udev/group changes.",
     "Read `NOTICE`, `docs/HARDWARE.md`, and `docs/SUPPORT-SCRIPT.md` before enabling experimental modules."
   ],
-  "install": "Primary test target is Linux Mint 21/22 (Cinnamon). We do not ship kernel modules. Inventory (`chromaflow sensors|devices|rescan`) works offline as an unprivileged user. The polkit helper (`/usr/libexec/chromaflow/install-support.sh`) is installed by a future .deb; the repo copy is `scripts/install-support.sh`. After udev or group changes (i2c, plugdev), log out. AppImage (later) will not install polkit — use the .deb for the helper.",
-  "usage": "Do not run the GUI or `chromaflow` with sudo. Use Support → Install detection support for modules/udev (polkit prompt). Never set PWM to 0% without an explicit action and a failsafe — this release cannot write PWM at all. If CoolerControl or fancontrol is already running, ChromaFlow warns and does not take over. Lighting talks to OpenRGB on 127.0.0.1:6742 only; devices with no Linux backend are labeled, not faked. Config lives in `~/.config/chromaflow/`.",
+  "install": "Primary test target is Linux Mint 21/22 (Cinnamon). We do not ship kernel modules. Inventory (`chromaflow sensors|devices|rescan`) works offline as an unprivileged user. Install the app with `bash scripts/build-chromaflow-deb.sh` then `sudo dpkg -i target/deb/chromaflow_0.1.0_amd64.deb` (see `packaging/README.md`). The package ships the color app icon (hicolor PNG + SVG). `apps/desktop/src-tauri/icons/icon.ico` is the Windows taskbar/Start icon for a future NSIS/MSI build — PWM on Windows is not in this release. After udev or group changes (i2c, plugdev), log out. OpenRGB is a hidden sibling engine, not a second Start-menu app.",
+  "usage": "Do not run the GUI or `chromaflow` with sudo. Use Support → Install detection support for modules/udev (polkit prompt). Never set PWM to 0% without an explicit confirm — the watchdog failsafe restores motherboard firmware control if the app or daemon stops. If CoolerControl or fancontrol is already running, ChromaFlow warns and does not take over. Lighting talks to OpenRGB on 127.0.0.1:6742 (spawn a pinned engine if the port is down). Uncontrolled USB HID is listed for research (no Apply). Config lives in `~/.config/chromaflow/`.",
   "urls": {
     "docs": "docs/START_HERE.md",
     "contributing": "CONTRIBUTING.md",

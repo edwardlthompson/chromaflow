@@ -112,11 +112,11 @@ def render_readme(root: Path, product: dict, *, for_preview: bool = False) -> st
     urls = product["urls"]
     badge = product["badge"]
     if for_preview:
-        hero_path = "../assets/readme-hero.svg"
-        lockup_path = "../assets/logo-lockup.svg"
+        hero_path = "../assets/chromaflow-icon-hero-glass.png"
+        lockup_path = "../assets/chromaflow-icon.png"
     else:
-        hero_path = "branding/assets/readme-hero.svg"
-        lockup_path = "branding/assets/logo-lockup.svg"
+        hero_path = "branding/assets/chromaflow-icon-hero-glass.png"
+        lockup_path = "branding/assets/chromaflow-icon.png"
 
     replacements = {
         "{{name}}": product["name"],

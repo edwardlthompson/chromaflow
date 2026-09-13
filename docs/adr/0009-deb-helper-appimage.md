@@ -1,6 +1,6 @@
 # ADR-0009: .deb helper vs AppImage
 
-- **Status:** Accepted
+- **Status:** Superseded (GUI AppImage). Helper pin still applies. Product install is [ADR-0013](0013-bundled-openrgb-appimage.md) sibling engine + `chromaflow_*.deb`.
 - **Date:** 2026-09-11
 - **Deciders:** ChromaFlow sprint 0
 
@@ -11,9 +11,8 @@ Polkit must execute a **pinned, root-owned** path. An AppImage extracted under `
 ## Decision
 
 - Helper install path: `/usr/libexec/chromaflow/install-support.sh`
-- `.deb` (later) installs helper + polkit policy + optional daemon
-- AppImage (later) ships GUI/CLI only and tells the user when the helper is missing
-- This milestone ships repo copies only
+- Product install unit is `chromaflow_0.1.0_amd64.deb` (GUI, CLI, `.desktop`, helper). ChromaFlow itself is **not** an AppImage.
+- A later GUI AppImage is **withdrawn**; FUSE is only for the optional OpenRGB engine file.
 
 ## Alternatives considered
 
@@ -25,7 +24,6 @@ Polkit must execute a **pinned, root-owned** path. An AppImage extracted under `
 | Issue | Resolution |
 |-------|------------|
 | Developers cannot test apply without a package | Apply is stubbed; dry-run is the gate |
-
 ## Consequences
 
 CI never installs polkit policy. `[HUMAN]` Mint VM for live apply later.

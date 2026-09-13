@@ -54,16 +54,18 @@ from human_task_waiting_gh import (
     automate_push_protection,
 )
 from human_task_chromaflow import (
-    automate_create_github_repo,
-    automate_dependabot_alerts,
-    automate_mint_cinnamon_smoke,
-    automate_pkexec_apply_stub,
+    automate_create_github_repo, automate_dependabot_alerts, automate_mint_cinnamon_smoke,
+    automate_openrgb_server, automate_pkexec_apply_stub, automate_pwm_live_smoke,
+    automate_pwm_takeover, automate_tauri_dev_packages,
 )
-
 HUMAN_RULES: list[tuple[re.Pattern[str], str, object]] = [
+    (re.compile(r"webkit2gtk|Tauri \*\*dev\*\*|libgtk-3-dev", re.I), "human", automate_tauri_dev_packages),
     (re.compile(r"Create GitHub repo", re.I), "human", automate_create_github_repo),
     (re.compile(r"Enable Dependabot alerts", re.I), "human", automate_dependabot_alerts),
     (re.compile(r"Mint 21/22|Cinnamon machine", re.I), "human", automate_mint_cinnamon_smoke),
+    (re.compile(r"Live take-over smoke", re.I), "human", automate_pwm_live_smoke),
+    (re.compile(r"take-over vs|coolercontrold on this machine", re.I), "human", automate_pwm_takeover),
+    (re.compile(r"openrgb --server", re.I), "human", automate_openrgb_server),
     (re.compile(r"pkexec|`--apply`", re.I), "human", automate_pkexec_apply_stub),
     (re.compile(r"Use this template", re.I), "human", automate_use_template),
     (re.compile(r"Fill placeholders.*INITIALIZATION_PROMPT", re.I), "human", automate_init_placeholders),

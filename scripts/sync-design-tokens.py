@@ -23,6 +23,8 @@ REQUIRED_BRAND_ASSETS = (
     "app-icon-512.svg",
     "readme-hero.svg",
     "social-preview.svg",
+    "chromaflow-icon.png",
+    "chromaflow-icon-hero-glass.png",
 )
 
 

@@ -90,3 +90,18 @@ items:
     unlocks: AMD/ATI SMBus
     risk: safe
     match_lspci: SMBus
+  - name: jc42
+    modprobe: jc42
+    unlocks: DDR4 DIMM SPD temperature (JEDEC JC-42)
+    risk: safe
+    match_lspci: SMBus
+  - name: spd5118
+    modprobe: spd5118
+    unlocks: DDR5 DIMM SPD temperature
+    risk: safe
+    match_lspci: SMBus
+  - name: gigabyte-wmi
+    modprobe: gigabyte_wmi
+    unlocks: Gigabyte WMI (board RGB/ACPI helpers)
+    risk: safe
+    match_dmi: Gigabyte

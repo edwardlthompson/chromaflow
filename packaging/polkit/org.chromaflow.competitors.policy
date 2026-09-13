@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<policyconfig>
+  <vendor>ChromaFlow</vendor>
+  <vendor_url>https://github.com/edwardlthompson/chromaflow</vendor_url>
+  <action id="org.chromaflow.stop-competitors">
+    <description>Stop competing fan controller daemons for ChromaFlow</description>
+    <message>Authentication is required to stop fancontrol, CoolerControl, or fan2go.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/chromaflow/manage-competitors.sh</annotate>
+    <annotate key="org.freedesktop.policykit.exec.allow_gui">false</annotate>
+    <annotate key="org.freedesktop.policykit.exec.argv1">--stop-apply</annotate>
+  </action>
+  <action id="org.chromaflow.remove-competitors">
+    <description>Uninstall competing fan controller packages for ChromaFlow</description>
+    <message>Authentication is required to uninstall competing fan and RGB controllers (fancontrol, CoolerControl, fan2go, thinkfan, NBFC, OpenRazer, ckb-next). OpenRGB and ChromaFlow are not removed.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/chromaflow/manage-competitors.sh</annotate>
+    <annotate key="org.freedesktop.policykit.exec.allow_gui">false</annotate>
+    <annotate key="org.freedesktop.policykit.exec.argv1">--remove-apply</annotate>
+  </action>
+</policyconfig>

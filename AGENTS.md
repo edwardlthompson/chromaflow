@@ -67,7 +67,7 @@ Stack tests: web `npm test` in `examples/web`; product `cargo test --workspace -
 - Strict type safety and runtime validation at all data boundaries
 - Core business logic decoupled from layout framework (hexagonal: inventory ports vs sysfs/OpenRGB adapters vs Tauri)
 - Opt-in only telemetry; GDPR/CCPA compliant
-- **Never write PWM** (`pwm*`, `pwm*_enable`) until a daemon watchdog + failsafe exists; this pass has no PWM write API
+- **Never write PWM** (`pwm*`, `pwm*_enable`) except via `pwm_apply` / `chromaflow daemon --watchdog` (ADR-0018). Never silent 0%. Failsafe is `pwm*_enable=2`. Never `set_pwm` symbols.
 - **Never** `modprobe` a name that is not on the YAML allowlist (`^[a-zA-Z0-9_-]+$`); never derive module names from DMI/lspci strings
 - **Never** run the GUI or `chromaflow` CLI as root; polkit helper is the only root path
 - **Never** bundle kernel modules / `.ko` / unsigned kernel code

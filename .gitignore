@@ -61,6 +61,11 @@ playwright-report/
 .envrc
 !.envrc.example
 
+# Host-specific first-run snapshots for the desktop preview
+apps/desktop/public/live-inventory.json
+apps/desktop/public/live-support.json
+apps/desktop/public/live-support-advanced.json
+
 # Live user configs (examples committed; copies from init)
 .app-update.json
 donations.json

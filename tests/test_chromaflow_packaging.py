@@ -1,0 +1,106 @@
+"""chromaflow .deb is the Mint install unit. No OpenRGB Start-menu entry."""
+from __future__ import annotations
+
+import os
+import stat
+import subprocess
+import tempfile
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+SCRIPT = ROOT / "scripts" / "build-chromaflow-deb.sh"
+
+
+class DebPackagingTests(unittest.TestCase):
+    def test_script_is_one_package_no_openrgb_desktop(self) -> None:
+        text = SCRIPT.read_text(encoding="utf-8")
+        self.assertIn("Package: chromaflow", text)
+        self.assertIn("chromaflow.desktop", text)
+        self.assertIn("chromaflow-gui", text)
+        self.assertIn("libwebkit2gtk-4.1-0", text)
+        self.assertIn("libfuse2", text)
+        self.assertIn("chromaflow-sdk.service", text)
+        self.assertIn("chromaflow-gui.service", text)
+        self.assertIn("enable-session.sh", text)
+        self.assertIn("/etc/xdg/autostart/chromaflow.desktop", text)
+        self.assertIn("chromaflow-gui.desktop", text)
+        self.assertIn("favorite-apps", (ROOT / "packaging/enable-session.sh").read_text(encoding="utf-8"))
+        self.assertIn("fetch-openrgb-engine.sh", text)
+        self.assertIn("OpenRGB.AppImage", text)
+        self.assertIn("liquidctl", text)
+        self.assertIn("i2c-tools", text)
+        self.assertIn("60-chromaflow.rules", text)
+        self.assertIn("update-desktop-database", text)
+        self.assertIn("npm run build", text)
+        self.assertIn("--features custom-protocol", text)
+        self.assertNotIn("OpenRGB.desktop", text)
+        self.assertNotIn("set_pwm", text)
+        desktop = (ROOT / "packaging" / "chromaflow.desktop").read_text(encoding="utf-8")
+        self.assertIn("Exec=chromaflow-gui", desktop)
+        self.assertIn("SingleMainWindow=true", desktop)
+        self.assertIn("TryExec=chromaflow-gui", desktop)
+        readme = (ROOT / "packaging" / "README.md").read_text(encoding="utf-8")
+        self.assertIn("dpkg -i", readme)
+        self.assertNotIn("user-local `.desktop` copy", readme)
+
+    def test_staged_deb_paths(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="cf-deb-") as raw:
+            tmp = Path(raw)
+            gui = tmp / "chromaflow-gui"
+            cli = tmp / "chromaflow"
+            for path in (gui, cli):
+                path.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+                path.chmod(path.stat().st_mode | stat.S_IEXEC)
+            env = os.environ.copy()
+            env["CHROMAFLOW_DEB_SKIP_CARGO"] = "1"
+            env["CHROMAFLOW_DEB_GUI"] = str(gui)
+            env["CHROMAFLOW_DEB_CLI"] = str(cli)
+            proc = subprocess.run(
+                ["bash", str(SCRIPT)],
+                check=False,
+                capture_output=True,
+                text=True,
+                env=env,
+                cwd=str(ROOT),
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            deb = ROOT / "target" / "deb" / "chromaflow_0.1.0_amd64.deb"
+            self.assertTrue(deb.is_file(), proc.stdout)
+            info = subprocess.run(
+                ["dpkg-deb", "-I", str(deb)],
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout
+            self.assertIn("Package: chromaflow", info)
+            names = subprocess.run(
+                ["dpkg-deb", "-c", str(deb)],
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout
+            self.assertIn("./usr/bin/chromaflow-gui", names)
+            self.assertIn("./usr/share/applications/chromaflow.desktop", names)
+            self.assertIn("./usr/share/applications/chromaflow-gui.desktop", names)
+            self.assertIn("./etc/xdg/autostart/chromaflow.desktop", names)
+            self.assertIn("./usr/lib/systemd/user/chromaflow-gui.service", names)
+            self.assertIn("./usr/libexec/chromaflow/enable-session.sh", names)
+            self.assertIn("./usr/share/icons/hicolor/512x512/apps/chromaflow.png", names)
+            self.assertIn("./usr/share/icons/hicolor/16x16/apps/chromaflow.png", names)
+            self.assertIn("./usr/share/icons/hicolor/48x48/apps/chromaflow.png", names)
+            self.assertIn("./usr/libexec/chromaflow/install-support.sh", names)
+            self.assertIn("./usr/libexec/chromaflow/manage-competitors.sh", names)
+            self.assertIn("./usr/libexec/chromaflow/pwm-failsafe.sh", names)
+            self.assertIn("./usr/libexec/chromaflow/pwm-acl.sh", names)
+            self.assertIn("./usr/libexec/chromaflow/chromaflow_it87.py", names)
+            self.assertIn("./usr/lib/systemd/user/chromaflowd.service", names)
+            self.assertIn("./usr/lib/systemd/user/chromaflow-sdk.service", names)
+            self.assertIn("./usr/bin/chromaflowd", names)
+            self.assertIn("./usr/lib/udev/rules.d/60-chromaflow.rules", names)
+            self.assertIn("liquidctl", info)
+            self.assertNotIn("OpenRGB.desktop", names)
+
+
+if __name__ == "__main__":
+    unittest.main()

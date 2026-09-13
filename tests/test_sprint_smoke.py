@@ -78,6 +78,25 @@ class SprintSmokeTests(unittest.TestCase):
             ns = _ns(require=True, sprint="M50", dry_run=False)
             self.assertEqual(run(root, ns), 2)
 
+    def test_sequential_parallel_stay_in_sprint(self) -> None:
+        text = """### Sprint 2 — Native window
+
+### Sequential (must complete in order)
+
+1. ✅ [AGENT] Spec
+2. ✅ [HUMAN] apt
+
+### Parallel (safe after Sequential step 1)
+
+3. ✅ [AGENT] Tauri host
+4. ✅ [AGENT] Desktop file
+"""
+        sprints = parse_sprints(text)
+        sprint = find_sprint(sprints, "Sprint 2")
+        assert sprint is not None
+        self.assertEqual([i.number for i in sprint.items], ["1", "2", "3", "4"])
+        self.assertTrue(sprint.complete)
+
     def test_if_complete_skips_open(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

@@ -166,3 +166,23 @@ If `adb` still needs `sudo chmod` on `/dev/bus/usb/...`, the rule did not match 
 | Multiple `adb` binaries | Distro `adb` vs SDK platform-tools | Prefer `$ANDROID_HOME/platform-tools` first on `PATH` (`check-local-compute`) |
 | Wireless debug pairing fails | OEM mDNS / VPN | Use USB for instrumented smoke; pair on same LAN without VPN |
 Never commit `ADB_VENDOR_KEYS`. Template CI does not require a physical OEM device.
+
+## ChromaFlow native GUI (not a browser)
+
+Product smoke is the **installed** `chromaflow-gui` from `chromaflow_*.deb` (Cinnamon menu). `cargo run -p chromaflow-desktop` is a dev fallback. Do **not** use `xdg-open http://127.0.0.1` as a launch.
+
+```bash
+bash scripts/build-chromaflow-deb.sh
+sudo dpkg -i target/deb/chromaflow_0.1.0_amd64.deb
+chromaflow-gui
+
+```
+
+To compile the host without installing:
+
+```bash
+sudo apt-get install -y --no-install-recommends \
+  libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libssl-dev
+cargo build -p chromaflow-desktop
+
+```

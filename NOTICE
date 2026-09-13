@@ -22,14 +22,24 @@ OpenRGB
   https://gitlab.com/CalcProgrammer1/OpenRGB
   License: GPL-2.0-or-later
   ChromaFlow talks to a locally running OpenRGB SDK server (127.0.0.1:6742)
-  as a separate process. OpenRGB source is not vendored. Linking OpenRGB
-  in-process would require a license discussion (likely GPL) before any
-  such change.
+  as a separate process. The Mint .deb ships the official OpenRGB AppImage at
+  /usr/libexec/chromaflow/OpenRGB.AppImage (GPL; not in this git tree).
+  `chromaflow daemon --sdk` keeps that sibling on localhost. OpenRGB source is
+  not vendored. Linking OpenRGB in-process would require a license discussion
+  (likely GPL) before any such change.
 
 liquidctl
   https://github.com/liquidctl/liquidctl
   License: GPL-3.0-or-later
   Optional PATH binary invoked as a separate process. Not linked.
+
+rivalcfg
+  Author: Fabien Loison (flozz) and contributors
+  https://github.com/flozz/rivalcfg
+  License: GPL-3.0-or-later
+  Prime Neo HID command bytes (output 0x62 / save 0x59) are documented by
+  the public Prime device profile. ChromaFlow writes those bytes to hidraw
+  itself. rivalcfg is not vendored, linked, or spawned.
 
 lm-sensors, i2c-tools, and other distro packages remain separate works
 installed by the user or by the polkit helper from official apt repositories.

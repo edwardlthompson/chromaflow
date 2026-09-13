@@ -1,33 +1,136 @@
 <script>
+  import { onMount } from "svelte";
   import Cooling from "./pages/Cooling.svelte";
   import Lighting from "./pages/Lighting.svelte";
   import Profiles from "./pages/Profiles.svelte";
   import Support from "./pages/Support.svelte";
-  import inventory from "./fixtures/inventory.json";
+  import fixture from "./fixtures/inventory.json";
+  import { isTauri, invoke } from "./lib/tauri.js";
+  import { ui, pwmOn } from "./lib/ui.js";
+  import { applySession, loadLocal, loadSession, persistSession } from "./lib/session.js";
+  import t from "./locales/en.json";
 
   const tabs = ["Cooling", "Lighting", "Profiles", "Support"];
-  let tab = "Cooling";
+  const boot = applySession(loadLocal());
+  let tab = boot.tab;
+  let inventory = fixture;
+  let lightInv = fixture;
+  let source = "sample";
+  let loadError = "";
+  let forceLoad = false;
+  let runLoad = async () => {};
+
+  $: conflicts = (inventory && inventory.conflicts) || [];
+  $: ui.page = tab;
+
+  function setTab(name) {
+    tab = name;
+    persistSession(name);
+    if (name !== "Cooling") ui.scrolling = false;
+    forceLoad = true;
+    runLoad();
+  }
+
+  function skipPoll() {
+    if (forceLoad) return false;
+    if (ui.pausePoll) return true;
+    if (tab === "Lighting") {
+      const n = (((lightInv && lightInv.openrgb) || {}).controllers || []).length;
+      if (n > 0) return true;
+    } else if (tab === "Profiles" && source === "this machine") return true;
+    if (tab === "Cooling" && ui.scrolling) return true;
+    const ae = typeof document !== "undefined" ? document.activeElement : null;
+    const tag = ae && ae.tagName;
+    return tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA";
+  }
+
+  onMount(() => {
+    let timer = 0;
+    let stop = false;
+    const load = async () => {
+      if (skipPoll() && source === "this machine") return;
+      forceLoad = false;
+      const light = tab === "Lighting" || tab === "Support";
+      try {
+        if (isTauri()) {
+          inventory = await invoke("inventory", { light });
+          if (light) lightInv = inventory;
+          source = "this machine";
+          loadError = "";
+          return;
+        }
+        const res = await fetch("/live-inventory.json", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data && Array.isArray(data.hwmon)) {
+          inventory = data;
+          if (light) lightInv = data;
+          source = "this machine";
+        }
+      } catch (err) {
+        loadError = String(err);
+      }
+    };
+    runLoad = load;
+    loadSession().then((s) => {
+      tab = s.tab;
+      forceLoad = true;
+      runLoad();
+    });
+    const onLeave = () => persistSession(tab);
+    window.addEventListener("pagehide", onLeave);
+    window.addEventListener("beforeunload", onLeave);
+    const tick = async () => {
+      if (stop) return;
+      await load();
+      if (stop) return;
+      timer = window.setTimeout(tick, ui.pollMs || 4000);
+    };
+    tick();
+    return () => {
+      stop = true;
+      window.clearTimeout(timer);
+      window.removeEventListener("pagehide", onLeave);
+      window.removeEventListener("beforeunload", onLeave);
+    };
+  });
 </script>
 
-<p class="banner" role="status">
-  English UI. Do not run as root. This build cannot write PWM. Conflicts:
-  {inventory.conflicts.length ? inventory.conflicts.join(", ") : "none detected"}.
-</p>
-<nav aria-label="Primary">
-  {#each tabs as name}
-    <button type="button" aria-current={tab === name ? "page" : undefined} on:click={() => (tab = name)}>
-      {name}
-    </button>
-  {/each}
-</nav>
-<main>
-  {#if tab === "Cooling"}
-    <Cooling {inventory} />
-  {:else if tab === "Lighting"}
-    <Lighting {inventory} />
-  {:else if tab === "Profiles"}
-    <Profiles />
-  {:else}
-    <Support />
-  {/if}
-</main>
+<div class="app-shell">
+  <header class="fc-top">
+    <span class="brand">ChromaFlow</span>
+    <p class="status" role="status">
+      Showing {source}. {$pwmOn ? t["app.pwmOn"] : t["app.pwmOff"]} Conflicts: {conflicts.length ? conflicts.join(", ") : "none"}.
+      {#if loadError} {loadError}{/if}
+    </p>
+  </header>
+  <div class="fc-body">
+    <nav class="fc-rail" aria-label="Primary">
+      {#each tabs as name}
+        <button type="button" aria-current={tab === name ? "page" : undefined} on:click={() => setTab(name)}>
+          {name}
+        </button>
+      {/each}
+    </nav>
+    <main
+      class:page={tab !== "Cooling"}
+      on:scroll={() => {
+        ui.scrolling = true;
+        window.clearTimeout(ui.scrollTimer);
+        ui.scrollTimer = window.setTimeout(() => {
+          ui.scrolling = false;
+        }, 450);
+      }}
+    >
+      {#if tab === "Cooling"}
+        <Cooling {inventory} live={source === "this machine"} />
+      {:else if tab === "Lighting"}
+        <Lighting inventory={lightInv} />
+      {:else if tab === "Profiles"}
+        <Profiles />
+      {:else}
+        <Support {inventory} />
+      {/if}
+    </main>
+  </div>
+</div>

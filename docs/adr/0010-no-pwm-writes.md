@@ -1,6 +1,6 @@
 # ADR-0010: No PWM writes until watchdog
 
-- **Status:** Accepted
+- **Status:** Superseded by [ADR-0018](0018-pwm-watchdog.md)
 - **Date:** 2026-09-11
 - **Deciders:** ChromaFlow sprint 0
 
@@ -28,7 +28,6 @@ CI greps for forbidden write APIs.
 | Issue | Resolution |
 |-------|------------|
 | Milestone cannot demo a live curve | Inventory + placeholder graph still prove the GUI shell |
-
 ## Consequences
 
 Blocked change: PWM writes without this ADR being superseded.

@@ -91,6 +91,8 @@ mod tests {
         let list = load(&dir).expect("allowlist");
         assert!(contains_module(&list, "nct6775"));
         assert!(!contains_module(&list, "not-a-real-module"));
+        assert!(contains_module(&list, "nct6775-i2c"));
+        assert!(!contains_module(&list, "i2c-nct6775"));
         assert!(list
             .modules_experimental
             .iter()

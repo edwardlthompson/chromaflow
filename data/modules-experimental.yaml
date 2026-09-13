@@ -1,8 +1,8 @@
 # Experimental: GUI Advanced checkbox / --advanced only. Never DMI → modprobe.
 items:
   - name: i2c-nct6775
-    modprobe: i2c-nct6775
-    unlocks: Nuvoton SMBus for RGB
+    modprobe: nct6775-i2c
+    unlocks: Nuvoton NCT6775 I2C (in-tree nct6775-i2c; there is no i2c-nct6775 module)
     risk: experimental
   - name: i2c-nvidia-gpu
     modprobe: i2c-nvidia-gpu

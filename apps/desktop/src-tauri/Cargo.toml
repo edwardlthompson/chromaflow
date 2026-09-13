@@ -13,8 +13,13 @@ path = "src/main.rs"
 [build-dependencies]
 tauri-build.workspace = true
 
+[features]
+# Embed Vite dist (`tauri://` / asset.localhost). Required for the .deb.
+# Omit for `tauri dev` so the webview can use http://127.0.0.1:1420.
+custom-protocol = ["tauri/custom-protocol"]
+
 [dependencies]
 chromaflow-core = { path = "../../../crates/chromaflow-core" }
 serde.workspace = true
 serde_json.workspace = true
-tauri.workspace = true
+tauri = { workspace = true, features = ["image-png", "image-ico", "tray-icon"] }
