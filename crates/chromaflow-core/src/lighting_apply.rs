@@ -51,7 +51,12 @@ pub fn apply_mode(backend: &str, device: &str, mode: &str, color: &str) -> Resul
     crate::lighting_broadcast::with_paint(|| apply_mode_unlocked(backend, device, mode, color))
 }
 
-fn apply_mode_unlocked(backend: &str, device: &str, mode: &str, color: &str) -> Result<String, String> {
+fn apply_mode_unlocked(
+    backend: &str,
+    device: &str,
+    mode: &str,
+    color: &str,
+) -> Result<String, String> {
     let backend = crate::lighting_port::rewrite(backend, device);
     ready(&backend);
     if backend == "liquidctl" {
@@ -74,7 +79,12 @@ pub fn apply_led(backend: &str, device: &str, led: u16, color: &str) -> Result<S
     crate::lighting_broadcast::with_paint(|| apply_led_unlocked(backend, device, led, color))
 }
 
-fn apply_led_unlocked(backend: &str, device: &str, led: u16, color: &str) -> Result<String, String> {
+fn apply_led_unlocked(
+    backend: &str,
+    device: &str,
+    led: u16,
+    color: &str,
+) -> Result<String, String> {
     if color.trim().is_empty() {
         return Err("color must be RRGGBB".into());
     }

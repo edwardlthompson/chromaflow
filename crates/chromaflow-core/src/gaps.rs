@@ -57,7 +57,13 @@ pub fn from_inventory(inv: &Inventory) -> Vec<Gap> {
             .join(" ");
         let liquid = inv.liquidctl_devices.join(" ");
         let hidden = inv.hid_rgb.iter().any(|h| {
-            !crate::lighting::hid_has_linux_backend(&h.vendor_id, &h.product_id, &h.name, &sdk, &liquid)
+            !crate::lighting::hid_has_linux_backend(
+                &h.vendor_id,
+                &h.product_id,
+                &h.name,
+                &sdk,
+                &liquid,
+            )
         });
         if hidden {
             gaps.push(Gap {

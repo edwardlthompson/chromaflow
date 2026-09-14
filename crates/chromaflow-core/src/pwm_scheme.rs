@@ -67,7 +67,11 @@ pub fn balanced(inv: &Inventory) -> crate::pwm_curves::CurveFile {
     from_parts(&inv.hwmon, &inv.gpu_fans, &inv.conflicts)
 }
 
-pub fn from_parts(chips: &[HwmonChip], gpu: &[GpuFan], conflicts: &[String]) -> crate::pwm_curves::CurveFile {
+pub fn from_parts(
+    chips: &[HwmonChip],
+    gpu: &[GpuFan],
+    conflicts: &[String],
+) -> crate::pwm_curves::CurveFile {
     let mut file = crate::pwm_curves::empty();
     file.min_duty = MIN_PERCENT;
     if conflicts.is_empty() {
@@ -81,7 +85,8 @@ pub fn from_parts(chips: &[HwmonChip], gpu: &[GpuFan], conflicts: &[String]) -> 
                 let kind = kind_of(&name);
                 let id = format!("{}-{}", chip.path, pwm.name);
                 file.names.insert(id, name);
-                file.channels.push(channel(&chip.name, &pwm.name, &dir, &kind, "gauge:cpu"));
+                file.channels
+                    .push(channel(&chip.name, &pwm.name, &dir, &kind, "gauge:cpu"));
             }
         }
     }
@@ -89,12 +94,15 @@ pub fn from_parts(chips: &[HwmonChip], gpu: &[GpuFan], conflicts: &[String]) -> 
         let idx = fan.id.rsplit(':').next().unwrap_or("0");
         let pwm = format!("fan{idx}");
         file.names.insert(fan.id.clone(), fan.label.clone());
-        file.channels.push(channel("nvidia", &pwm, "nvidia", "fan", "gauge:gpu"));
+        file.channels
+            .push(channel("nvidia", &pwm, "nvidia", "fan", "gauge:gpu"));
     }
     let members: Vec<String> = file
         .names
         .iter()
-        .filter(|(_, n)| n.to_ascii_uppercase().contains("PUMP") || n.to_ascii_lowercase().contains("gpu fan"))
+        .filter(|(_, n)| {
+            n.to_ascii_uppercase().contains("PUMP") || n.to_ascii_lowercase().contains("gpu fan")
+        })
         .map(|(id, _)| id.clone())
         .collect();
     if !members.is_empty() {
@@ -141,8 +149,14 @@ mod tests {
         assert_eq!(blocked.channels[0].curve_id, "balanced");
         assert_eq!(blocked.channels[0].min_pct, MIN_PERCENT);
         let open = from_parts(&[chip], &gpu, &[]);
-        assert!(open.channels.iter().any(|c| c.pwm == "pwm1" && c.kind == "fan"));
-        assert!(open.channels.iter().any(|c| c.chip == "nvidia" && c.temp_id == "gauge:gpu"));
+        assert!(open
+            .channels
+            .iter()
+            .any(|c| c.pwm == "pwm1" && c.kind == "fan"));
+        assert!(open
+            .channels
+            .iter()
+            .any(|c| c.chip == "nvidia" && c.temp_id == "gauge:gpu"));
         assert_eq!(header("it87952", "pwm2"), "FAN5_PUMP");
         assert_eq!(header("it87952", "pwm4"), "FAN7_PUMP");
         assert_eq!(kind_of("FAN5_PUMP"), "pump");

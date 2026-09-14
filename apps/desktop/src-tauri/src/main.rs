@@ -3,7 +3,6 @@
 #![deny(unsafe_code)]
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use chromaflow_core::{collect_cooling, collect_inventory};
 use chromaflow_core::gauges;
 use chromaflow_core::hwmon;
 use chromaflow_core::lighting;
@@ -16,6 +15,7 @@ use chromaflow_core::pwm_curves;
 use chromaflow_core::pwm_daemon;
 use chromaflow_core::refuse_if_root;
 use chromaflow_core::support;
+use chromaflow_core::{collect_cooling, collect_inventory};
 use serde_json::Value;
 use std::path::PathBuf;
 use std::process::Command;

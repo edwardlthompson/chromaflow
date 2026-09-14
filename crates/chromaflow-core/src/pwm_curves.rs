@@ -150,8 +150,11 @@ pub fn save(file: &CurveFile) -> Result<(), String> {
     let dir = profiles::config_dir();
     fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     let tmp = dir.join("curves.json.tmp");
-    fs::write(&tmp, serde_json::to_string_pretty(&file).map_err(|e| e.to_string())?)
-        .map_err(|e| e.to_string())?;
+    fs::write(
+        &tmp,
+        serde_json::to_string_pretty(&file).map_err(|e| e.to_string())?,
+    )
+    .map_err(|e| e.to_string())?;
     fs::rename(&tmp, path()).map_err(|e| e.to_string())?;
     let cool = serde_json::json!({
         "schema": 2,

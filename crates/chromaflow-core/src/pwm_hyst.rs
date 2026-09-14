@@ -50,7 +50,8 @@ pub fn clamp(
         );
         return target;
     };
-    if response_ms > 0 && now.saturating_duration_since(prev.at) < Duration::from_millis(u64::from(response_ms))
+    if response_ms > 0
+        && now.saturating_duration_since(prev.at) < Duration::from_millis(u64::from(response_ms))
     {
         return prev.pct;
     }

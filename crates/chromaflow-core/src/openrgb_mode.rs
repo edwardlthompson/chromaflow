@@ -94,11 +94,7 @@ fn write_mode(
     )
 }
 
-fn find_data(
-    stream: &mut TcpStream,
-    name: &str,
-    proto: u32,
-) -> Result<(u32, Vec<u8>), String> {
+fn find_data(stream: &mut TcpStream, name: &str, proto: u32) -> Result<(u32, Vec<u8>), String> {
     let want = name.trim().to_ascii_lowercase();
     if want.is_empty() {
         return Err("device required".into());

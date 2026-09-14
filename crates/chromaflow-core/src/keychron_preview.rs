@@ -51,19 +51,21 @@ fn ensure() {
     }
     let (tx, rx) = mpsc::channel();
     *slot = Some(tx);
-    let _ = thread::Builder::new().name("keychron-leds".into()).spawn(move || {
-        let mut file = match open_via() {
-            Some(f) => f,
-            None => return,
-        };
-        while rx.recv().is_ok() {
-            while rx.try_recv().is_ok() {}
-            let cols = with_via_lock(|| read_all(&mut file));
-            if let Some(cols) = cols {
-                *LAST.lock().unwrap_or_else(|p| p.into_inner()) = cols;
+    let _ = thread::Builder::new()
+        .name("keychron-leds".into())
+        .spawn(move || {
+            let mut file = match open_via() {
+                Some(f) => f,
+                None => return,
+            };
+            while rx.recv().is_ok() {
+                while rx.try_recv().is_ok() {}
+                let cols = with_via_lock(|| read_all(&mut file));
+                if let Some(cols) = cols {
+                    *LAST.lock().unwrap_or_else(|p| p.into_inner()) = cols;
+                }
             }
-        }
-    });
+        });
 }
 
 pub(crate) fn open_via() -> Option<File> {
@@ -86,12 +88,18 @@ pub(crate) fn open_via() -> Option<File> {
 
 fn is_via(sys: &Path, name: &str) -> bool {
     let text = fs::read_to_string(sys.join(name).join("device/uevent")).unwrap_or_default();
-    let hid = text.lines().find_map(|l| l.strip_prefix("HID_ID=")).unwrap_or("");
+    let hid = text
+        .lines()
+        .find_map(|l| l.strip_prefix("HID_ID="))
+        .unwrap_or("");
     let parts: Vec<&str> = hid.split(':').collect();
     if parts.len() < 3 {
         return false;
     }
-    let vid = format!("{:0>4}", parts[1].trim().trim_start_matches('0').to_ascii_lowercase());
+    let vid = format!(
+        "{:0>4}",
+        parts[1].trim().trim_start_matches('0').to_ascii_lowercase()
+    );
     if vid != VID {
         return false;
     }
@@ -183,7 +191,8 @@ fn hsv_to_rgb(h: u8, s: u8, v: u8) -> [u8; 3] {
     let rem = (u16::from(h) - region * 43) * 6;
     let p = u8::try_from(u16::from(v) * (255 - u16::from(s)) / 255).unwrap_or(0);
     let q = u8::try_from(u16::from(v) * (255 - u16::from(s) * rem / 255) / 255).unwrap_or(0);
-    let t = u8::try_from(u16::from(v) * (255 - u16::from(s) * (255 - rem) / 255) / 255).unwrap_or(0);
+    let t =
+        u8::try_from(u16::from(v) * (255 - u16::from(s) * (255 - rem) / 255) / 255).unwrap_or(0);
     match region {
         0 => [v, t, p],
         1 => [q, v, p],

@@ -76,7 +76,10 @@ mod tests {
         assert_eq!(super::claim("1038", "1a00"), Some("arena"));
         assert_eq!(super::rewrite("openrgb", "Keychron Q6 HE"), "keychron");
         assert_eq!(super::rewrite("openrgb", "X570S AORUS MASTER"), "liquidctl");
-        assert_eq!(super::rewrite("openrgb", "MSI GeForce RTX 4090 Suprim Liquid X"), "msi_gpu");
+        assert_eq!(
+            super::rewrite("openrgb", "MSI GeForce RTX 4090 Suprim Liquid X"),
+            "msi_gpu"
+        );
         assert!(super::skip_sdk("Keychron Q6 HE"));
         assert!(super::arenaish("SteelSeries Arena 7"));
         assert_eq!(super::pad_id("0x3434"), "3434");

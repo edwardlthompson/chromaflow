@@ -82,7 +82,11 @@ pub fn file_sha256(path: &Path) -> Result<String, String> {
         return Err("sha256sum failed".into());
     }
     let text = String::from_utf8_lossy(&out.stdout);
-    Ok(text.split_whitespace().next().unwrap_or("").to_ascii_lowercase())
+    Ok(text
+        .split_whitespace()
+        .next()
+        .unwrap_or("")
+        .to_ascii_lowercase())
 }
 
 pub fn finalize_part(part: &Path, dest: &Path, sha: &str, max_bytes: u64) -> Result<(), String> {

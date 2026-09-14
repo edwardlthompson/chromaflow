@@ -86,7 +86,9 @@ fn pwms(dir: &Path) -> Vec<PwmNode> {
         .map(|name| {
             let path = dir.join(&name);
             // IT8795x pwm4/pwm5 read ENODATA until pwmN_enable=1; still list them.
-            let value = read_trimmed(&path).filter(|v| !v.is_empty()).unwrap_or_else(|| "0".into());
+            let value = read_trimmed(&path)
+                .filter(|v| !v.is_empty())
+                .unwrap_or_else(|| "0".into());
             let enable = dir.join(format!("{name}_enable"));
             let writable = fs::metadata(&path)
                 .map(|m| !m.permissions().readonly())

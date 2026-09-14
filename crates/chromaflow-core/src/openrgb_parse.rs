@@ -80,14 +80,22 @@ pub fn tune_mode(blob: &mut [u8], proto: u32, rgb: [u8; 3]) {
 }
 
 pub fn fill_motion(blob: &mut [u8], proto: u32) {
-    let nlen = u16::from_le_bytes(blob.get(0..2).and_then(|s| s.try_into().ok()).unwrap_or([0, 0])) as usize;
+    let nlen = u16::from_le_bytes(
+        blob.get(0..2)
+            .and_then(|s| s.try_into().ok())
+            .unwrap_or([0, 0]),
+    ) as usize;
     let base = 2usize.saturating_add(nlen);
     let smin = read_u32(blob, base + 8);
     let smax = read_u32(blob, base + 12);
     let speed_off = if proto >= 3 { base + 32 } else { base + 24 };
     let speed = read_u32(blob, speed_off);
     if speed == 0 && smax > 0 {
-        patch_u32(blob, speed_off, if smax > smin { (smin + smax) / 2 } else { smax });
+        patch_u32(
+            blob,
+            speed_off,
+            if smax > smin { (smin + smax) / 2 } else { smax },
+        );
     }
     if proto >= 3 {
         let bmin = read_u32(blob, base + 16);
@@ -221,7 +229,12 @@ fn read_colors(data: &[u8], i: &mut usize) -> Result<Vec<String>, String> {
         if *i + 3 > data.len() {
             return Err("eof".into());
         }
-        out.push(format!("#{:02x}{:02x}{:02x}", data[*i], data[*i + 1], data[*i + 2]));
+        out.push(format!(
+            "#{:02x}{:02x}{:02x}",
+            data[*i],
+            data[*i + 1],
+            data[*i + 2]
+        ));
         *i = (*i + 4).min(data.len());
     }
     Ok(out)
@@ -391,7 +404,10 @@ mod tests {
         mode.extend_from_slice(&0u16.to_le_bytes());
         crate::openrgb_parse::tune_mode(&mut mode, 0, [1, 2, 3]);
         let off = 2 + name.len() + 24;
-        assert_eq!(u32::from_le_bytes(mode[off..off + 4].try_into().unwrap()), 2);
+        assert_eq!(
+            u32::from_le_bytes(mode[off..off + 4].try_into().unwrap()),
+            2
+        );
     }
 
     #[test]

@@ -8,7 +8,10 @@ use tauri::{AppHandle, Manager};
 
 fn sock_path() -> PathBuf {
     let dir = std::env::var("XDG_RUNTIME_DIR").unwrap_or_else(|_| {
-        format!("/tmp/chromaflow-{}", std::env::var("USER").unwrap_or_else(|_| "user".into()))
+        format!(
+            "/tmp/chromaflow-{}",
+            std::env::var("USER").unwrap_or_else(|_| "user".into())
+        )
     });
     PathBuf::from(dir).join("chromaflow-gui.sock")
 }

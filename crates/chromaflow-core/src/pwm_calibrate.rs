@@ -79,7 +79,12 @@ fn is_owned(owned: &Path, dir: &str, pwm: &str) -> bool {
         .unwrap_or(false)
 }
 
-pub fn sweep(inv: &Inventory, dir: &str, pwm: &str, allow_zero: bool) -> Result<Vec<[u32; 2]>, String> {
+pub fn sweep(
+    inv: &Inventory,
+    dir: &str,
+    pwm: &str,
+    allow_zero: bool,
+) -> Result<Vec<[u32; 2]>, String> {
     sweep_at(
         &hwmon::hwmon_root(),
         &pwm_apply::owned_path(),
@@ -108,7 +113,11 @@ pub fn sweep_at(
         return Err("take-over first".into());
     }
     set_busy_at(owned, true);
-    let start = if allow_zero { 0u8 } else { pwm_policy::MIN_PERCENT };
+    let start = if allow_zero {
+        0u8
+    } else {
+        pwm_policy::MIN_PERCENT
+    };
     let result = (|| {
         let mut rows = Vec::new();
         for pct in (start..=100).step_by(10) {
@@ -117,7 +126,10 @@ pub fn sweep_at(
             }
             let duty = pwm_policy::percent_to_duty(pct, allow_zero)?;
             let path = root.join(dir).join(pwm);
-            pwm_apply::apply_enable(&path.parent().unwrap().join(format!("{pwm}_enable")), ENABLE_MANUAL)?;
+            pwm_apply::apply_enable(
+                &path.parent().unwrap().join(format!("{pwm}_enable")),
+                ENABLE_MANUAL,
+            )?;
             pwm_apply::apply_duty(&path, duty, allow_zero)?;
             let ms = dwell_ms();
             if ms > 0 {

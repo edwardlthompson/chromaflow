@@ -34,7 +34,8 @@ pub fn set_live(rgb: [u8; 3]) -> Result<String, String> {
         .write(true)
         .open(&path)
         .map_err(|e| e.to_string())?;
-    file.write_all(&color_report(rgb)).map_err(|e| e.to_string())?;
+    file.write_all(&color_report(rgb))
+        .map_err(|e| e.to_string())?;
     *slot = Some(Live {
         file,
         last: Some(rgb),
@@ -91,13 +92,22 @@ fn vendor_hidraw() -> Option<PathBuf> {
 
 fn is_prime_vendor(sys: &Path, name: &str) -> bool {
     let text = fs::read_to_string(sys.join(name).join("device/uevent")).unwrap_or_default();
-    let hid = text.lines().find_map(|l| l.strip_prefix("HID_ID=")).unwrap_or("");
+    let hid = text
+        .lines()
+        .find_map(|l| l.strip_prefix("HID_ID="))
+        .unwrap_or("");
     let parts: Vec<&str> = hid.split(':').collect();
     if parts.len() < 3 {
         return false;
     }
-    let vid = format!("{:0>4}", parts[1].trim().trim_start_matches('0').to_ascii_lowercase());
-    let pid = format!("{:0>4}", parts[2].trim().trim_start_matches('0').to_ascii_lowercase());
+    let vid = format!(
+        "{:0>4}",
+        parts[1].trim().trim_start_matches('0').to_ascii_lowercase()
+    );
+    let pid = format!(
+        "{:0>4}",
+        parts[2].trim().trim_start_matches('0').to_ascii_lowercase()
+    );
     if vid != VID || pid != PID {
         return false;
     }

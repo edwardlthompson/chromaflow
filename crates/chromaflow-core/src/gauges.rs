@@ -130,7 +130,9 @@ fn max_group_c(hwmon: &[HwmonChip], want: &str) -> Option<f64> {
             if channel_group(&chip.name, &row.label) != want {
                 continue;
             }
-            let Some(c) = milli_c(&row.value) else { continue };
+            let Some(c) = milli_c(&row.value) else {
+                continue;
+            };
             if !(-40.0..=125.0).contains(&c) {
                 continue;
             }
@@ -176,7 +178,9 @@ mod tests {
     fn meminfo_available_and_fallback() {
         let a = parse_meminfo("MemTotal: 1000 kB\nMemAvailable: 250 kB\n").unwrap();
         assert!((a - 0.75).abs() < 0.001);
-        let b = parse_meminfo("MemTotal: 1000 kB\nMemFree: 100 kB\nBuffers: 50 kB\nCached: 50 kB\n").unwrap();
+        let b =
+            parse_meminfo("MemTotal: 1000 kB\nMemFree: 100 kB\nBuffers: 50 kB\nCached: 50 kB\n")
+                .unwrap();
         assert!((b - 0.8).abs() < 0.001);
         assert!(parse_meminfo("").is_none());
         assert!(parse_meminfo("MemTotal: 0 kB\nMemAvailable: 0 kB\n").is_none());

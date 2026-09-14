@@ -14,9 +14,7 @@ fn ensure_frontend() -> io::Result<()> {
         if release {
             let body = fs::read_to_string(&html)?;
             if body.contains("\"/assets/") || !body.contains("./assets/") {
-                panic!(
-                    "release dist needs Vite base './'; run npm run build in apps/desktop"
-                );
+                panic!("release dist needs Vite base './'; run npm run build in apps/desktop");
             }
         }
         return Ok(());

@@ -193,7 +193,10 @@ fn spawn_bin(bin: &Path) -> Result<(), String> {
     reap_child();
     hold_spawn();
     let log_txt = fs::read_to_string(log_path).unwrap_or_default();
-    Err(fuse_hint(&log_txt, "OpenRGB engine started but 127.0.0.1:6742 stayed down"))
+    Err(fuse_hint(
+        &log_txt,
+        "OpenRGB engine started but 127.0.0.1:6742 stayed down",
+    ))
 }
 
 /// Reuse 6742 if up; otherwise spawn at most one sibling. Missing binary is a no-op.
@@ -288,7 +291,9 @@ mod tests {
             "/var/lib/flatpak/app/org.openrgb.OpenRGB/openrgb",
         );
         assert_ne!(
-            resolve_bin().map(|p| p.to_string_lossy().into_owned()).unwrap_or_default(),
+            resolve_bin()
+                .map(|p| p.to_string_lossy().into_owned())
+                .unwrap_or_default(),
             "/var/lib/flatpak/app/org.openrgb.OpenRGB/openrgb"
         );
         std::env::set_var("CHROMAFLOW_OPENRGB_CMDLINE", "bwrap -- openrgb --server");
@@ -298,7 +303,11 @@ mod tests {
         let marker = dir.join("spawned");
         let _ = fs::remove_file(&marker);
         let stub = dir.join("stub-openrgb");
-        fs::write(&stub, format!("#!/bin/sh\necho ran > {}\n", marker.display())).unwrap();
+        fs::write(
+            &stub,
+            format!("#!/bin/sh\necho ran > {}\n", marker.display()),
+        )
+        .unwrap();
         use std::os::unix::fs::PermissionsExt;
         let mut p = fs::metadata(&stub).unwrap().permissions();
         p.set_mode(0o755);
@@ -312,7 +321,9 @@ mod tests {
         std::env::remove_var("CHROMAFLOW_NO_SPAWN");
         std::env::remove_var("CHROMAFLOW_ALLOW_SPAWN");
         std::env::remove_var("CHROMAFLOW_OPENRGB");
-        assert!(!forbidden(Path::new("/usr/libexec/chromaflow/OpenRGB.AppImage")));
+        assert!(!forbidden(Path::new(
+            "/usr/libexec/chromaflow/OpenRGB.AppImage"
+        )));
         assert!(forbidden(Path::new("/home/u/.wine/openrgb.exe")));
         assert_eq!(proc_state("3116 (OpenRGB) Z 2746"), Some('Z'));
         assert_eq!(proc_state("3116 (OpenRGB) S 2746"), Some('S'));

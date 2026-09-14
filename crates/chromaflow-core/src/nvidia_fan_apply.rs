@@ -20,7 +20,9 @@ fn last_same(idx: u8, pct: u8) -> bool {
 }
 
 fn remember(idx: u8, pct: u8) {
-    LAST.lock().unwrap_or_else(|p| p.into_inner()).insert(idx, pct);
+    LAST.lock()
+        .unwrap_or_else(|p| p.into_inner())
+        .insert(idx, pct);
 }
 
 fn clear_last() {
@@ -31,7 +33,11 @@ pub fn set_percent(idx: u8, pct: u8, allow_zero: bool) -> Result<(), String> {
     if pct == 0 && !allow_zero {
         return Err("0% needs an explicit confirm".into());
     }
-    let floor = if allow_zero { 0 } else { pwm_policy::MIN_PERCENT };
+    let floor = if allow_zero {
+        0
+    } else {
+        pwm_policy::MIN_PERCENT
+    };
     let pct = pct.max(floor).min(100);
     if last_same(idx, pct) {
         return Ok(());
@@ -74,7 +80,11 @@ pub fn tick(inv: &Inventory, file: &CurveFile) -> Result<String, String> {
     }
     let g = gauges::snapshot(&inv.hwmon);
     let mut n = 0u32;
-    for ch in file.channels.iter().filter(|c| c.enabled && c.chip == "nvidia") {
+    for ch in file
+        .channels
+        .iter()
+        .filter(|c| c.enabled && c.chip == "nvidia")
+    {
         if one(inv, file, ch, &g) {
             n += 1;
         }

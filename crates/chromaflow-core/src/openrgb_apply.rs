@@ -1,6 +1,8 @@
 //! SET_CUSTOM_MODE + UPDATE_LEDS on localhost. No hidraw, no PWM.
 
-use crate::openrgb_proto::{close, open_client, parse_name, write_pkt, COUNT, SET_CUSTOM, UPDATE_LEDS};
+use crate::openrgb_proto::{
+    close, open_client, parse_name, write_pkt, COUNT, SET_CUSTOM, UPDATE_LEDS,
+};
 
 pub fn set_color(name: &str, rgb: [u8; 3]) -> Result<String, String> {
     let want = name.trim().to_ascii_lowercase();

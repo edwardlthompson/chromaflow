@@ -54,7 +54,10 @@ pub fn apply_duty(path: &Path, duty: u8, allow_zero: bool) -> Result<(), String>
 
 pub fn restore_dir(root: &Path, dir: &str, pwm: &str) -> Result<(), String> {
     let path = pwm_path(root, dir, pwm)?;
-    apply_enable(&path.parent().unwrap().join(format!("{pwm}_enable")), ENABLE_FIRMWARE)
+    apply_enable(
+        &path.parent().unwrap().join(format!("{pwm}_enable")),
+        ENABLE_FIRMWARE,
+    )
 }
 
 pub fn record_owned(channels: &[Channel]) -> Result<(), String> {
@@ -78,7 +81,9 @@ pub fn failsafe_at(root: &Path, owned: &Path) -> Result<u32, String> {
     let mut n = 0;
     for line in text.lines() {
         let mut parts = line.split_whitespace();
-        let (Some(dir), Some(pwm)) = (parts.next(), parts.next()) else { continue };
+        let (Some(dir), Some(pwm)) = (parts.next(), parts.next()) else {
+            continue;
+        };
         restore_dir(root, dir, pwm)?;
         n += 1;
     }
@@ -116,7 +121,13 @@ pub fn tick(inv: &Inventory, file: &CurveFile) -> Result<String, String> {
     Ok(format!("applied {n}; {gpu}"))
 }
 
-fn one(root: &Path, inv: &Inventory, file: &CurveFile, ch: &Channel, g: &gauges::Gauges) -> Result<u32, String> {
+fn one(
+    root: &Path,
+    inv: &Inventory,
+    file: &CurveFile,
+    ch: &Channel,
+    g: &gauges::Gauges,
+) -> Result<u32, String> {
     let identify = pwm_recipe::flat_full(&ch.curve_id, file);
     let Some(temp) = pwm_recipe::temp_of(inv, file, ch, g) else {
         if !identify {
@@ -138,7 +149,11 @@ fn one(root: &Path, inv: &Inventory, file: &CurveFile, ch: &Channel, g: &gauges:
     };
     let off = i16::from(ch.offset);
     pct = u8::try_from((i16::from(pct) + off).clamp(0, 100)).unwrap_or(pct);
-    let floor = if ch.min_pct > 0 { ch.min_pct } else { file.min_duty };
+    let floor = if ch.min_pct > 0 {
+        ch.min_pct
+    } else {
+        file.min_duty
+    };
     pct = pct.max(floor);
     if ch.stop_pct > 0 && pct <= ch.stop_pct && !file.allow_zero {
         pct = floor;
@@ -161,7 +176,10 @@ fn one(root: &Path, inv: &Inventory, file: &CurveFile, ch: &Channel, g: &gauges:
 fn apply_manual(root: &Path, ch: &Channel, pct: u8, allow_zero: bool) -> Result<(), String> {
     let duty = pwm_policy::percent_to_duty(pct, allow_zero)?;
     let pwm = pwm_path(root, &ch.dir, &ch.pwm)?;
-    apply_enable(&pwm.parent().unwrap().join(format!("{}_enable", ch.pwm)), ENABLE_MANUAL)?;
+    apply_enable(
+        &pwm.parent().unwrap().join(format!("{}_enable", ch.pwm)),
+        ENABLE_MANUAL,
+    )?;
     apply_duty(&pwm, duty, allow_zero)
 }
 
@@ -184,7 +202,10 @@ mod tests {
         let owned = root.join("owned");
         fs::write(&owned, "hwmon0 pwm1\n").unwrap();
         assert_eq!(failsafe_at(&root, &owned).unwrap(), 1);
-        assert_eq!(fs::read_to_string(chip.join("pwm1_enable")).unwrap().trim(), "2");
+        assert_eq!(
+            fs::read_to_string(chip.join("pwm1_enable")).unwrap().trim(),
+            "2"
+        );
         assert_eq!(fs::read_to_string(chip.join("pwm1")).unwrap().trim(), "51");
         let _ = fs::remove_dir_all(&root);
     }

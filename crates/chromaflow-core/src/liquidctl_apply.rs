@@ -2,7 +2,9 @@
 
 use std::process::Command;
 
-const ALL: [&str; 8] = ["led1", "led2", "led3", "led4", "led5", "led6", "led7", "led8"];
+const ALL: [&str; 8] = [
+    "led1", "led2", "led3", "led4", "led5", "led6", "led7", "led8",
+];
 const BOARD: [&str; 3] = ["led1", "led3", "led4"];
 const AIO: [&str; 5] = ["led2", "led5", "led6", "led7", "led8"];
 
@@ -42,7 +44,14 @@ pub fn set_device(device: &str, hex: &str, mode: &str) -> Result<String, String>
     let st = style(mode);
     let n = device.to_ascii_lowercase();
     if st == "fixed" && (n.contains("sync") || n.contains("aio")) {
-        if let Ok(msg) = hid_set(if n.contains("sync") { "uniform" } else { "digital" }, hex) {
+        if let Ok(msg) = hid_set(
+            if n.contains("sync") {
+                "uniform"
+            } else {
+                "digital"
+            },
+            hex,
+        ) {
             if n.contains("sync") {
                 return Ok(msg);
             }
@@ -73,7 +82,12 @@ fn set_on(chans: &[&str], style: &str, hex: &str) -> Result<String, String> {
     let mut n = 0u32;
     for ch in chans {
         let ok = if style == "color-cycle" {
-            run(&bin, &["-m", "Fusion", "--speed", "fastest", "set", ch, "color", style])
+            run(
+                &bin,
+                &[
+                    "-m", "Fusion", "--speed", "fastest", "set", ch, "color", style,
+                ],
+            )
         } else {
             run(&bin, &["-m", "Fusion", "set", ch, "color", style, hex])
         };
@@ -121,7 +135,10 @@ mod tests {
         assert!(super::set_fusion_sync("").is_err());
         assert!(set_fusion("").is_err());
         assert!(set_fusion("00").is_err());
-        assert_eq!(channels("CPU AIO"), &["led2", "led5", "led6", "led7", "led8"]);
+        assert_eq!(
+            channels("CPU AIO"),
+            &["led2", "led5", "led6", "led7", "led8"]
+        );
         assert_eq!(channels("Motherboard Fusion"), &["led1", "led3", "led4"]);
         assert_eq!(style("Cycle All"), "color-cycle");
         assert_eq!(style("Breathing"), "pulse");

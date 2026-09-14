@@ -69,7 +69,12 @@ pub fn connect() -> Result<TcpStream, String> {
     Ok(stream)
 }
 
-pub fn write_pkt(stream: &mut TcpStream, device: u32, pkt_id: u32, body: &[u8]) -> Result<(), String> {
+pub fn write_pkt(
+    stream: &mut TcpStream,
+    device: u32,
+    pkt_id: u32,
+    body: &[u8],
+) -> Result<(), String> {
     let mut hdr = [0u8; 16];
     hdr[0..4].copy_from_slice(MAGIC);
     hdr[4..8].copy_from_slice(&device.to_le_bytes());
@@ -125,7 +130,9 @@ pub fn parse_name(data: &[u8]) -> Option<String> {
     if end > data.len() {
         return None;
     }
-    let raw = std::str::from_utf8(&data[start..end]).ok()?.trim_end_matches('\0');
+    let raw = std::str::from_utf8(&data[start..end])
+        .ok()?
+        .trim_end_matches('\0');
     if raw.is_empty() {
         None
     } else {

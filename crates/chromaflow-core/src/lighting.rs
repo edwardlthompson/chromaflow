@@ -9,7 +9,12 @@ use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
 const KNOWN: &[(&str, &str, &str, &str)] = &[
-    ("048d", "5702", "motherboard", "Gigabyte RGB Fusion 2.0 (ARGB headers)"),
+    (
+        "048d",
+        "5702",
+        "motherboard",
+        "Gigabyte RGB Fusion 2.0 (ARGB headers)",
+    ),
     ("1038", "1856", "mouse", "SteelSeries Prime Neo Noir"),
     ("3434", "0b60", "keyboard", "Keychron Q6 HE"),
     ("1038", "1a00", "speakers", "SteelSeries Arena 7"),
@@ -93,7 +98,9 @@ pub fn liquidctl_devices() -> Vec<String> {
         }
     }
     let got = match Command::new("liquidctl").arg("list").output() {
-        Ok(out) if out.status.success() => Some(parse_liquidctl(&String::from_utf8_lossy(&out.stdout))),
+        Ok(out) if out.status.success() => {
+            Some(parse_liquidctl(&String::from_utf8_lossy(&out.stdout)))
+        }
         _ => None,
     };
     let mut g = LIQUID.lock().unwrap_or_else(|p| p.into_inner());
@@ -136,9 +143,18 @@ fn pad4(raw: &str) -> String {
 
 fn noise(name: &str) -> bool {
     let n = name.to_ascii_lowercase();
-    ["ups", "microphone", "fingerprint", "camera", "touchpad", "wacom", "cs201", "consumer control"]
-        .iter()
-        .any(|k| n.contains(k))
+    [
+        "ups",
+        "microphone",
+        "fingerprint",
+        "camera",
+        "touchpad",
+        "wacom",
+        "cs201",
+        "consumer control",
+    ]
+    .iter()
+    .any(|k| n.contains(k))
 }
 
 fn classify(vid: &str, pid: &str, name: &str) -> Option<(String, String)> {
@@ -241,7 +257,10 @@ mod tests {
         assert!(!hid_has_linux_backend("048d", "5702", "Fusion", "", ""));
         assert!(hid_has_linux_backend("1038", "1a00", "Arena 7", "", ""));
         let (v, p, n) = parse_uevent("HID_ID=0003:0000048D:00005702\nHID_NAME=ITE Device\n");
-        assert_eq!((v.as_str(), p.as_str(), n.as_str()), ("048d", "5702", "ITE Device"));
+        assert_eq!(
+            (v.as_str(), p.as_str(), n.as_str()),
+            ("048d", "5702", "ITE Device")
+        );
         assert_eq!(
             parse_liquidctl("Device #0: Gigabyte RGB Fusion 2.0 5702 Controller\n"),
             ["Gigabyte RGB Fusion 2.0 5702 Controller"]

@@ -37,10 +37,7 @@ static REFRESHING: AtomicBool = AtomicBool::new(false);
 
 pub fn snapshot() -> Vec<GpuFan> {
     let now = Instant::now();
-    let stale = GPU_FANS
-        .lock()
-        .unwrap_or_else(|p| p.into_inner())
-        .clone();
+    let stale = GPU_FANS.lock().unwrap_or_else(|p| p.into_inner()).clone();
     if let Some((at, v)) = stale {
         if now.saturating_duration_since(at) >= FAN_TTL {
             kick_refresh();

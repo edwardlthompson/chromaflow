@@ -31,7 +31,12 @@ fn hex4(raw: &str) -> String {
 
 pub fn read_ids(dir: &Path) -> Option<[String; 4]> {
     let one = |n: &str| fs::read_to_string(dir.join(n)).ok().map(|s| hex4(&s));
-    Some([one("vendor")?, one("device")?, one("subsystem_vendor")?, one("subsystem_device")?])
+    Some([
+        one("vendor")?,
+        one("device")?,
+        one("subsystem_vendor")?,
+        one("subsystem_device")?,
+    ])
 }
 
 pub fn is_suprim_liquid(ids: &[String; 4]) -> bool {
@@ -42,7 +47,9 @@ pub fn present() -> bool {
     let Ok(entries) = fs::read_dir(pci_root()) else {
         return false;
     };
-    entries.flatten().any(|e| read_ids(&e.path()).is_some_and(|ids| is_suprim_liquid(&ids)))
+    entries
+        .flatten()
+        .any(|e| read_ids(&e.path()).is_some_and(|ids| is_suprim_liquid(&ids)))
 }
 
 pub fn devices() -> Vec<RgbDevice> {
@@ -130,7 +137,10 @@ pub fn set_snap(rgb: [u8; 3]) -> Result<String, String> {
 fn write_next(rgb: [u8; 3]) -> Result<String, String> {
     on_bus(|bus| {
         i2c_sets(bus, &snap_pairs(rgb))?;
-        Ok(format!("flip GPU RGB {:02X}{:02X}{:02X} on i2c-{bus}", rgb[0], rgb[1], rgb[2]))
+        Ok(format!(
+            "flip GPU RGB {:02X}{:02X}{:02X} on i2c-{bus}",
+            rgb[0], rgb[1], rgb[2]
+        ))
     })
 }
 
@@ -165,7 +175,10 @@ fn i2c_sets(bus: u8, pairs: &[(u8, u8)]) -> Result<(), String> {
 fn write_rgb(rgb: [u8; 3], save: bool) -> Result<String, String> {
     on_bus(|bus| {
         paint(bus, rgb, save)?;
-        Ok(format!("set GPU RGB {:02X}{:02X}{:02X} on i2c-{bus}", rgb[0], rgb[1], rgb[2]))
+        Ok(format!(
+            "set GPU RGB {:02X}{:02X}{:02X} on i2c-{bus}",
+            rgb[0], rgb[1], rgb[2]
+        ))
     })
 }
 
@@ -311,7 +324,12 @@ mod tests {
         assert!(prefer_first("NVIDIA i2c adapter 1 at b:00.0"));
         assert!(!prefer_first("NVIDIA i2c adapter 11 at b:00.0"));
         assert!(!prefer_first("NVIDIA i2c adapter 6 at b:00.0"));
-        assert!(!is_suprim_liquid(&["10de".into(), "2684".into(), "1462".into(), "0000".into()]));
+        assert!(!is_suprim_liquid(&[
+            "10de".into(),
+            "2684".into(),
+            "1462".into(),
+            "0000".into()
+        ]));
         let p = snap_pairs([0x11, 0x22, 0x33]);
         assert_eq!(p[0], (0x30, 0x11));
         assert_eq!(&p[3..], &[(0x22, 0x13), (0x3f, 0x00)]);

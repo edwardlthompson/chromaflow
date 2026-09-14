@@ -106,7 +106,9 @@ fn phase_at(t0: Instant, speed: u8) -> u16 {
 
 fn run() {
     let t0 = Instant::now();
-    let lamps = thread::Builder::new().name("cf-lamps".into()).spawn(run_lamps);
+    let lamps = thread::Builder::new()
+        .name("cf-lamps".into())
+        .spawn(run_lamps);
     let gpu = thread::Builder::new().name("cf-gpu".into()).spawn(run_gpu);
     while !STOP.load(Ordering::Relaxed) {
         let p = phase_at(t0, SPEED.load(Ordering::Relaxed));

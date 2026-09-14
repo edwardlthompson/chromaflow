@@ -58,7 +58,10 @@ fn main() -> ExitCode {
         }
         "support" => {
             let advanced = rest.iter().any(|a| a == "--advanced");
-            let extra = rest.windows(2).find(|w| w[0] == "--only").map(|w| w[1].as_str());
+            let extra = rest
+                .windows(2)
+                .find(|w| w[0] == "--only")
+                .map(|w| w[1].as_str());
             if rest.iter().any(|a| a == "--apply") {
                 match support::apply(advanced, extra) {
                     Ok(plan) => {

@@ -17,7 +17,9 @@ fn skip_daemon() -> bool {
 fn rpm_of(dir: &str, pwm: &str) -> u32 {
     pwm.strip_prefix("pwm")
         .filter(|n| !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()))
-        .and_then(|n| fs::read_to_string(hwmon::hwmon_root().join(dir).join(format!("fan{n}_input"))).ok())
+        .and_then(|n| {
+            fs::read_to_string(hwmon::hwmon_root().join(dir).join(format!("fan{n}_input"))).ok()
+        })
         .and_then(|s| s.trim().parse().ok())
         .unwrap_or(0)
 }
@@ -58,7 +60,8 @@ pub fn run_takeover() -> i32 {
             Ok(rows) => {
                 let key = format!("{}/{}", ch.dir, ch.pwm);
                 let empty = rows.last().map(|r| r[1]).unwrap_or(0) == 0;
-                file.calibration.insert(key, if empty { Vec::new() } else { rows.clone() });
+                file.calibration
+                    .insert(key, if empty { Vec::new() } else { rows.clone() });
                 eprintln!("calibrate {}/{} {:?}", ch.dir, ch.pwm, rows.last());
             }
             Err(err) => eprintln!("calibrate {}/{}: {err}", ch.dir, ch.pwm),
@@ -67,7 +70,10 @@ pub fn run_takeover() -> i32 {
     let _ = pwm_curves::save(&file);
     match pwm_apply::tick(&inv, &file) {
         Ok(msg) => {
-            eprintln!("scheme balanced: {msg}; failsafe enable={}", pwm_policy::failsafe_enable());
+            eprintln!(
+                "scheme balanced: {msg}; failsafe enable={}",
+                pwm_policy::failsafe_enable()
+            );
             let _ = fs::read_to_string(pwm_apply::owned_path()).map(|t| eprintln!("owned:\n{t}"));
             0
         }

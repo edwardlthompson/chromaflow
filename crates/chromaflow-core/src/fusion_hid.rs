@@ -53,8 +53,14 @@ fn start(slot: &mut Option<Serve>) -> Result<(), String> {
         .stderr(Stdio::null())
         .spawn()
         .map_err(|e| e.to_string())?;
-    let stdin = child.stdin.take().ok_or_else(|| "Fusion HID stdin".to_string())?;
-    let stdout = child.stdout.take().ok_or_else(|| "Fusion HID stdout".to_string())?;
+    let stdin = child
+        .stdin
+        .take()
+        .ok_or_else(|| "Fusion HID stdin".to_string())?;
+    let stdout = child
+        .stdout
+        .take()
+        .ok_or_else(|| "Fusion HID stdout".to_string())?;
     let (tx, rx) = mpsc::channel();
     thread::Builder::new()
         .name("fusion-hid".into())

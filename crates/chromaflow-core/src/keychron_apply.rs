@@ -87,7 +87,9 @@ pub fn set_color(rgb: [u8; 3]) -> Result<String, String> {
         let want = rgb_to_hsv(rgb);
         for _ in 0..3 {
             enter_solid(file, rgb)?;
-            if via_get(file, 2) == Some(SOLID_FX) && via_get(file, 4).is_some_and(|h| hue_close(h, want[0])) {
+            if via_get(file, 2) == Some(SOLID_FX)
+                && via_get(file, 4).is_some_and(|h| hue_close(h, want[0]))
+            {
                 SOLID.store(true, Ordering::Relaxed);
                 return Ok("set Keychron SOLID via VIA".into());
             }
@@ -122,7 +124,8 @@ pub fn set_hue(h: u8, s: u8) -> Result<String, String> {
             }
             SOLID.store(true, Ordering::Relaxed);
         }
-        via_cmd(file, &[0x07, 0x03, 0x04, h, s]).ok_or_else(|| "Keychron hue failed".to_string())?;
+        via_cmd(file, &[0x07, 0x03, 0x04, h, s])
+            .ok_or_else(|| "Keychron hue failed".to_string())?;
         Ok("set Keychron SOLID hue".into())
     })
 }
@@ -202,7 +205,8 @@ fn enter_solid(file: &mut std::fs::File, rgb: [u8; 3]) -> Result<(), String> {
         }
     }
     let hsv = rgb_to_hsv(rgb);
-    via_cmd(file, &[0x07, 0x03, 0x04, hsv[0], hsv[1]]).ok_or_else(|| "Keychron SOLID failed".to_string())?;
+    via_cmd(file, &[0x07, 0x03, 0x04, hsv[0], hsv[1]])
+        .ok_or_else(|| "Keychron SOLID failed".to_string())?;
     Ok(())
 }
 
@@ -210,7 +214,8 @@ fn enter_direct(file: &mut std::fs::File) -> Result<(), String> {
     SOLID.store(false, Ordering::Relaxed);
     for pkt in via_direct_packets() {
         if pkt.first() == Some(&CMD) {
-            xfer(file, SET_TYPE, &[TYPE_SOLID]).ok_or_else(|| "Keychron Direct type failed".to_string())?;
+            xfer(file, SET_TYPE, &[TYPE_SOLID])
+                .ok_or_else(|| "Keychron Direct type failed".to_string())?;
         } else {
             via_cmd(file, &pkt).ok_or_else(|| "Keychron custom failed".to_string())?;
         }

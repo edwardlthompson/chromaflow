@@ -76,7 +76,8 @@ pub fn apply(advanced: bool, extra: Option<&str>) -> Result<Value, String> {
     let out = cmd.output().map_err(|e| e.to_string())?;
     let stdout = String::from_utf8_lossy(&out.stdout);
     let stderr = String::from_utf8_lossy(&out.stderr);
-    json_from_output(&stdout).ok_or_else(|| brief(&format!("pkexec apply failed: {stderr}{stdout}")))
+    json_from_output(&stdout)
+        .ok_or_else(|| brief(&format!("pkexec apply failed: {stderr}{stdout}")))
 }
 
 fn json_from_output(stdout: &str) -> Option<Value> {

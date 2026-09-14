@@ -102,7 +102,11 @@ fn sync_sdk(frames: Vec<LedFrame>, pushing: bool, original: Vec<LedFrame>) -> Ve
             push(ses, &frames)
         };
         return match pushed {
-            Ok(()) => written_rows(if original.is_empty() { &frames } else { &original }),
+            Ok(()) => written_rows(if original.is_empty() {
+                &frames
+            } else {
+                &original
+            }),
             Err(_) => {
                 if let Some(mut ses) = guard.take() {
                     close(&mut ses.stream);
@@ -263,7 +267,10 @@ fn pull(ses: &mut Session) -> Result<Vec<ColorFrame>, String> {
         }
         ses.names[idx] = dev.name.clone();
         let mode = mode_name(&dev);
-        if !mode.is_empty() && !mode.eq_ignore_ascii_case("direct") && !mode.eq_ignore_ascii_case("custom") {
+        if !mode.is_empty()
+            && !mode.eq_ignore_ascii_case("direct")
+            && !mode.eq_ignore_ascii_case("custom")
+        {
             ses.painted[idx] = false;
         }
         rows.push(ColorFrame {
@@ -370,7 +377,10 @@ mod tests {
                 name: name.clone(),
                 colors: colors.clone(),
             }]);
-            assert_eq!(rows[0].led_colors, colors, "written pixels must match the host frame");
+            assert_eq!(
+                rows[0].led_colors, colors,
+                "written pixels must match the host frame"
+            );
             std::thread::sleep(std::time::Duration::from_millis(delay_ms));
         }
     }

@@ -65,7 +65,11 @@ fn probe_cached(fresh: bool) -> OpenRgbProbe {
         }
         if let Some(at) = g.fail_at {
             if now.saturating_duration_since(at) < NEG {
-                return g.ok.as_ref().map(|(_, p)| p.clone()).unwrap_or_else(|| unreachable_probe(sandboxed, "SDK probe cached miss"));
+                return g
+                    .ok
+                    .as_ref()
+                    .map(|(_, p)| p.clone())
+                    .unwrap_or_else(|| unreachable_probe(sandboxed, "SDK probe cached miss"));
             }
         }
     }
@@ -150,9 +154,10 @@ fn list_controllers(stream: &mut std::net::TcpStream) -> Result<Vec<RgbDevice>, 
     let mut devices = Vec::new();
     for idx in 0..n {
         let data = crate::openrgb_proto::request_data(stream, idx as u32, proto)?;
-        let mut dev = crate::openrgb_parse::parse_controller_at(&data, proto).unwrap_or_else(|_| {
-            RgbDevice::sdk(parse_name(&data).unwrap_or_else(|| format!("controller {idx}")))
-        });
+        let mut dev =
+            crate::openrgb_parse::parse_controller_at(&data, proto).unwrap_or_else(|_| {
+                RgbDevice::sdk(parse_name(&data).unwrap_or_else(|| format!("controller {idx}")))
+            });
         if dev.name.is_empty() {
             dev.name = format!("controller {idx}");
         }

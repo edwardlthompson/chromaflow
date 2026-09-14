@@ -78,6 +78,9 @@ mod tests {
             return;
         }
         let _ = detect();
-        assert!(!systemctl_quiet("is-enabled", "this-unit-does-not-exist-chromaflow"));
+        assert!(!systemctl_quiet(
+            "is-enabled",
+            "this-unit-does-not-exist-chromaflow"
+        ));
     }
 }
