@@ -1,4 +1,4 @@
-//! Fusion color via liquidctl analog; D_LED extra via fusion-hid.py. Never vendors rgb_fusion2.py.
+//! Fusion color via fusion-hid.py; liquidctl analog is optional. Never vendors rgb_fusion2.py.
 
 use std::process::Command;
 
@@ -19,11 +19,20 @@ pub fn channels(device: &str) -> &'static [&'static str] {
     }
 }
 
+pub fn hid_kind(device: &str) -> &'static str {
+    let n = device.to_ascii_lowercase();
+    if n.contains("motherboard") {
+        "soft"
+    } else if n.contains("aio") {
+        "digital"
+    } else {
+        "uniform"
+    }
+}
+
 pub fn style(mode: &str) -> &'static str {
     let m = mode.to_ascii_lowercase();
-    if m.contains("cycle all") || m.contains("color-cycle") || m.contains("spectrum") {
-        "color-cycle"
-    } else if m.contains("breath") || m.contains("pulse") {
+    if m.contains("breath") || m.contains("pulse") {
         "pulse"
     } else if m.contains("flash") || m.contains("strobe") {
         "flash"
@@ -42,21 +51,10 @@ pub fn set_fusion(hex: &str) -> Result<String, String> {
 
 pub fn set_device(device: &str, hex: &str, mode: &str) -> Result<String, String> {
     let st = style(mode);
-    let n = device.to_ascii_lowercase();
-    if st == "fixed" && (n.contains("sync") || n.contains("aio")) {
-        if let Ok(msg) = hid_set(
-            if n.contains("sync") {
-                "uniform"
-            } else {
-                "digital"
-            },
-            hex,
-        ) {
-            if n.contains("sync") {
-                return Ok(msg);
-            }
-            let analog = set_on(channels(device), st, hex)?;
-            return Ok(format!("{analog}; {msg}"));
+    if st == "fixed" {
+        if let Ok(msg) = hid_set(hid_kind(device), hex) {
+            let _ = set_on(channels(device), st, hex);
+            return Ok(msg);
         }
     }
     set_on(channels(device), st, hex)
@@ -75,23 +73,11 @@ fn hid_set(kind: &str, hex: &str) -> Result<String, String> {
 }
 
 fn set_on(chans: &[&str], style: &str, hex: &str) -> Result<String, String> {
-    if style != "color-cycle" {
-        valid_hex(hex)?;
-    }
+    valid_hex(hex)?;
     let bin = bin();
     let mut n = 0u32;
     for ch in chans {
-        let ok = if style == "color-cycle" {
-            run(
-                &bin,
-                &[
-                    "-m", "Fusion", "--speed", "fastest", "set", ch, "color", style,
-                ],
-            )
-        } else {
-            run(&bin, &["-m", "Fusion", "set", ch, "color", style, hex])
-        };
-        if ok.is_ok() {
+        if run(&bin, &["-m", "Fusion", "set", ch, "color", style, hex]).is_ok() {
             n += 1;
         }
     }
@@ -128,7 +114,7 @@ fn run(bin: &str, args: &[&str]) -> Result<(), String> {
 
 #[cfg(test)]
 mod tests {
-    use super::{channels, set_fusion, style};
+    use super::{channels, hid_kind, set_fusion, style};
 
     #[test]
     fn rejects_empty_hex() {
@@ -140,7 +126,10 @@ mod tests {
             &["led2", "led5", "led6", "led7", "led8"]
         );
         assert_eq!(channels("Motherboard Fusion"), &["led1", "led3", "led4"]);
-        assert_eq!(style("Cycle All"), "color-cycle");
+        assert_eq!(hid_kind("Motherboard Fusion"), "soft");
+        assert_eq!(hid_kind("CPU AIO"), "digital");
+        assert_eq!(hid_kind("sync"), "uniform");
+        assert_eq!(style("Cycle All"), "fixed");
         assert_eq!(style("Breathing"), "pulse");
         assert_eq!(style("sync"), "fixed");
     }

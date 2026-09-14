@@ -15,6 +15,41 @@
 
 ```
 
+### 2026-09-14 — Product Release SBOM tag is CHANGELOG version
+- **Status:** Accepted
+- **Context:** Template `release.yml` required GitHub tags to equal `.template-version` (1.4.0), so product `v0.2.0` could not attach SBOM via the workflow.
+- **Decision:** `scripts/product-release-version.sh` reads the first CHANGELOG `[X.Y.Z]`. Tag gate and SBOM default tag use that. `.template-version` stays the bootstrap pin. Do not merge a template 1.5.0 Release Please PR.
+- **Alternatives considered:** Bump `.template-version` to 0.2.0 (rejected: that is the template pin). Use Cargo workspace 0.1.0 (rejected: GitHub Release is 0.2.0).
+- **Consequences:** `workflow_dispatch` / tag `v0.2.0` can attach SBOM. PWM unchanged.
+
+### 2026-09-14 — Fusion Apply without hidraw/liquidctl
+- **Status:** Accepted
+- **Context:** USB `048d:5702` is claimed by `fusion-hid.py serve` (usbfs), so hidraw is missing and `liquidctl list` is empty. Motherboard Apply still spawned liquidctl and failed. Cycle All’s lamp thread kept painting Fusion, so CPU usage never stuck.
+- **Decision:** `set_device` writes Fusion HID first (`soft` / `digital` / `uniform`); liquidctl analog is optional. Cycle All is host `fixed`, not firmware `color-cycle`. The Cycle All lamp thread no longer writes Fusion; Lighting ticks Fusion even while other lamps cycle.
+- **Alternatives considered:** Rebind usbhid (rejected: serve already owns usbfs). Firmware color-cycle for Fusion (rejected: unsynced, and it hid CPU usage).
+- **Consequences:** Motherboard and CPU AIO follow CPU usage / Apply while USB is present. PWM unchanged.
+
+### 2026-09-14 — Fusion rows follow hidraw 048d:5702
+- **Status:** Accepted
+- **Context:** OpenRGB is opt-in, `liquidctl list` is empty, and the ITE has no hidraw node, so Motherboard Fusion and CPU AIO vanished even though USB `048d:5702` is present.
+- **Decision:** Inventory injects Fusion from `/sys/bus/usb/devices` when hidraw is missing. `fusionTargets` lists both rows from that USB id or a liquidctl Fusion name. Native apply is still liquidctl + fusion-hid.
+- **Alternatives considered:** Keep liquidctl-list-only (rejected: empty list hid the lamps). Show the ITE HID as one Uncontrolled leftover (rejected: Apply path already exists).
+- **Consequences:** Lighting shows analog + AIO whenever the Fusion USB device enumerates. PWM unchanged.
+
+### 2026-09-14 — Automate leftover 0.2.0 HUMAN rows
+- **Status:** Accepted
+- **Context:** `/ship` left Actions PR permission, GitHub Release SBOM, and gtk-rs Medium on HUMAN.
+- **Decision:** Enable Actions write + PR approval via API. Publish GitHub Release `v0.2.0` on `main` with CycloneDX + OpenVEX (template `release.yml` still keys off `.template-version`, so do not dispatch it for product tags). Keep glib 0.18.5 until Tauri gtk-rs 0.20.
+- **Alternatives considered:** Merge a Release Please 1.5.0 PR (rejected: that is template version). Bump gtk-rs now (rejected: breaking Tauri 2).
+- **Consequences:** https://github.com/edwardlthompson/chromaflow/releases/tag/v0.2.0 holds SBOM assets. Do not merge a template 1.5.0 RP PR. PWM unchanged.
+
+### 2026-09-14 — Left rail uses even-height icons
+- **Status:** Accepted
+- **Context:** Tab names wasted rail width and did not grow with the window. `/ship` left GitHub Actions PR permission, Release SBOM, and gtk-rs/glib Medium on the table.
+- **Decision:** Four SVG buttons live in `.rail-slot` cells. Header is 3rem; each tab is `calc((100vh - 3rem) / 4)` so WebKitGTK tracks window height without depending on nested percentage grid. Icons scale to 55% of each slot. Incomplete 0.2.0 items stay as Sprint 34 HUMAN rows.
+- **Alternatives considered:** Keep text labels (rejected: user asked for large icons). `flex-grow` on `<button>` / nested flex / `1fr` on an absolutely positioned rail (rejected: WebKitGTK leaves them packed at the top). Cap icon `max-height` (rejected: they would not grow with a tall window).
+- **Consequences:** Session tab ids stay Cooling/Lighting/Profiles/Support. PWM unchanged.
+
 ### 2026-09-14 — Ship 0.2.0 with Medium glib / unmaintained unic on local audit
 - **Status:** Accepted
 - **Context:** `/ship` `upd audit --check` exits 6 on GHSA-wrw7-89jp-8q8g (Medium, `glib` 0.18.5) and unmaintained `proc-macro-error` / `unic-*` with no `fixed_version`. There is no High or Critical. `npm audit --audit-level=high` is clean. `glib` 0.20.0 is gtk-rs 0.18→0.20, not a patch/minor for Tauri 2.

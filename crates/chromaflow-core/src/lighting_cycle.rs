@@ -143,7 +143,6 @@ fn run_gpu() {
 }
 
 fn run_lamps() {
-    let mut n = 0u32;
     let mut last = None;
     while !STOP.load(Ordering::Relaxed) {
         let t0 = Instant::now();
@@ -153,12 +152,8 @@ fn run_lamps() {
             last = Some(hsv);
             let _ = keychron_apply::set_fill(rgb);
         }
-        let hex = format!("{:02X}{:02X}{:02X}", rgb[0], rgb[1], rgb[2]);
         let _ = crate::arena_apply::set_color(rgb);
         let _ = crate::prime_apply::set_live(rgb);
-        let kind = if n % 12 == 0 { "uniform" } else { "soft" };
-        let _ = crate::fusion_hid::set(kind, &hex);
-        n = n.wrapping_add(1);
         nap(t0, 120);
     }
 }

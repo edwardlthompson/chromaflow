@@ -85,7 +85,11 @@ export function arenaTargets(inventory) {
 }
 
 export function fusionTargets(inventory) {
-  if (!liquidctlList(inventory).some((n) => /fusion/i.test(n))) return [];
+  const hid = hidList(inventory).some(
+    (d) => String((d && d.vendor_id) || "").toLowerCase() === "048d"
+      && String((d && d.product_id) || "").toLowerCase() === "5702",
+  );
+  if (!hid && !liquidctlList(inventory).some((n) => /fusion/i.test(n))) return [];
   const row = (name, protocol, leds, led_names) => ({
     backend: "liquidctl",
     name,

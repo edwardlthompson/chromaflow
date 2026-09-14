@@ -2,6 +2,19 @@
 
 > Archive of finished BUILD_PLAN items.
 
+## Sprint 35 — Leftovers after Fusion list restore (2026-09-14)
+
+- ✅ [AGENT] Fusion Apply when USB `048d:5702` has no hidraw and `liquidctl list` is empty (`docs/features/fusion-usb-apply.md`)
+- ✅ [AGENT] GitHub Release SBOM/tag gate uses product version, not `.template-version` (`docs/features/product-release-sbom.md`)
+- ✅ [HUMAN] Review and land Unreleased (icon rail + Fusion USB list) — dirty tree, not on origin/main
+
+## Sprint 34 — Rail icons + leftover 0.2.0 ship (2026-09-14)
+
+- ✅ [AGENT] Replace tab names with large icons that share the rail height evenly (`docs/features/rail-icons.md`)
+- ✅ [HUMAN] Allow GitHub Actions to create and approve pull requests so Release Please can open a PR
+- ✅ [HUMAN] Run Actions → Release (`workflow_dispatch`) so the GitHub Release includes SBOM/OpenVEX
+- ✅ [HUMAN] Decide when to take gtk-rs 0.20 so glib 0.18.5 Medium (GHSA-wrw7-89jp-8q8g) can leave the local audit
+
 ## Sprint 33 — Lighting without OpenRGB (2026-09-14)
 
 - ✅ [AGENT] Kill OpenRGB by default; native Fusion/Keychron/Arena/Prime lighting

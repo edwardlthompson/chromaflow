@@ -9,6 +9,13 @@ Bootstrapped from [agent-project-bootstrap](https://github.com/edwardlthompson/a
 
 ## [Unreleased]
 
+### Changed
+
+- Left rail uses large icons instead of tab names; the four buttons split the vertical space evenly and scale with window height
+- Lighting lists Motherboard Fusion and CPU AIO when USB `048d:5702` is present, even if `liquidctl list` and hidraw are empty
+- Fusion Apply paints analog + AIO over the HID serve when hidraw and `liquidctl list` are empty; CPU usage on those rows is not overwritten by Cycle All
+- GitHub Release SBOM/tag gate matches CHANGELOG product version, not `.template-version`
+
 ## [0.2.0] - 2026-09-14
 
 ### Changed

@@ -24,6 +24,10 @@ TASKS = (
     "Run `openrgb --server` on this host for a live Lighting smoke",
     "Confirm take-over vs `fancontrol` / `coolercontrold` on this machine before any PWM write",
     "Live take-over smoke: confirm, RPM moves, close GUI → firmware failsafe",
+    "Allow GitHub Actions to create and approve pull requests so Release Please can open a PR",
+    "Run Actions → Release (`workflow_dispatch`) so the GitHub Release includes SBOM/OpenVEX",
+    "Decide when to take gtk-rs 0.20 so glib 0.18.5 Medium (GHSA-wrw7-89jp-8q8g) can leave the local audit",
+    "Review and land Unreleased (icon rail + Fusion USB list) — dirty tree, not on origin/main",
 )
 
 

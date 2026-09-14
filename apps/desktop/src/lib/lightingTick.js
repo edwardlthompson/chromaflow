@@ -132,6 +132,7 @@ export function startLightingTick({ getDevices, getPreview, setPreview, invoke, 
   let lastSig = "";
   let lastPaint = "";
   let lastHid = {};
+  let lastFusion = 0;
   let timer = 0;
   const my = (ui.tickId += 1);
   const loop = () => {
@@ -149,8 +150,38 @@ export function startLightingTick({ getDevices, getPreview, setPreview, invoke, 
       lastPaint = sig;
       setPreview(hex ? stampHostFrames(getPreview(), (devices || []).map((d) => ({ name: d.name, colors: [hex] }))) : stampHostFrames(getPreview(), frames));
     }
-    if (isTauri() && onLight && !ui.pausePoll && !inflight && !ui.cycleOn) {
+    if (isTauri() && onLight && !ui.pausePoll && !inflight) {
       const gen = ui.paintGen;
+      if (ui.cycleOn) {
+        if (now - lastFusion >= MOTION_MS) {
+          lastFusion = now;
+        inflight = true;
+        const work = Promise.resolve()
+          .then(async () => {
+            if (ui.pausePoll || ui.paintGen !== gen) return;
+            const jobs = [];
+            const seen = new Set();
+            const next = { ...lastHid };
+            for (const d of devices || []) {
+              if ((d && d.backend) !== "liquidctl") continue;
+              const row = hidFrame(d, ui.lastMode, ui.lastColor, now);
+              if (!row || seen.has(row.key) || lastHid[row.key] === row.hex) continue;
+              seen.add(row.key);
+              jobs.push(
+                invoke("lighting_apply", { backend: row.backend, device: row.device, color: row.color, mode: row.mode, led: null }).then(() => {
+                  next[row.key] = row.hex;
+                }),
+              );
+            }
+            lastHid = next;
+            await Promise.all(jobs);
+          })
+          .catch(() => {});
+        ui.paintBusy = work.finally(() => {
+          inflight = false;
+        });
+        }
+      } else {
       const motion = cadence === MOTION_MS;
       const push = Boolean(frames.length && (motion || sig !== lastSig));
       const snap = !hex && !frames.length && live;
@@ -196,6 +227,7 @@ export function startLightingTick({ getDevices, getPreview, setPreview, invoke, 
         ui.paintBusy = work.finally(() => {
           inflight = false;
         });
+      }
       }
     }
     timer = window.setTimeout(loop, cadence || (live ? SNAP_MS : METER_MS));

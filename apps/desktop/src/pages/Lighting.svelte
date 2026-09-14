@@ -272,6 +272,7 @@
     remember();
     applyMsg = n ? (isTauri() ? t["lighting.applyOk"] : t["lighting.applyNeedGui"]) : t["lighting.noEffects"];
     if (n) {
+      if (!wantsCycle(lastMode)) setHostCycle(false, invoke, isTauri);
       const t0 = performance.now();
       pushHostNow(t0);
       if (isTauri()) pushHidNow(devices, lastMode, lastColor, invoke, t0);

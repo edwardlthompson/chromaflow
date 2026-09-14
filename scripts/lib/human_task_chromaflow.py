@@ -127,6 +127,11 @@ def automate_tauri_dev_packages(root: Path, _cfg: dict) -> AttemptResult:
     return AttemptResult(1, "tauri-dev-apt", tail or "apt needs polkit/sudo password", True)
 
 
+from human_task_chromaflow_ship import (
+    automate_actions_pr_permission,
+    automate_glib_defer,
+    automate_release_sbom,
+)
 from human_task_chromaflow_live import (
     automate_openrgb_server,
     automate_pkexec_apply_stub,

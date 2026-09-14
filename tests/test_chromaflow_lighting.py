@@ -403,6 +403,8 @@ class LightingHidTests(unittest.TestCase):
         text = (ROOT / "crates/chromaflow-core/src/lighting.rs").read_text(encoding="utf-8")
         self.assertIn("HID_ID", text)
         self.assertIn("CHROMAFLOW_HIDRAW_SYS", text)
+        self.assertIn("CHROMAFLOW_USB_SYS", text)
+        self.assertIn("scan_usb_fusion", text)
         self.assertNotIn("set_pwm", text)
         self.assertIn("usb_rgb_not_in_openrgb", (ROOT / "crates/chromaflow-core/src/gaps.rs").read_text(encoding="utf-8"))
 
@@ -754,7 +756,11 @@ class LightingHidTests(unittest.TestCase):
         fusion_rs = (ROOT / "crates/chromaflow-core/src/liquidctl_apply.rs").read_text(encoding="utf-8")
         self.assertIn("set_fusion_sync", fusion_rs)
         self.assertIn("set_device", fusion_rs)
+        self.assertIn("hid_kind", fusion_rs)
+        self.assertIn('"soft"', fusion_rs)
+        self.assertIn("let _ = set_on", fusion_rs)
         self.assertIn("led6", fusion_rs)
+        self.assertNotIn('"color-cycle"', fusion_rs)
         self.assertIn("fusion-hid.py", fusion_rs)
         hid_py = (ROOT / "scripts/fusion-hid.py").read_text(encoding="utf-8")
         self.assertIn("digital", hid_py)
@@ -773,6 +779,8 @@ class LightingHidTests(unittest.TestCase):
         page = (ROOT / "apps/desktop/src/pages/Lighting.svelte").read_text(encoding="utf-8")
         tick = (ROOT / "apps/desktop/src/lib/lightingTick.js").read_text(encoding="utf-8")
         self.assertIn("pushHidNow", page)
+        self.assertIn("wantsCycle(lastMode)", page)
+        self.assertIn("setHostCycle(false", page)
         self.assertIn("pushFusionNow", page)
         self.assertIn("lighting_broadcast", page)
         self.assertIn("setHostCycle", page)
@@ -780,6 +788,8 @@ class LightingHidTests(unittest.TestCase):
         self.assertIn("wantsCycle", tick)
         self.assertIn("ui.cycleOn", tick)
         self.assertIn("if (ui.cycleOn) return PREVIEW_MS", tick)
+        self.assertIn("lastFusion", tick)
+        self.assertIn('!== "liquidctl"', tick)
         self.assertIn("PREVIEW_MS = 32", tick)
         self.assertIn("bumpPaint", page)
         self.assertIn("pushHidNow", tick)
@@ -807,7 +817,7 @@ class LightingHidTests(unittest.TestCase):
         self.assertIn("period_ms", cycle_rs)
         self.assertIn("current_hue", cycle_rs)
         self.assertIn("run_lamps", cycle_rs)
-        self.assertIn("soft", cycle_rs)
+        self.assertNotIn("fusion_hid", cycle_rs)
         self.assertIn("set_fill", cycle_rs)
         self.assertIn("prime_apply::set_live", cycle_rs)
         self.assertIn("prime_apply::save", cycle_rs)
@@ -883,7 +893,11 @@ class LightingHidTests(unittest.TestCase):
                 "const fusion = lightingDevices({ liquidctl_devices: ['Gigabyte RGB Fusion 2.0 5702 Controller'], hid_rgb: [], openrgb: { controllers: [] } });"
                 "if (fusion.filter((d) => d.backend === 'liquidctl').length !== 2) throw new Error('fusion split');"
                 "if (!fusion.some((d) => d.name === 'CPU AIO')) throw new Error('aio');"
-                "if (!fusion.some((d) => d.name === 'Motherboard Fusion')) throw new Error('board');",
+                "if (!fusion.some((d) => d.name === 'Motherboard Fusion')) throw new Error('board');"
+                "const hidOnly = lightingDevices({ liquidctl_devices: [], hid_rgb: ["
+                "{ name: 'ITE', vendor_id: '048d', product_id: '5702', readable: true }"
+                "], openrgb: { controllers: [] } });"
+                "if (hidOnly.filter((d) => d.backend === 'liquidctl').length !== 2) throw new Error('hid fusion');",
             ],
             cwd=ROOT,
             text=True,

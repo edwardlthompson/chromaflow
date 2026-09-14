@@ -66,7 +66,46 @@ pub fn scan(sys_root: &Path, nodes: &[DevNode]) -> Vec<HidRgb> {
             product: usb_field(sys_root, Path::new(base), "product"),
         });
     }
+    scan_usb_fusion(&mut best);
     best.into_values().take(32).collect()
+}
+
+fn usb_bus_root() -> PathBuf {
+    std::env::var("CHROMAFLOW_USB_SYS")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| PathBuf::from("/sys/bus/usb/devices"))
+}
+
+fn scan_usb_fusion(best: &mut BTreeMap<(String, String), HidRgb>) {
+    let usb = usb_bus_root();
+    let Ok(entries) = fs::read_dir(&usb) else {
+        return;
+    };
+    for ent in entries.flatten() {
+        let dir = ent.path();
+        let vid = pad4(&sysfs_text(&dir.join("idVendor")));
+        let pid = pad4(&sysfs_text(&dir.join("idProduct")));
+        if vid != "048d" || pid != "5702" || best.contains_key(&(vid.clone(), pid.clone())) {
+            continue;
+        }
+        let Some((kind, name)) = classify(&vid, &pid, "") else {
+            continue;
+        };
+        best.insert(
+            (vid.clone(), pid.clone()),
+            HidRgb {
+                path: dir.display().to_string(),
+                name,
+                kind,
+                vendor_id: vid,
+                product_id: pid,
+                readable: false,
+                hid_name: String::new(),
+                manufacturer: sysfs_text(&dir.join("manufacturer")),
+                product: sysfs_text(&dir.join("product")),
+            },
+        );
+    }
 }
 
 const LIQUID_TTL: Duration = Duration::from_secs(15);
@@ -265,5 +304,13 @@ mod tests {
             parse_liquidctl("Device #0: Gigabyte RGB Fusion 2.0 5702 Controller\n"),
             ["Gigabyte RGB Fusion 2.0 5702 Controller"]
         );
+        let usb = std::path::PathBuf::from("target/usb-fusion-test");
+        let node = usb.join("3-1");
+        let _ = std::fs::create_dir_all(&node);
+        std::fs::write(node.join("idVendor"), "048d\n").unwrap();
+        std::fs::write(node.join("idProduct"), "5702\n").unwrap();
+        std::env::set_var("CHROMAFLOW_USB_SYS", &usb);
+        let rows = scan(Path::new("/no-hidraw"), &[]);
+        assert!(rows.iter().any(|r| r.vendor_id == "048d" && r.product_id == "5702"));
     }
 }

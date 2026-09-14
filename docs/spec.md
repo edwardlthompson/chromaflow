@@ -14,7 +14,7 @@
 |----|-------|------------|
 | FR-1 | As a user I run `chromaflow sensors` / `devices` / `rescan` so I see JSON inventory | hwmon + hidraw + i2c + liquidctl-if-present + OpenRGB localhost probe; no PWM writes |
 | FR-2 | As a user I run Support dry-run so I see a checklist | JSON would_* fields; no apt/modprobe/udev mutation |
-| FR-3 | As a user I open the GUI tabs Cooling / Lighting / Profiles / Support | English UI; curve placeholder is display-only; Support shows dry-run |
+| FR-3 | As a user I open the GUI pages Cooling / Lighting / Profiles / Support from large rail icons | English UI; icons share rail height evenly; Support shows dry-run |
 | FR-4 | As a user I am told why a device is missing | `gaps[]` uses HARDWARE.md ids; Windows-only is not faked |
 | FR-5 | As a user I am warned about other fan daemons | `conflicts[]` includes fancontrol, coolercontrold, fan2go |
 Open vs original brief ([`docs/PRODUCT_GAPS.md`](PRODUCT_GAPS.md)):

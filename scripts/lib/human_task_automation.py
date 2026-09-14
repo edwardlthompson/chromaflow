@@ -58,6 +58,7 @@ from human_task_chromaflow import (
     automate_openrgb_server, automate_pkexec_apply_stub, automate_pwm_live_smoke,
     automate_pwm_takeover, automate_tauri_dev_packages,
 )
+from human_task_chromaflow_ship import SHIP_HUMAN_RULES
 HUMAN_RULES: list[tuple[re.Pattern[str], str, object]] = [
     (re.compile(r"webkit2gtk|Tauri \*\*dev\*\*|libgtk-3-dev", re.I), "human", automate_tauri_dev_packages),
     (re.compile(r"Create GitHub repo", re.I), "human", automate_create_github_repo),
@@ -85,6 +86,7 @@ HUMAN_RULES: list[tuple[re.Pattern[str], str, object]] = [
     (re.compile(r"mcp\.foss\.example|mcp\.json", re.I), "human", automate_mcp_copy),
     (re.compile(r"Dependabot interval|disable automerge", re.I), "human", automate_dependabot_weekly),
     (re.compile(r"CODEOWNERS|Watch repo Issues", re.I), "human", automate_codeowners_about),
+    *SHIP_HUMAN_RULES,
     (re.compile(r"Release Please|Approve/merge Release", re.I), "human", automate_release_please_merge),
     (re.compile(r"Lightroom", re.I), "human", automate_lightroom_smoke),
     (re.compile(r"Private vulnerability reporting", re.I), "human", automate_private_vuln_reporting),

@@ -2545,6 +2545,13 @@
       "owner": "maintainer"
     },
     {
+      "path": "scripts/product-release-version.sh",
+      "purpose": "Print CHANGELOG product semver for GitHub Release SBOM/tag gate",
+      "read_when": "bootstrap_session_start",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
       "path": "scripts/wait-release-sbom.sh",
       "purpose": "Poll GitHub Release for sbom.cyclonedx.json",
       "read_when": "bootstrap_session_start",

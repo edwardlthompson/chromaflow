@@ -11,9 +11,9 @@
   import { researchDevices } from "./lib/research.js";
   import { setHostCycle, wantsCycle } from "./lib/lightingTick.js";
   import { startGaugeTick } from "./lib/gaugesTick.js";
+  import RailNav from "./lib/RailNav.svelte";
   import t from "./locales/en.json";
 
-  const tabs = ["Cooling", "Lighting", "Profiles", "Support"];
   const boot = applySession(loadLocal());
   let tab = boot.tab;
   let inventory = fixture;
@@ -122,13 +122,7 @@
     </p>
   </header>
   <div class="fc-body">
-    <nav class="fc-rail" aria-label="Primary">
-      {#each tabs as name}
-        <button type="button" aria-current={tab === name ? "page" : undefined} on:click={() => setTab(name)}>
-          {name}
-        </button>
-      {/each}
-    </nav>
+    <RailNav {tab} {setTab} />
     <main
       class:page={tab !== "Cooling"}
       on:scroll={() => {

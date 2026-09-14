@@ -103,5 +103,29 @@ class DebPackagingTests(unittest.TestCase):
             self.assertNotIn("OpenRGB.desktop", names)
 
 
+class ProductReleaseSbomTests(unittest.TestCase):
+    def test_release_tag_uses_changelog_not_template(self) -> None:
+        release = (ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
+        script = ROOT / "scripts" / "product-release-version.sh"
+        text = script.read_text(encoding="utf-8")
+        self.assertIn("product-release-version.sh", release)
+        self.assertIn("CHANGELOG product version", release)
+        self.assertNotIn("does not match .template-version", release)
+        self.assertNotIn("cat .template-version", release)
+        self.assertIn("CHANGELOG.md", text)
+        self.assertNotIn("set_pwm", text)
+        self.assertNotIn("i2cdump", text)
+        proc = subprocess.run(
+            ["bash", str(script)],
+            check=True,
+            capture_output=True,
+            text=True,
+            cwd=str(ROOT),
+        )
+        self.assertEqual(proc.stdout.strip(), "0.2.0")
+        spec = (ROOT / "docs/features/product-release-sbom.md").read_text(encoding="utf-8")
+        self.assertIn("product-release-version.sh", spec)
+
+
 if __name__ == "__main__":
     unittest.main()

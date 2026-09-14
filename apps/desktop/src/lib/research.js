@@ -24,14 +24,10 @@ export function hidHasBackend(d, inventory) {
   const pid = String((d && d.product_id) || "").toLowerCase();
   if (vid === "1038" && (pid === "1a00" || pid === "1856")) return true;
   if (vid === "3434") return Boolean(d && d.readable);
-  const sdk = sdkBlob(inventory);
-  const liquid = liquidBlob(inventory);
-  if (vid === "048d" && pid === "5702") {
-    return /aorus|gigabyte|fusion/.test(sdk) || liquid.includes("fusion");
-  }
+  if (vid === "048d" && pid === "5702") return true;
   const name = String((d && d.name) || "").toLowerCase();
   if (!name) return false;
-  return sdk.includes(name) || controlledNames(inventory).includes(name);
+  return sdkBlob(inventory).includes(name) || controlledNames(inventory).includes(name);
 }
 
 function controlledNames(inventory) {
