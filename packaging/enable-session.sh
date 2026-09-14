@@ -3,8 +3,8 @@
 set -e
 systemctl --user daemon-reload >/dev/null 2>&1 || true
 systemctl --user enable chromaflowd.service >/dev/null 2>&1 || true
-systemctl --user enable chromaflow-sdk.service >/dev/null 2>&1 || true
-systemctl --user enable chromaflow-gui.service >/dev/null 2>&1 || true
+systemctl --user disable --now chromaflow-sdk.service >/dev/null 2>&1 || true
+systemctl --user enable --now chromaflow-gui.service >/dev/null 2>&1 || true
 if command -v gsettings >/dev/null 2>&1; then
   python3 - <<'PY' || true
 import ast

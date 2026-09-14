@@ -19,6 +19,7 @@ pub fn collect_inventory() -> Inventory {
         i2c: nodes::scan_prefix(&dev_root, "i2c-"),
         liquidctl: probes::liquidctl(),
         liquidctl_devices: lighting::liquidctl_devices(),
+        gpu_rgb: crate::gpu_apply::devices(),
         openrgb: probes::openrgb(),
         kernel_release: kernel_release(),
         gaps: Vec::new(),
@@ -41,6 +42,7 @@ pub fn collect_cooling() -> Inventory {
             detail: String::new(),
         },
         liquidctl_devices: Vec::new(),
+        gpu_rgb: Vec::new(),
         openrgb: OpenRgbProbe {
             status: "skipped".into(),
             detail: String::new(),

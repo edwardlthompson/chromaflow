@@ -4,7 +4,9 @@ use crate::types::GpuFan;
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 use std::process::Command;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
+use std::thread;
 use std::time::{Duration, Instant};
 
 fn display() -> String {
@@ -31,19 +33,41 @@ pub fn command() -> Command {
 
 const FAN_TTL: Duration = Duration::from_secs(2);
 static GPU_FANS: Mutex<Option<(Instant, Vec<GpuFan>)>> = Mutex::new(None);
+static REFRESHING: AtomicBool = AtomicBool::new(false);
 
 pub fn snapshot() -> Vec<GpuFan> {
     let now = Instant::now();
-    if let Ok(g) = GPU_FANS.lock() {
-        if let Some((at, v)) = g.as_ref() {
-            if now.saturating_duration_since(*at) < FAN_TTL {
-                return v.clone();
-            }
+    let stale = GPU_FANS
+        .lock()
+        .unwrap_or_else(|p| p.into_inner())
+        .clone();
+    if let Some((at, v)) = stale {
+        if now.saturating_duration_since(at) >= FAN_TTL {
+            kick_refresh();
         }
+        return v;
     }
-    let fans = query().map(|t| parse(&t)).unwrap_or_default();
+    store(query_fans())
+}
+
+fn kick_refresh() {
+    if REFRESHING.swap(true, Ordering::SeqCst) {
+        return;
+    }
+    let _ = thread::Builder::new().name("nvidia-fans".into()).spawn(|| {
+        let fans = query_fans();
+        store(fans);
+        REFRESHING.store(false, Ordering::SeqCst);
+    });
+}
+
+fn query_fans() -> Vec<GpuFan> {
+    query().map(|t| parse(&t)).unwrap_or_default()
+}
+
+fn store(fans: Vec<GpuFan>) -> Vec<GpuFan> {
     if let Ok(mut g) = GPU_FANS.lock() {
-        *g = Some((now, fans.clone()));
+        *g = Some((Instant::now(), fans.clone()));
     }
     fans
 }

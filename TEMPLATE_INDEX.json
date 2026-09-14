@@ -3043,6 +3043,13 @@
       "owner": "agent"
     },
     {
+      "path": "scripts/fetch-openrgb-device-index.sh",
+      "purpose": "Write OpenRGB detector identity CSV from a pinned clone (never vendors C++)",
+      "read_when": "feature_work",
+      "update_when": "milestone_boundary",
+      "owner": "agent"
+    },
+    {
       "path": "scripts/zenity-askpass.sh",
       "purpose": "SUDO_ASKPASS helper using zenity for local HUMAN automation",
       "read_when": "feature_work",

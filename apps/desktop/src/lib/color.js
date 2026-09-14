@@ -78,6 +78,31 @@ export function hsvToHex(h, s, v) {
   return rgbToHex(rgb.r, rgb.g, rgb.b);
 }
 
+/** Same 16-bit rainbow as Rust lighting_cycle::rgb16. Local preview only. */
+export function periodMs(speed) {
+  const s = Math.max(8, Number(speed) || 128);
+  return Math.min(40000, Math.max(16000, Math.floor(2500000 / s)));
+}
+
+export function phase16(nowMs, speed) {
+  const period = Math.max(1, periodMs(speed));
+  const ms = Math.floor(Number(nowMs) % period);
+  return Math.floor((ms * 65536) / period) & 65535;
+}
+
+export function rgb16(h) {
+  const x = (h & 65535) * 6;
+  const region = Math.floor(x / 65536);
+  const t = Math.floor(((x % 65536) * 255) / 65535);
+  const q = 255 - t;
+  if (region === 0) return [255, t, 0];
+  if (region === 1) return [q, 255, 0];
+  if (region === 2) return [0, 255, t];
+  if (region === 3) return [0, q, 255];
+  if (region === 4) return [t, 0, 255];
+  return [255, 0, q];
+}
+
 export function hexToHsv(raw) {
   const rgb = hexToRgb(raw);
   return rgb ? rgbToHsv(rgb.r, rgb.g, rgb.b) : null;

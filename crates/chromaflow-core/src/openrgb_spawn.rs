@@ -4,14 +4,24 @@ use crate::openrgb_engine::{dest_path, share_dir};
 use crate::openrgb_proto::{connect, lock_sdk};
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::{Child, Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Mutex;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 static SPAWNING: AtomicBool = AtomicBool::new(false);
+static CHILD: Mutex<Option<Child>> = Mutex::new(None);
+static HOLD_UNTIL: Mutex<Option<Instant>> = Mutex::new(None);
+
+pub fn sdk_opt_in() -> bool {
+    std::env::var("CHROMAFLOW_OPENRGB_SDK").ok().as_deref() == Some("1")
+}
 
 pub fn spawn_allowed() -> bool {
+    if !sdk_opt_in() {
+        return false;
+    }
     if std::env::var("CHROMAFLOW_NO_SPAWN").ok().as_deref() == Some("1") {
         return false;
     }
@@ -52,14 +62,75 @@ fn pid_path() -> PathBuf {
     share_dir().join("openrgb.pid")
 }
 
+fn sibling_pid() -> Option<u32> {
+    let raw = fs::read_to_string(pid_path()).ok()?;
+    let pid: u32 = raw.trim().parse().ok()?;
+    (pid >= 2).then_some(pid)
+}
+
+fn proc_state(stat: &str) -> Option<char> {
+    stat.rsplit_once(')')?.1.trim().chars().next()
+}
+
+fn proc_running(pid: u32) -> bool {
+    let text = fs::read_to_string(format!("/proc/{pid}/stat")).unwrap_or_default();
+    matches!(proc_state(&text), Some(s) if s != 'Z' && s != 'X')
+}
+
+fn reap_child() {
+    let mut g = CHILD.lock().unwrap_or_else(|p| p.into_inner());
+    let Some(ch) = g.as_mut() else {
+        return;
+    };
+    match ch.try_wait() {
+        Ok(Some(_)) | Err(_) => {
+            *g = None;
+            let _ = fs::remove_file(pid_path());
+        }
+        Ok(None) => {}
+    }
+}
+
 fn pid_alive() -> bool {
-    let Ok(raw) = fs::read_to_string(pid_path()) else {
-        return false;
-    };
-    let Ok(pid) = raw.trim().parse::<u32>() else {
-        return false;
-    };
-    Path::new(&format!("/proc/{pid}")).exists()
+    reap_child();
+    if CHILD.lock().unwrap_or_else(|p| p.into_inner()).is_some() {
+        return true;
+    }
+    sibling_pid().is_some_and(proc_running)
+}
+
+fn spawn_held() -> bool {
+    let g = HOLD_UNTIL.lock().unwrap_or_else(|p| p.into_inner());
+    matches!(*g, Some(t) if Instant::now() < t)
+}
+
+fn hold_spawn() {
+    *HOLD_UNTIL.lock().unwrap_or_else(|p| p.into_inner()) =
+        Some(Instant::now() + Duration::from_secs(30));
+}
+
+fn store_child(child: Child) {
+    let mut g = CHILD.lock().unwrap_or_else(|p| p.into_inner());
+    if let Some(mut old) = g.take() {
+        let _ = old.kill();
+        let _ = old.wait();
+    }
+    *g = Some(child);
+}
+
+fn apply_x11(cmd: &mut Command) {
+    let dpy = std::env::var("CHROMAFLOW_DISPLAY")
+        .or_else(|_| std::env::var("DISPLAY"))
+        .unwrap_or_else(|_| ":0".into());
+    cmd.env("DISPLAY", &dpy);
+    if std::env::var_os("XAUTHORITY").is_none() {
+        if let Ok(home) = std::env::var("HOME") {
+            let xa = PathBuf::from(home).join(".Xauthority");
+            if xa.is_file() {
+                cmd.env("XAUTHORITY", xa);
+            }
+        }
+    }
 }
 
 fn wait_port() -> bool {
@@ -92,6 +163,7 @@ fn spawn_bin(bin: &Path) -> Result<(), String> {
         .map_err(|e| e.to_string())?;
     let err_log = log.try_clone().map_err(|e| e.to_string())?;
     let mut cmd = Command::new(bin);
+    apply_x11(&mut cmd);
     if bin
         .extension()
         .and_then(|e| e.to_str())
@@ -113,10 +185,13 @@ fn spawn_bin(bin: &Path) -> Result<(), String> {
         .spawn()
         .map_err(|e| fuse_hint("", &e.to_string()))?;
     let _ = fs::write(pid_path(), format!("{}\n", child.id()));
-    std::mem::forget(child);
+    store_child(child);
     if wait_port() {
+        *HOLD_UNTIL.lock().unwrap_or_else(|p| p.into_inner()) = None;
         return Ok(());
     }
+    reap_child();
+    hold_spawn();
     let log_txt = fs::read_to_string(log_path).unwrap_or_default();
     Err(fuse_hint(&log_txt, "OpenRGB engine started but 127.0.0.1:6742 stayed down"))
 }
@@ -133,8 +208,12 @@ pub fn ensure_sdk() {
     if connect().is_ok() {
         return;
     }
+    reap_child();
     if pid_alive() {
         let _ = wait_port();
+        return;
+    }
+    if spawn_held() {
         return;
     }
     let Some(bin) = resolve_bin() else {
@@ -149,6 +228,42 @@ pub fn ensure_sdk() {
     }
     let _ = spawn_bin(&bin);
     SPAWNING.store(false, Ordering::SeqCst);
+}
+
+/// SIGTERM the OpenRGB pid file only. Then spawn again.
+pub fn restart_sdk_once() -> bool {
+    if !spawn_allowed() {
+        return false;
+    }
+    {
+        let mut g = CHILD.lock().unwrap_or_else(|p| p.into_inner());
+        if let Some(mut ch) = g.take() {
+            let _ = ch.kill();
+            let _ = ch.wait();
+        }
+    }
+    if let Some(pid) = sibling_pid() {
+        if proc_running(pid) {
+            let _ = Command::new("kill")
+                .args(["-TERM", &pid.to_string()])
+                .status();
+            for _ in 0..25 {
+                if !proc_running(pid) {
+                    break;
+                }
+                thread::sleep(Duration::from_millis(200));
+            }
+            if proc_running(pid) {
+                return false;
+            }
+        }
+    }
+    let _ = fs::remove_file(pid_path());
+    SPAWNING.store(false, Ordering::SeqCst);
+    *HOLD_UNTIL.lock().unwrap_or_else(|p| p.into_inner()) = None;
+    crate::openrgb::drop_probe_cache();
+    ensure_sdk();
+    true
 }
 
 pub fn engine_missing() -> bool {
@@ -193,11 +308,15 @@ mod tests {
         std::env::set_var("CHROMAFLOW_ALLOW_SPAWN", "1");
         ensure_sdk();
         assert!(!marker.exists());
+        assert!(!restart_sdk_once());
         std::env::remove_var("CHROMAFLOW_NO_SPAWN");
         std::env::remove_var("CHROMAFLOW_ALLOW_SPAWN");
         std::env::remove_var("CHROMAFLOW_OPENRGB");
         assert!(!forbidden(Path::new("/usr/libexec/chromaflow/OpenRGB.AppImage")));
         assert!(forbidden(Path::new("/home/u/.wine/openrgb.exe")));
+        assert_eq!(proc_state("3116 (OpenRGB) Z 2746"), Some('Z'));
+        assert_eq!(proc_state("3116 (OpenRGB) S 2746"), Some('S'));
+        assert!(!matches!(proc_state("3116 (OpenRGB) Z 2746"), Some(s) if s != 'Z' && s != 'X'));
         let _ = engine_missing();
     }
 }

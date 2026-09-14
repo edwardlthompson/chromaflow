@@ -1,9 +1,10 @@
 /** Quiet / Balanced / Performance graphs. Never write PWM. */
 
 export const PRESETS = [
-  { id: "quiet", points: [[30, 20], [55, 22], [70, 28], [82, 50], [90, 100]] },
-  { id: "balanced", points: [[30, 20], [50, 40], [70, 70], [85, 100]] },
-  { id: "performance", points: [[30, 35], [45, 60], [60, 85], [75, 100]] },
+  { id: "quiet", points: [[25, 20], [55, 22], [70, 28], [82, 50], [90, 100]] },
+  { id: "balanced", points: [[25, 20], [50, 40], [70, 70], [85, 100]] },
+  { id: "performance", points: [[25, 35], [45, 60], [60, 85], [75, 100]] },
+  { id: "full", points: [[25, 100], [90, 100]] },
 ];
 
 export function presetPoints(id) {
@@ -37,7 +38,7 @@ export function tunedCurve(minDuty, maxDuty) {
 const PLOT = { l: 24, t: 12, w: 168, h: 76 };
 
 export function plotX(t) {
-  return PLOT.l + ((Number(t) - 20) / 80) * PLOT.w;
+  return PLOT.l + ((Number(t) - 25) / 75) * PLOT.w;
 }
 
 export function plotY(p) {

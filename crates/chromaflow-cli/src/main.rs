@@ -1,10 +1,14 @@
 use chromaflow_core::lighting_apply;
+use chromaflow_core::lighting_broadcast;
+use chromaflow_core::lighting_cycle;
 use chromaflow_core::profiles;
 use chromaflow_core::support;
 use chromaflow_core::{collect_inventory, refuse_if_root};
 use std::env;
 use std::path::PathBuf;
 use std::process::ExitCode;
+use std::thread;
+use std::time::{Duration, Instant};
 
 mod cooling;
 mod daemon;
@@ -20,7 +24,7 @@ fn print_help() {
         "chromaflow — unprivileged inventory CLI\n\
          Usage: chromaflow <sensors|devices|rescan|support|profiles|daemon|cooling|rgb> [...]\n\
          support: [--advanced] [--apply] [--only NAME]\n\
-         rgb: --backend openrgb|liquidctl|arena|prime --device NAME --color RRGGBB [--mode NAME] [--led N]\n\
+         rgb: --backend openrgb|liquidctl|arena|prime|keychron|msi_gpu --device NAME --color RRGGBB [--mode NAME] [--led N] [--broadcast] [--cycle] [--seconds N] [--poll]\n\
          daemon: --dry-run | --watchdog | --failsafe | --sdk\n\
          cooling: --takeover\n\
          Do not run as root. PWM duty only via --watchdog or cooling --takeover (never silent 0%)."
@@ -127,12 +131,26 @@ fn main() -> ExitCode {
     }
 }
 
+fn print_keychron_poll() {
+    let fx = chromaflow_core::keychron_apply::poll_effect();
+    let hue = chromaflow_core::keychron_apply::poll_hue();
+    println!(
+        "keychron effect={} hue={}",
+        fx.map(|n| n.to_string()).unwrap_or_else(|| "none".into()),
+        hue.map(|n| n.to_string()).unwrap_or_else(|| "none".into()),
+    );
+}
+
 fn rgb_cmd(rest: &[String]) -> ExitCode {
     let mut backend = "openrgb".to_string();
     let mut device = String::new();
     let mut color = String::new();
     let mut mode = String::new();
     let mut led: Option<u16> = None;
+    let mut broadcast = false;
+    let mut cycle = false;
+    let mut poll = false;
+    let mut seconds = 3u64;
     let mut i = 0;
     while i < rest.len() {
         match rest[i].as_str() {
@@ -156,11 +174,79 @@ fn rgb_cmd(rest: &[String]) -> ExitCode {
                 led = rest.get(i + 1).and_then(|s| s.parse().ok());
                 i += 2;
             }
+            "--seconds" => {
+                seconds = rest
+                    .get(i + 1)
+                    .and_then(|s| s.parse().ok())
+                    .filter(|n| *n > 0)
+                    .unwrap_or(3);
+                i += 2;
+            }
+            "--broadcast" => {
+                broadcast = true;
+                i += 1;
+            }
+            "--cycle" => {
+                cycle = true;
+                i += 1;
+            }
+            "--poll" => {
+                poll = true;
+                i += 1;
+            }
             flag => {
                 eprintln!("unknown rgb flag {flag}");
                 return ExitCode::from(2);
             }
         }
+    }
+    if poll {
+        if color.is_empty() && !broadcast && !cycle {
+            print_keychron_poll();
+            return ExitCode::SUCCESS;
+        }
+        if !cycle {
+            print_keychron_poll();
+        }
+    }
+    if cycle {
+        lighting_cycle::set_running(true, 128);
+        let until = Instant::now() + Duration::from_secs(seconds.max(1));
+        while Instant::now() < until {
+            thread::sleep(Duration::from_millis(150));
+            if poll {
+                println!("cycle hue={}", lighting_cycle::current_hue());
+            }
+        }
+        lighting_cycle::set_running(false, 128);
+        if poll {
+            print_keychron_poll();
+        }
+        return ExitCode::SUCCESS;
+    }
+    if broadcast {
+        if color.is_empty() {
+            eprintln!("rgb --broadcast requires --color RRGGBB");
+            return ExitCode::from(2);
+        }
+        let mode = if mode.trim().is_empty() {
+            "Solid Color"
+        } else {
+            mode.as_str()
+        };
+        return match lighting_broadcast::broadcast(&color, mode) {
+            Ok(msg) => {
+                println!("{msg}");
+                if poll {
+                    print_keychron_poll();
+                }
+                ExitCode::SUCCESS
+            }
+            Err(err) => {
+                eprintln!("{err}");
+                ExitCode::from(1)
+            }
+        };
     }
     if device.is_empty() || color.is_empty() {
         eprintln!("rgb requires --device and --color RRGGBB");

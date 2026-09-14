@@ -5,7 +5,8 @@
   import EffectList from "./EffectList.svelte";
   import LedGrid from "./LedGrid.svelte";
   import { deviceKey, hasLedLayout, liveSwatch, normalizeHex, sizeLabel } from "./lighting.js";
-  import { HOST_EFFECTS, layoutColors } from "./effectViz.js";
+  import { SHARED_MODES, deviceModes } from "./effectCatalog.js";
+  import { layoutColors } from "./effectViz.js";
   import { mosaicDevice } from "./keyboard.js";
   import { ui } from "./ui.js";
   import t from "../locales/en.json";
@@ -25,7 +26,7 @@
   $: allProtocol = devices.length
     ? [...new Set(devices.map((d) => d.protocol).filter(Boolean))].join(" · ")
     : t["lighting.empty"];
-  $: allModes = HOST_EFFECTS;
+  $: allModes = SHARED_MODES;
   $: sharedMode = devices.length && devices.every((d) => d.mode === devices[0].mode) ? devices[0].mode : "";
   $: allBoard = mosaicDevice(devices.map((d) => ({ ...d, led_colors: layoutColors(d) })));
   $: ui.liveBoard =
@@ -116,7 +117,7 @@
       {#if openId === deviceKey(d)}
         <div class="picker-flow">
           <ColorWheel bind:hex={rowHex} wheelLabel={t["lighting.color"]}>
-            <EffectList modes={HOST_EFFECTS} selected={d.mode} hex={rowHex} {busy} on:mode={(ev) => dispatch("mode", { backend: d.backend, device: d.name, ...ev.detail })} />
+            <EffectList modes={deviceModes(d)} selected={d.mode} hex={rowHex} {busy} on:mode={(ev) => dispatch("mode", { backend: d.backend, device: d.name, ...ev.detail })} />
             <button type="button" class="tools-apply" on:click={() => applyDevice(d)} disabled={busy}>{t["lighting.apply"]}</button>
           </ColorWheel>
           <GaugeMeter {gauges} on:apply={(ev) => dispatch("gauge", ev.detail)} />

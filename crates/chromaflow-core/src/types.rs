@@ -9,6 +9,7 @@ pub struct Inventory {
     pub i2c: Vec<DevNode>,
     pub liquidctl: BinaryProbe,
     pub liquidctl_devices: Vec<String>,
+    pub gpu_rgb: Vec<RgbDevice>,
     pub openrgb: OpenRgbProbe,
     pub kernel_release: String,
     pub gaps: Vec<Gap>,

@@ -117,16 +117,25 @@ pub fn tick(inv: &Inventory, file: &CurveFile) -> Result<String, String> {
 }
 
 fn one(root: &Path, inv: &Inventory, file: &CurveFile, ch: &Channel, g: &gauges::Gauges) -> Result<u32, String> {
+    let identify = pwm_recipe::flat_full(&ch.curve_id, file);
     let Some(temp) = pwm_recipe::temp_of(inv, file, ch, g) else {
-        restore_dir(root, &ch.dir, &ch.pwm)?;
-        return Ok(0);
+        if !identify {
+            restore_dir(root, &ch.dir, &ch.pwm)?;
+            return Ok(0);
+        }
+        apply_manual(root, ch, 100, file.allow_zero)?;
+        return Ok(1);
     };
     if inv.hwmon.iter().all(|c| c.name != ch.chip) {
         restore_dir(root, &ch.dir, &ch.pwm)?;
         return Ok(0);
     }
     let pts = pwm_recipe::points_for(&ch.curve_id, file);
-    let mut pct = pwm_recipe::interp(temp, &pts);
+    let mut pct = if identify {
+        100
+    } else {
+        pwm_recipe::interp(temp, &pts)
+    };
     let off = i16::from(ch.offset);
     pct = u8::try_from((i16::from(pct) + off).clamp(0, 100)).unwrap_or(pct);
     let floor = if ch.min_pct > 0 { ch.min_pct } else { file.min_duty };
@@ -134,20 +143,26 @@ fn one(root: &Path, inv: &Inventory, file: &CurveFile, ch: &Channel, g: &gauges:
     if ch.stop_pct > 0 && pct <= ch.stop_pct && !file.allow_zero {
         pct = floor;
     }
-    pct = pwm_hyst::clamp(
-        &pwm_hyst::key(&ch.dir, &ch.pwm),
-        pct,
-        temp,
-        ch.hysteresis_c,
-        ch.step_up,
-        ch.step_down,
-        ch.response_ms,
-    );
-    let duty = pwm_policy::percent_to_duty(pct, file.allow_zero)?;
+    if !identify {
+        pct = pwm_hyst::clamp(
+            &pwm_hyst::key(&ch.dir, &ch.pwm),
+            pct,
+            temp,
+            ch.hysteresis_c,
+            ch.step_up,
+            ch.step_down,
+            ch.response_ms,
+        );
+    }
+    apply_manual(root, ch, pct, file.allow_zero)?;
+    Ok(1)
+}
+
+fn apply_manual(root: &Path, ch: &Channel, pct: u8, allow_zero: bool) -> Result<(), String> {
+    let duty = pwm_policy::percent_to_duty(pct, allow_zero)?;
     let pwm = pwm_path(root, &ch.dir, &ch.pwm)?;
     apply_enable(&pwm.parent().unwrap().join(format!("{}_enable", ch.pwm)), ENABLE_MANUAL)?;
-    apply_duty(&pwm, duty, file.allow_zero)?;
-    Ok(1)
+    apply_duty(&pwm, duty, allow_zero)
 }
 
 #[cfg(test)]

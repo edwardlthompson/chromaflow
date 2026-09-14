@@ -4,7 +4,7 @@
 
 ## Acceptance criteria
 
-- ✅ User-visible behavior: Cooling has Fans / Pumps / Temps / Curves; one Auto-calibrate in the Cooling toolbar sweeps every writable fan then pump (20–100% duty↔RPM, never silent 0%); fan/pump cards omit Tune and per-card calibrate; every Cooling board tile is `22rem` (fan/pump/temp/curve); curve graphs fill the leftover card height with °C/% labels in the SVG; Lighting/Profiles/Support unmount off-tab; Cooling inventory is hwmon-only (no OpenRGB spawn); 60 s graphs have a 0–100% / 30–90 °C wireframe (vertical bar every 15 s); **+** next to Temps adds a mix; **+** / **Clone** next to Curves copies a preset into an editable card (Quiet/Balanced/Performance stay locked); lighting USB/OpenRGB ticks run only on Lighting; inventory poll pauses while Cooling is scrolling; **Apply to all** persists in `curves.json` across launches (hydrate waits for this-machine inventory, not the sample fixture)
+- ✅ User-visible behavior: Cooling has Fans / Pumps / Temps / Curves; one Auto-calibrate in the Cooling toolbar sweeps every writable fan then pump (20–100% duty↔RPM, never silent 0%); fan/pump cards omit Tune and per-card calibrate; every Cooling board tile is `22rem` (fan/pump/temp/curve); curve graphs fill the leftover card height with °C/% labels in the SVG (Quiet/Balanced/Performance/100% start at 25 °C); Lighting/Profiles/Support unmount off-tab; Cooling inventory is hwmon-only (no OpenRGB spawn); 60 s graphs have a 0–100% / 25–90 °C wireframe (vertical bar every 15 s); Temps + Lighting gauges share App `startGaugeTick` at 400 ms (150 samples); **+** next to Temps adds a mix; **+** / **Clone** next to Curves copies a preset into an editable card (Quiet/Balanced/Performance/100% stay locked); lighting USB/OpenRGB ticks run only on Lighting; inventory poll pauses while Cooling is scrolling but not while a card dropdown is focused; **Apply to all** persists in `curves.json` across launches (hydrate waits for this-machine inventory, not the sample fixture); Cooling fan cards poll about 400 ms (sysfs; NVIDIA RPM is stale-while-revalidate); NVIDIA fan % is the nvidia-settings percent (not 0–255 round-trip); **100%** is a flat identify curve (no Apply to all)
 - ✅ Offline/error behavior: invalid temps flagged; empty hwmon shows “No hwmon chips”; Vite cannot write sysfs; 0 RPM headers are hidden (Hidden row; restore shows the card)
 - ✅ Accessibility: conflict banner `role="alert"`; curve `role="img"`; mix/curve plus buttons have `aria-label`
 - ✅ i18n: keys under `cooling.*` in `apps/desktop/src/locales/en.json`
@@ -21,11 +21,10 @@
 
 | Layer | Path |
 |-------|------|
-| Logic | `apps/desktop/src/lib/cooling.js` `coolingBoard.js` `coolingMix.js` `coolingCurves.js` `coolingSweep.js` `spark.js` `crates/chromaflow-core/src/pwm_recipe.rs` |
+| Logic | `apps/desktop/src/lib/cooling.js` `coolingBoard.js` `coolingMix.js` `coolingCurves.js` `coolingSweep.js` `spark.js` `gaugesTick.js` `crates/chromaflow-core/src/pwm_recipe.rs` |
 | View | `apps/desktop/src/pages/Cooling.svelte` `TempsList.svelte` `SparkGraph.svelte` `CurvesList.svelte` |
 | Tests | `tests/test_chromaflow_cooling_ui.py` plus daemon fake-sysfs |
 | Wiring | `App.svelte` unmounts idle tabs; Cooling `inventory` `{ light: false }` → `collect_cooling`; Tauri `pwm_takeover` schema 2; custom curves in `curves.json` |
-
 ## Tests
 
 - Automated: yes — `tests/test_chromaflow_cooling_ui.py` plus three-channel daemon fake-sysfs
@@ -43,3 +42,4 @@ G-UX / G-COOL / G-SAFE (ADR-0018). File `.sensor` mixes are skipped (PRODUCT_GAP
 ## Notes
 
 - After each AGENT step: `python3 scripts/agent-run.py watch-agent-gates --once --autofix --scope auto`
+- 100% (`full`) is an identify curve: apply skips step/hysteresis so the packaged 5%/tick limiter cannot wind it back to Quiet. The GUI write is not enough while `/usr/bin/chromaflow --watchdog` is the old binary.

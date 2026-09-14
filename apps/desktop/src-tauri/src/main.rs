@@ -9,7 +9,6 @@ use chromaflow_core::hwmon;
 use chromaflow_core::lighting;
 use chromaflow_core::lighting_apply as color_apply;
 use chromaflow_core::openrgb_engine;
-use chromaflow_core::openrgb_spawn;
 use chromaflow_core::profiles;
 use chromaflow_core::pwm_apply;
 use chromaflow_core::pwm_calibrate as pwm_cal;
@@ -62,7 +61,6 @@ fn competitors_remove() -> Result<Value, String> {
 fn inventory(light: Option<bool>) -> Result<Value, String> {
     refuse_if_root()?;
     if light.unwrap_or(false) {
-        openrgb_spawn::ensure_sdk();
         serde_json::to_value(collect_inventory()).map_err(|e| e.to_string())
     } else {
         serde_json::to_value(collect_cooling()).map_err(|e| e.to_string())
@@ -98,6 +96,20 @@ fn lighting_sync(frames: Vec<chromaflow_core::openrgb_preview::LedFrame>) -> Res
         return Ok(Value::Array(vec![]));
     }
     serde_json::to_value(rows).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn lighting_broadcast(color: String, mode: String) -> Result<Value, String> {
+    refuse_if_root()?;
+    let detail = chromaflow_core::lighting_broadcast::broadcast(&color, &mode)?;
+    Ok(serde_json::json!({ "ok": true, "detail": detail }))
+}
+
+#[tauri::command]
+fn lighting_cycle(on: bool, speed: u8) -> Result<Value, String> {
+    refuse_if_root()?;
+    chromaflow_core::lighting_cycle::set_running(on, speed);
+    Ok(serde_json::json!({ "ok": true, "on": on }))
 }
 
 #[tauri::command]
@@ -230,6 +242,10 @@ fn prepare_webkit() {
     if std::env::var_os("WEBKIT_DISABLE_DMABUF_RENDERER").is_none() {
         std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
     }
+    // NVIDIA + Cinnamon: DMA-BUF off still leaves a blank #121418 surface.
+    if std::env::var_os("WEBKIT_DISABLE_COMPOSITING_MODE").is_none() {
+        std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
+    }
 }
 
 fn main() {
@@ -252,6 +268,8 @@ fn main() {
             lighting_preview,
             lighting_sync,
             lighting_apply,
+            lighting_broadcast,
+            lighting_cycle,
             lighting_engine_install,
             lighting_hid_serial,
             open_url,
@@ -271,8 +289,6 @@ fn main() {
             icon::apply(app);
             let _ = tray::attach(app);
             window_geom::restore(app);
-            openrgb_engine::start_user_unit();
-            openrgb_spawn::ensure_sdk();
             Ok(())
         })
         .on_window_event(|window, event| {

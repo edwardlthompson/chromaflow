@@ -50,8 +50,10 @@ pub fn cached_gpu() -> GpuSmi {
             }
         }
     }
-    let out = Command::new("nvidia-smi")
+    let out = Command::new("timeout")
         .args([
+            "1",
+            "nvidia-smi",
             "--query-gpu=temperature.gpu,utilization.gpu",
             "--format=csv,noheader,nounits",
         ])

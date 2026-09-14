@@ -4,7 +4,7 @@
 
 ## Acceptance criteria
 
-- ✅ User-visible behavior: Extra kernel support includes `liquidctl`; Install all / Install skip extras that are already present (no re-modprobe, no DKMS reload). Cooling temp cards show usage % plus full-width 60 s usage (green→red, 0–100%) and temp (blue→red, 30–90 °C) graphs. Top bar and left tab rail do not scroll. `chromaflow cooling --takeover` writes a Balanced scheme (min 20%, never silent 0%), enables `chromaflowd`, and sweeps tach headers.
+- ✅ User-visible behavior: Extra kernel support includes `liquidctl`; Install all / Install skip extras that are already present (no re-modprobe, no DKMS reload). Cooling temp cards show usage % plus full-width 60 s usage (green→red, 0–100%) and temp (blue→red, 25–90 °C) graphs. Top bar and left tab rail do not scroll. `chromaflow cooling --takeover` writes a Balanced scheme (min 20%, never silent 0%), enables `chromaflowd`, and sweeps tach headers.
 - ✅ Offline/error behavior: unknown extra still rejected before pkexec; Vite cannot write PWM; conflicts skip motherboard PWM and still allow NVIDIA; calibrate skip when no `fanN_input`; failsafe remains `pwm*_enable=2`
 - ✅ Accessibility: spark SVGs `role="img"`; conflict banner unchanged
 - ✅ i18n: `lighting.extras.liquidctl` `cooling.usageGraph` `cooling.tempGraph`
@@ -23,10 +23,9 @@
 | View | `TempsList.svelte` `app.css` Extra kernel support |
 | Tests | `tests/test_chromaflow_support.py` `tests/test_chromaflow_cooling_ui.py` rust `pwm_scheme` |
 | Wiring | `install-support.sh --only liquidctl`; `chromaflow cooling --takeover`; Tauri `pwm_load` |
-
 ## Tests
 
-- Automated: yes — extra id order, pending skip, spark 30–90 band, overflow hidden, scheme never `set_pwm`
+- Automated: yes — extra id order, pending skip, spark 25–90 band, overflow hidden, scheme never `set_pwm`
 - Coverage: liquidctl apt `--only`; Balanced min 20%; conflicts skip hwmon
 
 ## Fallback validation

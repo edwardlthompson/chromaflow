@@ -8,6 +8,9 @@
   import { isTauri, invoke } from "./lib/tauri.js";
   import { ui, pwmOn } from "./lib/ui.js";
   import { applySession, loadLocal, loadSession, persistSession } from "./lib/session.js";
+  import { researchDevices } from "./lib/research.js";
+  import { setHostCycle, wantsCycle } from "./lib/lightingTick.js";
+  import { startGaugeTick } from "./lib/gaugesTick.js";
   import t from "./locales/en.json";
 
   const tabs = ["Cooling", "Lighting", "Profiles", "Support"];
@@ -19,6 +22,8 @@
   let loadError = "";
   let forceLoad = false;
   let runLoad = async () => {};
+  let gauges = ui.gauges;
+  let hist = ui.gaugeHist || [];
 
   $: conflicts = (inventory && inventory.conflicts) || [];
   $: ui.page = tab;
@@ -36,9 +41,9 @@
     if (ui.pausePoll) return true;
     if (tab === "Lighting") {
       const n = (((lightInv && lightInv.openrgb) || {}).controllers || []).length;
-      if (n > 0) return true;
+      if (n > 0 && researchDevices(lightInv).length === 0) return true;
     } else if (tab === "Profiles" && source === "this machine") return true;
-    if (tab === "Cooling" && ui.scrolling) return true;
+    if (tab === "Cooling") return ui.scrolling;
     const ae = typeof document !== "undefined" ? document.activeElement : null;
     const tag = ae && ae.tagName;
     return tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA";
@@ -74,6 +79,7 @@
     runLoad = load;
     loadSession().then((s) => {
       tab = s.tab;
+      if (wantsCycle(s.lastMode)) setHostCycle(true, invoke, isTauri);
       forceLoad = true;
       runLoad();
     });
@@ -84,12 +90,23 @@
       if (stop) return;
       await load();
       if (stop) return;
-      timer = window.setTimeout(tick, ui.pollMs || 4000);
+      const wait =
+        tab === "Cooling" ? 400 : tab === "Lighting" ? (ui.cycleOn ? 15000 : 4000) : ui.pollMs || 4000;
+      timer = window.setTimeout(tick, wait);
     };
     tick();
+    const stopGauges = startGaugeTick({
+      invoke,
+      isTauri,
+      onSample: (next, nextHist) => {
+        gauges = next;
+        hist = nextHist || [];
+      },
+    });
     return () => {
       stop = true;
       window.clearTimeout(timer);
+      stopGauges();
       window.removeEventListener("pagehide", onLeave);
       window.removeEventListener("beforeunload", onLeave);
     };
@@ -123,9 +140,9 @@
       }}
     >
       {#if tab === "Cooling"}
-        <Cooling {inventory} live={source === "this machine"} />
+        <Cooling {inventory} live={source === "this machine"} {gauges} {hist} />
       {:else if tab === "Lighting"}
-        <Lighting inventory={lightInv} />
+        <Lighting inventory={lightInv} {gauges} />
       {:else if tab === "Profiles"}
         <Profiles />
       {:else}

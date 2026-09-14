@@ -13,7 +13,8 @@ Catalog for Sprint 2+. Live board: [`BUILD_PLAN.md`](../BUILD_PLAN.md). Feature 
 | G-APP | Standalone Cinnamon app (`chromaflow` / `chromaflow-gui`) | Vite tab; no `.desktop`; Tauri crate exists, local compile blocked on GTK/WebKit **dev** | 2 |
 | G-UX | Look/act like Fan Control + OpenRGB (graphs, device tree, curve editor) | Cooling: Fans / Pumps / Temps / Curves; temp cards for CPU/GPU/RAM/Disk/Combined + mix; AIO checkbox on every control card | 20 |
 | G-COOL | hwmon + liquidctl AIO + GPU fans; curves, hysteresis, min/max; daemon on boot | Schema v2 + NVIDIA GPU fans + ITE names + AIO unit; `it87-dkms` first; optional apt `liquidctl` (not installed on this host) | 20 |
-| G-LED | OpenRGB device list, modes, colors, per-LED, sync, profiles | SDK protocol/LED count/color/modes per device + Kelvin picker + per-LED matrix; liquidctl Fusion fallback; Arena 7 HID; Prime Neo hidraw 0x62; Fusion USB 048d:5702 treated as the Aorus chip | 4, 7, 8 |
+| G-LED | OpenRGB device list, modes, colors, per-LED, sync, profiles | Native hidraw + liquidctl Fusion by default (ADR-0021); OpenRGB opt-in `CHROMAFLOW_OPENRGB_SDK=1` | 33 |
+| G-LED-NATIVE | Independent MIT ports for every OpenRGB-supported device | Identity catalog `data/openrgb-device-index.csv`; Keychron/Arena/Prime/Fusion native; GPU I2C map unverified on this 4090 | 33 |
 | G-DET | Detect hidraw/i2c/module/Windows-only gaps; Install + Rescan | `gaps[]` exists; Support dry-run selects YAML ∩ lspci/DMI/loaded/`i2c-dev` (not the full dump) | 5 |
 | G-SUP | Polkit script: apt, udev, groups, allowlist `modprobe`, JSON, logout/reboot | One-click pkexec `--apply` via pinned helper; optional `--advanced` I2C | 5 |
 | G-PROF | Profiles bind a fan-curve set + an RGB profile in `~/.config/chromaflow/` | Schema v1 JSON round-trip; names only; nothing applied to PWM | 5 |
@@ -21,7 +22,6 @@ Catalog for Sprint 2+. Live board: [`BUILD_PLAN.md`](../BUILD_PLAN.md). Feature 
 | G-SAFE | Never silent 0% PWM; watchdog + `ExecStopPost` failsafe | `chromaflow daemon --watchdog` + unit `ExecStopPost`; firmware enable (2); 0% needs confirm | 15 |
 | G-BOOT | Optional `/etc/modules-load.d/chromaflow.conf` via polkit | Dry-run plan only (`apply: false`) | 5 |
 | G-I18N | English UI, design tokens, Settings/About | Product UI hardcodes English + raw hex; Golden Path tokens live in `examples/web` | 3 |
-
 This machine’s live `rescan` (Gigabyte X570S AORUS MASTER + RTX 4090 hybrid):
 
 | Control | Probe | Notes |
@@ -32,14 +32,13 @@ This machine’s live `rescan` (Gigabyte X570S AORUS MASTER + RTX 4090 hybrid):
 | CPU_FAN / SYS_FAN1–3 / CPU_OPT | `it8689_*` pwm1–5 after host `it87-dkms` | Two tachs live (~2000 / ~1550 RPM); likely the case fans. CPU AIO stays on its own controller |
 | FAN4 / FAN5_PUMP / FAN6_PUMP | `it87952_*` pwm1–3 | Secondary ITE; extra MMIO tachs may appear |
 | USB AIO | none | No NZXT/Corsair/Asetek HID; `liquidctl` not installed |
-
 **Deferred:** Fan Control File `.sensor` mixes (plugin-style). Mix + is Max/Min/Average/Sum/Subtract/Offset/Time average of hwmon + Lighting gauge ids only.
 
 ## Locked (not gaps)
 
 - No Fan Control or OpenRGB source copies (proprietary Fan Control; GPL stop-and-ask).
 - No GUI as root; no bundled `.ko`; allowlist-only `modprobe` names.
-- MIT until an in-process OpenRGB link (ADR-0007).
+- MIT until an in-process OpenRGB link (ADR-0007). Native ports are identity + on-device HID, not a C++ translation (ADR-0020).
 - Tauri + Rust, not Avalonia (ADR-0006). Close UX gaps **inside** the native window.
 
 ## Parallelization

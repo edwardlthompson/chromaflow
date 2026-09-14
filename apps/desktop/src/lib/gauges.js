@@ -6,7 +6,7 @@ export function tempRatio(celsius) {
   if (celsius == null || celsius === "") return null;
   const c = Number(celsius);
   if (!Number.isFinite(c)) return null;
-  return Math.max(0, Math.min(1, (c - 35) / 55));
+  return Math.max(0, Math.min(1, (c - 25) / 65));
 }
 
 function meanPair(a, b, empty) {
@@ -84,7 +84,8 @@ export function pushSample(hist, g, max = 60) {
 
 export function gaugeLane(device) {
   const n = `${(device && device.name) || ""} ${(device && device.backend) || ""}`.toLowerCase();
-  if (/geforce|nvidia|4090|liquid|aio|radiator|suprim/.test(n)) return "gpu";
+  if (/cpu aio/.test(n)) return "cpu";
+  if (/geforce|nvidia|4090|suprim/.test(n)) return "gpu";
   if (/aorus|fusion|motherboard|x570|gigabyte/.test(n)) return "cpu";
   if ((device && device.backend) === "arena" || /keychron|keyboard|arena|speaker/.test(n)) return "combined";
   return "combined";

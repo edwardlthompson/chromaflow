@@ -53,14 +53,14 @@ pub fn run_watch() -> i32 {
 }
 
 pub fn run_sdk() -> i32 {
-    eprintln!("chromaflow daemon --sdk: keep localhost lighting engine up; no PWM");
-    loop {
-        chromaflow_core::openrgb_spawn::ensure_sdk();
-        if once() {
-            return 0;
-        }
-        thread::sleep(Duration::from_secs(5));
+    if !chromaflow_core::openrgb_spawn::sdk_opt_in() {
+        eprintln!(
+            "chromaflow daemon --sdk: OpenRGB spawn is off (native lighting). Set CHROMAFLOW_OPENRGB_SDK=1 to opt in; no PWM"
+        );
+        return 0;
     }
+    eprintln!("chromaflow daemon --sdk: keep localhost lighting engine up; no PWM");
+    chromaflow_core::openrgb_boot::run()
 }
 
 pub fn run_failsafe() -> i32 {

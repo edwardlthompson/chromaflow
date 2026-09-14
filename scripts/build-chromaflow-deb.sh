@@ -82,7 +82,7 @@ Section: utils
 Priority: optional
 Architecture: amd64
 Maintainer: ChromaFlow <chromaflow@localhost>
-Depends: libwebkit2gtk-4.1-0, libgtk-3-0, libjavascriptcoregtk-4.1-0, libc6, libfuse2
+Depends: libwebkit2gtk-4.1-0, libgtk-3-0, libjavascriptcoregtk-4.1-0, libc6, libfuse2, libxcb-cursor0
 Recommends: liquidctl, i2c-tools, lm-sensors, libayatana-appindicator3-1
 Provides: chromaflow-helper
 Conflicts: chromaflow-helper

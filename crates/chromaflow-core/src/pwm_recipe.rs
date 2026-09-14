@@ -1,4 +1,4 @@
-//! Named Quiet/Balanced/Performance graphs and temp ids. Never writes sysfs.
+//! Named Quiet/Balanced/Performance/100% graphs and temp ids. Never writes sysfs.
 
 use crate::gauges::Gauges;
 use crate::pwm_curves::{Channel, CurveFile};
@@ -7,9 +7,10 @@ use crate::types::Inventory;
 
 pub fn points(id: &str) -> Vec<(f32, u8)> {
     match id {
-        "quiet" => vec![(30.0, 20), (55.0, 22), (70.0, 28), (82.0, 50), (90.0, 100)],
-        "performance" => vec![(30.0, 35), (45.0, 60), (60.0, 85), (75.0, 100)],
-        _ => vec![(30.0, 20), (50.0, 40), (70.0, 70), (85.0, 100)],
+        "quiet" => vec![(25.0, 20), (55.0, 22), (70.0, 28), (82.0, 50), (90.0, 100)],
+        "performance" => vec![(25.0, 35), (45.0, 60), (60.0, 85), (75.0, 100)],
+        "full" => vec![(25.0, 100), (90.0, 100)],
+        _ => vec![(25.0, 20), (50.0, 40), (70.0, 70), (85.0, 100)],
     }
 }
 
@@ -27,6 +28,11 @@ pub fn points_for(id: &str, file: &CurveFile) -> Vec<(f32, u8)> {
             (!pts.is_empty()).then_some(pts)
         })
         .unwrap_or_else(|| points(id))
+}
+
+pub fn flat_full(id: &str, file: &CurveFile) -> bool {
+    let pts = points_for(id, file);
+    !pts.is_empty() && pts.iter().all(|p| p.1 == 100)
 }
 
 pub fn interp(temp_c: f32, pts: &[(f32, u8)]) -> u8 {
@@ -148,6 +154,11 @@ mod tests {
         assert!(interp(88.0, &p) >= 70);
         assert_eq!(interp(90.0, &points("performance")), 100);
         assert_eq!(interp(50.0, &points("balanced")), 40);
+        assert_eq!(interp(25.0, &points("quiet")), 20);
+        assert_eq!(interp(25.0, &points("full")), 100);
+        assert_eq!(interp(80.0, &points("full")), 100);
+        assert!(flat_full("full", &crate::pwm_curves::empty()));
+        assert!(!flat_full("quiet", &crate::pwm_curves::empty()));
         let mut file = crate::pwm_curves::empty();
         file.custom.push(crate::pwm_curves::NamedCurve {
             id: "custom-1".into(),

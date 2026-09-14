@@ -15,7 +15,8 @@ This host exposes four hidraw nodes for that VID:PID. Interface with HID descrip
 Unprivileged code **may write** HID **output** reports to that vendor hidraw only:
 
 - Color: report ID `0x00`, command `0x62 0x01`, RGB, 15 zero bytes, `0xFF`
-- Save: `0x00 0x59` after 50ms
+- Save: `0x00 0x59` after 50ms on Apply (and once when Cycle All stops)
+- Animation must write live `0x62` only on a persistent hidraw fd and must not send `0x59` every frame (EEPROM + pointer hitch on this mouse)
 
 Command bytes match the public rivalcfg Prime device profile; the write is our hidraw path, not a rivalcfg spawn. No SteelSeries GG. No PWM.
 
@@ -33,7 +34,6 @@ Command bytes match the public rivalcfg Prime device profile; the write is our h
 | Null color | Same RRGGBB parse as ADR-0011; unit test report layout |
 | Busy device | 50ms before save; `Result` on write |
 | GPL | Cite public command bytes; no rivalcfg source in `crates/` |
-
 ## Consequences
 
 Prime Neo appears on Lighting with Apply. Research list omits it when hidraw is readable. [ADR-0012](0012-arena7-hid-write.md) “Prime Neo display-only” is superseded for this packet only.

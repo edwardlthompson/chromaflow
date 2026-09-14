@@ -19,7 +19,7 @@ export const pwmOn = writable(false);
 
 export const ui = {
   pausePoll: false,
-  pollMs: 15000,
+  pollMs: 1000,
   page: "Cooling",
   liveBoard: false,
   effectSpeed: 128,
@@ -32,4 +32,7 @@ export const ui = {
   gaugePalette: "blue",
   scrolling: false,
   scrollTimer: 0,
+  paintGen: 0,
+  paintBusy: Promise.resolve(),
+  cycleOn: false,
 };

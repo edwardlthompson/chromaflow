@@ -15,7 +15,236 @@
 
 ```
 
-## Entries
+### 2026-09-14 — Ship 0.2.0 with Medium glib / unmaintained unic on local audit
+- **Status:** Accepted
+- **Context:** `/ship` `upd audit --check` exits 6 on GHSA-wrw7-89jp-8q8g (Medium, `glib` 0.18.5) and unmaintained `proc-macro-error` / `unic-*` with no `fixed_version`. There is no High or Critical. `npm audit --audit-level=high` is clean. `glib` 0.20.0 is gtk-rs 0.18→0.20, not a patch/minor for Tauri 2.
+- **Decision:** Do not bump gtk-rs this release. Local `pre-release-gate.sh --local` stays red on `upd audit --check`. Feature-gate, license, and version passed. PWM unchanged.
+- **Alternatives considered:** `--fix-audit` to glib 0.20 (rejected: breaking gtk-rs). `--no-fail` (rejected: disables the gate).
+- **Consequences:** GitHub Dependabot/CodeQL remain the High+ inbox. Revisit gtk-rs when Tauri allows it.
+
+### 2026-09-14 — GPU Cycle All double-buffers RGB1 then static+save
+- **Status:** Accepted
+- **Context:** RGB1 writes do not show until a mode latch, so they are already a back buffer. Idle-first Apply snaps walk but drop static (rainbow leak). Save without re-entering static stays stuck. Zone blocks while in static flash.
+- **Decision:** First `set_snap` still arms with idle + RGB + blocks + static + save. Later snaps write RGB1, then static `0x13` + save `0x3F` in one `i2cset` batch (no idle, no zone blocks, no `i2ctransfer`). Fallback to the full sequence if the batch fails. `GPU_MS` stays 500.
+- **Alternatives considered:** Idle every snap (rejected: that is the pop). RGB1 or save-only (rejected: stuck). Keep zone blocks on the flip (rejected: they flash).
+- **Consequences:** Re-enable Cycle All. If the jewel freezes, this ITE still needs idle to latch and there is no hidden bank. PWM unchanged.
+
+### 2026-09-14 — Restore GPU Cycle All saved static snaps
+- **Status:** Superseded
+- **Context:** Program-then-save without idle (`i2ctransfer` + `0x3F`) left the shroud stuck, same as RGB1-only. This ITE only shows a new host color after idle + static + save.
+- **Decision:** `set_snap` always uses the full Apply sequence every 500 ms. Pops from idle are accepted until a real double-buffer exists. No `i2ctransfer`.
+- **Alternatives considered:** Keep no-idle commit (rejected: stuck twice). Firmware rainbow (rejected: unsynced).
+- **Consequences:** Shroud should walk again. Color pops during idle remain. PWM unchanged.
+
+### 2026-09-14 — GPU Cycle All programs RGB then save, no idle
+- **Status:** Superseded
+- **Context:** Full Apply snaps walk the wheel but idle `0x1C` plus bytewise RGB leave a gap where leftover colors pop. RGB1 with no save does not stick. The jewel should keep the last static color until the next color is committed.
+- **Decision:** After the first arm, `commit_next` writes RGB1 and BGR blocks in one `i2ctransfer` (no idle, no mode rewrite), then save `0x3F` with no extra delay. Apply and the first snap still use idle + static + save. Fallback to the full sequence if the transfer fails. `GPU_MS` stays 500.
+- **Alternatives considered:** Idle every snap (rejected: that is the gap). RGB1 with no save (rejected: stuck).
+- **Consequences:** Re-enable Cycle All. If the shroud freezes, save without idle is not enough and we fall back. PWM unchanged.
+
+### 2026-09-14 — Restore GPU Cycle All saved static snaps
+- **Status:** Superseded
+- **Context:** RGB1-only `i2ctransfer` snaps left the 4090 shroud stuck on one color. This ITE does not display RGB1 until idle + static + save. The 500 ms Apply-class snap was walking the wheel (with pops).
+- **Decision:** `set_snap` writes the full saved static sequence again (idle, RGB1, brightness, BGR blocks, `0x13`, `0x3F`). `GPU_MS` stays 500. No `i2ctransfer`.
+- **Alternatives considered:** Keep RGB1-only (rejected: stuck). Firmware rainbow (rejected: unsynced).
+- **Consequences:** Shroud should walk again. Pops from idle/save may return. PWM unchanged.
+
+### 2026-09-14 — GPU snap is RGB1 only
+- **Status:** Superseded
+- **Context:** Skipping idle was not enough. Snaps still wrote BGR `0x27–0x29`, static `0x13`, and save `0x3F` every 500 ms. Those registers are for multi-color effects; Direct only uses RGB1.
+- **Decision:** `snap` is one `i2ctransfer` to `0x30–0x32`. Apply still arms with idle + RGB1 + brightness + static + save, and does not write the color blocks. `GPU_MS` stays 500.
+- **Alternatives considered:** Keep zone blocks on the snap (rejected: they flash). Save every snap (rejected: blink).
+- **Consequences:** Re-enable Cycle All. If the jewel stops walking, RGB1 is not live without save. PWM unchanged.
+
+### 2026-09-14 — GPU Cycle All flashes were idle + bytewise RGB
+- **Status:** Superseded
+- **Context:** 30 s of Cycle All showed only `cf-gpu` writing `i2c-0` `0x68`. Captured idle `0x22=0x1C`, BGR block `0x28`, static `0x13`, save `0x3F`. No second process. Idle drops static so firmware rainbow leaks; R/G/B 20 ms apart are wrong intermediate colors.
+- **Decision:** After the first arm, `set_snap` stays in static: one `i2ctransfer` RGB1, zone blocks, `0x13`, save. No idle. Apply still uses the full idle sequence. `GPU_MS` stays 500.
+- **Alternatives considered:** Keep idle every snap (rejected: that is the glitch). Firmware rainbow (rejected: unsynced).
+- **Consequences:** Re-enable Cycle All on the debug GUI. If color stops walking, idle may still be required. PWM unchanged.
+
+### 2026-09-14 — GPU Cycle All snaps the host wheel every 500 ms
+- **Status:** Superseded
+- **Context:** 1 s snaps stayed smooth. The user asked to try 500 ms.
+- **Decision:** `GPU_MS` is 500. Same Apply-class `set_color` (save) from `PHASE`. Stop sleep stays 50 ms slices. No bus dump.
+- **Alternatives considered:** Stay at 1 s (rejected: user asked to try 500 ms). Return to 120 ms lamp rate (rejected: freeze).
+- **Consequences:** I2C+save about twice as often as 1 s. Watch for GUI hitch. PWM unchanged.
+
+### 2026-09-14 — GPU Cycle All snaps the host wheel every 1 s
+- **Status:** Superseded
+- **Context:** 2 s saved static snaps were an acceptable sync workaround. The user asked to try 1 s and watch GUI load.
+- **Decision:** `GPU_MS` is 1000. Same Apply-class `set_color` (save) from `PHASE`. Stop sleep stays 50 ms slices. No bus dump.
+- **Alternatives considered:** Stay at 2 s (rejected: user asked to try 1 s). Return to lamp-rate I2C (rejected: freeze).
+- **Consequences:** About twice as many ITE saves while Cycle All runs. Hitch, if any, shows about once per second. PWM unchanged.
+
+### 2026-09-14 — GPU Cycle All snaps the host wheel every 2 s
+- **Status:** Superseded
+- **Context:** Firmware rainbow `0x08` moved the shroud but drifted from Keychron. Fast Direct I2C froze the GUI. Solid Apply (saved static) is the only host color the jewel follows.
+- **Decision:** `run_gpu` writes `gpu_apply::set_color` (idle, RGB, BGR, static, save) from the same 16-bit `PHASE` as the lamps, at `GPU_MS` 2000. Sleep is 50 ms slices so Cycle All stop does not block the GUI for 2 s. Misses back off 5 s. No bus dump. No OpenRGB C++.
+- **Alternatives considered:** Keep firmware rainbow (rejected: unsynced). Host-tick at 80–120 ms (rejected: freeze). Direct without save (rejected: no visible change).
+- **Consequences:** Shroud is choppy but on-hue. Flash save every 2 s while Cycle All runs. PWM unchanged.
+
+### 2026-09-14 — GPU Cycle All is firmware rainbow, not I2C polling
+- **Status:** Superseded
+- **Context:** Full Direct re-program every hue on NVIDIA adapter 1 hung the GUI (same GPU as the display; Cinnamon offered to kill it). Solid Apply worked because it is one saved I2C burst. Live RGB1 without save never moved the jewel. A one-shot rainbow `0x22=0x08` plus save `0x3F` completed in 178 ms with no leftover `i2cset`.
+- **Decision:** Cycle All calls `gpu_apply::set_rainbow` once (idle, direction, brightness, speed, rainbow, save). HID lamps keep the host 16-bit wheel. Apply still uses static RGB + save. Never dump the bus. No OpenRGB C++.
+- **Alternatives considered:** Host-tick Direct every 80 ms (rejected: freeze). Direct without save (rejected: user-visible no change). Leave GPU off Cycle All (rejected: shroud must cycle).
+- **Consequences:** Shroud rainbow is on-chip, not hue-locked to Keychron. GUI must stay responsive. PWM unchanged.
+
+### 2026-09-14 — GPU Cycle All re-programs Direct each hue
+- **Status:** Superseded
+- **Context:** Apply All solid on the 4090 shroud worked (full static + save `0x3F`). Cycle All stayed on that color because live frames only wrote RGB1 `0x30–0x32` after the first arm. The ITE does not follow RGB1-only after a saved static fill; OpenRGB Direct re-enters idle then static on every LED update and does not save.
+- **Decision:** `set_live` always writes unknown `0x2E`, idle `0x1C`, RGB1, brightness, BGR blocks `0x27–0x29`, static `0x13`, never `0x3F`. `begin_live` clears the last RGB when Cycle All starts. 20 ms pacing. No bus dump. No OpenRGB C++.
+- **Alternatives considered:** Keep RGB1-only after arm (rejected: user-visible stuck color). Save every hue (rejected: flash wear; Apply already saves). Firmware rainbow `0x08` (rejected: not the host 16-bit wheel).
+- **Consequences:** Cycle All on the debug GUI should walk the jewel with Keychron. Idle between hues may flicker slightly. PWM unchanged.
+
+### 2026-09-14 — GPU shroud ITE is NVIDIA adapter 1; never dump
+- **Status:** Accepted
+- **Context:** Skipping adapter 1 and requiring RGB readback left the 4090 shroud dark. Writes to `i2c-0` `0x68` do change the jewel: idle `0x1C` without finishing static `0x13` looks off. `i2cget`/`i2cdump` are garbage or wedge the adapter `EIO`. OpenRGB MSI GPUv2 Direct on NVIDIA uses port 1.
+- **Decision:** Prefer NVIDIA adapter 1. Arm with unknown `0x2E=0`, idle `0x1C`, RGB1 `0x30–0x32`, brightness `0x64`, BGR blocks `0x27–0x29`, static `0x13`, save `0x3F` only on Apply. Live frames write RGB1 only (20 ms per byte), no idle, no save, no readback. Cycle All still backs off 5 s on `EIO`. No OpenRGB C++.
+- **Alternatives considered:** Keep skipping adapter 1 (rejected: that is the ITE on this host). Trust `i2cget` (rejected: ITE does not read colors). Dump the bus to debug (rejected: `EIO` until the adapter recovers).
+- **Consequences:** Re-enable Cycle All on the debug GUI. Never `i2cdump` GPU I2C. PWM unchanged.
+
+### 2026-09-14 — GPU I2C adapter 1 is dummy; stop Cycle All storm
+- **Status:** Superseded
+- **Context:** Cycle All kept the 4090 shroud red. Live `i2cdetect` shows `0x68` only on NVIDIA **adapter 1** (`i2c-0`). Writes ACK, then `i2cget` returns `0x3f`/`0x46` and an `i2cdump` leaves the adapter `EIO`. Adapters 3–6 have no live ITE. OpenRGB detect skips NVIDIA `port_id == 1` (DDC).
+- **Decision:** `skip_dummy` ignores adapter 1. Apply/live require RGB readback to match. Cycle All backs off 5 s after misses instead of `i2cset` every 120 ms. Live frames do not write save `0x3f`. No OpenRGB C++.
+- **Alternatives considered:** Keep writing adapter 1 (rejected: dummy ACK, then EIO). Translate MSIGPUv2 C++ (rejected: ADR-0007).
+- **Consequences:** The on-card jewel/nameplate stays dark/red until a non-DDC NVIDIA I2C map exists. Chassis AIO ARGB remains Fusion D_LED. PWM unchanged.
+
+### 2026-09-13 — Cycle All live GPU I2C
+- **Status:** Accepted
+- **Context:** Cycle All skipped NVIDIA I2C because `i2cget`/`i2cset` on the lamp thread stalled the pointer (same class of extra work as Prime `0x59`). The shroud then stayed on the last Apply color.
+- **Decision:** `gpu_apply::set_live` skips duplicate RGB and `try_lock`s so a slow SMBus write cannot stack. A `cf-gpu` thread (120 ms) follows the same 16-bit `PHASE` as HID lamps. After the first arm, only ITE RGB regs `0x30–0x32` are written. Apply still uses `set_color` (blocking lock).
+- **Alternatives considered:** Keep GPU off Cycle All (rejected: user wants the shroud on the wheel). `i2cset` on the HID lamp thread (rejected: a 0.2 s timeout would stretch Keychron/Prime).
+- **Consequences:** Re-apply Cycle All on the debug GUI. GPU util still caches 2 s. PWM unchanged.
+
+### 2026-09-13 — Shared 400 ms hardware gauges tick
+- **Status:** Accepted
+- **Context:** Lighting skipped `hardware_gauges` while Cycle All ran, polled at 1 s, and omitted CPU/GPU load from the hist key, so usage gauges froze. Cooling had a separate 1 s TempsList interval that unmounted off-tab.
+- **Decision:** `gaugesTick.js` polls `hardware_gauges` every 400 ms from `App.svelte` (150 samples ≈ 60 s). Cooling Temps and Lighting GaugeMeter consume the same `gauges`/`hist`. nvidia-smi stays on its 2 s cache (ADR-0017). Cycle All still skips HID/OpenRGB apply on the lighting tick.
+- **Alternatives considered:** Keep Lighting poll paused during Cycle All (rejected: `/proc` + cached smi is not USB). Push nvidia-smi onto the LED frame (rejected: hitch).
+- **Consequences:** Usage bars and sparks update on Lighting while rainbow runs. GPU utilization still steps at most every 2 s. PWM unchanged.
+
+### 2026-09-13 — Keychron Direct type 0 (static), not breathing
+- **Status:** Accepted
+- **Context:** Cycle All walked hue on Direct but keys dimmed to black. `0xA8`/`0x08` value 1 is `PER_KEY_RGB_BREATHING`, not “per-key vs solid.”
+- **Decision:** `enter_direct` sets type `0` (`PER_KEY_RGB_SOLID`) so assigned HSV stays at full value. VIA custom `0x17` still shows the per-key buffer. No RGB_SAVE.
+- **Alternatives considered:** Drop Direct and return to VIA SOLID hue (rejected: loses per-key). Zero VIA speed only (rejected earlier: `0x17` can still animate).
+- **Consequences:** Re-apply Cycle All on the debug GUI. PWM unchanged.
+
+### 2026-09-13 — Cycle All Direct fill; Prime live HID
+- **Status:** Accepted
+- **Context:** VIA SOLID hue cannot address per-key Direct. Prime `0x62` + 50 ms + EEPROM `0x59` on the animation clock stalled Cinnamon because lighting shares the mouse USB device.
+- **Decision:** Cycle All arms Keychron Direct once and `set_fill`s all 108 keys on the 120 ms lamp thread (skip unchanged HSV; no VIA GET / `drop_session`). Prime `set_live` writes `0x62` on a persistent fd and skips duplicate RGB; `0x59` save is Apply plus one shot on cycle stop. GPU I2C stays off Cycle All.
+- **Alternatives considered:** Keep SOLID hue (rejected: no per-key control). Firmware rainbow (rejected: unsynced with Fusion). OpenRGB QMK flash (rejected: HUMAN flashing / GPL).
+- **Consequences:** Uniform Cycle All is still 256 HSV steps on the keys. Pointer should stay smooth. PWM unchanged.
+
+### 2026-09-13 — Cycle All 16-bit RGB fade; skip mouse/GPU I2C
+- **Status:** Accepted
+- **Context:** 8-bit HSV steps still looked like pops. Painting Prime (mouse HID) and NVIDIA I2C every lamp tick still made Cinnamon hitch. Fusion uniform rewrote D_LED padding on every frame.
+- **Decision:** Internal hue is 16-bit (65536 steps) converted to RGB for Arena/Fusion. Keychron VIA SOLID only updates when the top 8 bits change (~12 Hz over a ~20 s lap). Lamp ticks use Fusion `soft` analog (full `uniform` every 12th). Prime and GPU I2C are not written during Cycle All. `hardware_gauges` and Lighting inventory slow/stop while `cycleOn`.
+- **Alternatives considered:** 60 Hz all-lamp RGB (rejected: USB/I2C stall). Firmware Fusion color-cycle (rejected: unsynced).
+- **Consequences:** Keyboard firmware can only show 256 hues; RGB devices fade with ~1–2 levels per 120 ms. Mouse/GPU shroud stay on the last color until Apply All. PWM unchanged.
+
+### 2026-09-13 — Cycle All smooth wheel; stop USB/I2C storm
+- **Status:** Accepted
+- **Context:** Cycle All painted Keychron, Fusion, NVIDIA I2C, Arena, and Prime every 40 ms (and spawned five threads per frame). Prime is the mouse HID; GPU `i2cget` probed the bus every frame. The desktop pointer hitching. Wall-clock hue skipped ~50 steps whenever Fusion blocked, so colors jumped.
+- **Decision:** Keychron walks hue += 1 on its own thread. Other lamps follow the same hue about every 500 ms, no per-frame thread::scope. Cached GPU bus is not probed with `i2cget` each write. SOLID hue packets skip VIA GET once effect 1 is armed. JS tick drops to 500 ms while `cycleOn`.
+- **Alternatives considered:** Keep 40 ms all-lamp sync (rejected: mouse/GPU stall). Firmware Fusion color-cycle (rejected: unsynced).
+- **Consequences:** Full rainbow is ~10–20 s depending on speed. Lamps lag the keyboard by up to 500 ms. PWM unchanged.
+
+### 2026-09-13 — Cycle All SOLID hue clock
+- **Status:** Accepted
+- **Context:** GUI Cycle All stayed on VIA effect 1 (`#ff005d`) because Direct ticks never replaced firmware SOLID, and choosing Cycle All in the dropdown did not apply until a second click. CLI Direct GET_COLOR could move with the GUI killed, but the lamps still showed the last SOLID hue.
+- **Decision:** `lighting_cycle` walks HSV hue on a wall clock and paints SOLID on Keychron plus Fusion/GPU/Arena/Prime. Apply Cycle All (select change or All Devices) starts the thread; Apply All/solid stops it. Poll VIA GET hue (id 4), not GET_COLOR.
+- **Alternatives considered:** Host Direct `0x17` rainbow (rejected on this Q6 HE: lamps stay SOLID). Firmware Fusion `color-cycle` (rejected: unsynced).
+- **Consequences:** Live smoke is `chromaflow rgb --cycle --seconds 3 --poll`. PWM unchanged. GET_COLOR store may stay stale while SOLID hue walks.
+
+### 2026-09-13 — Buffer-then-broadcast lighting; GET_COLOR retry
+- **Status:** Accepted
+- **Context:** Cycle All looked like a solid color because each tick spawned `fusion-hid.py` and raced Keychron Direct vs SOLID. Apply All white on the first try was in-flight Direct overwriting SOLID. AIO digital packets were last, so the pump lagged.
+- **Decision:** One `lighting_broadcast` paints every native lamp from the same hex under a paint mutex. Fusion HID stays open (`fusion-hid.py serve`) and writes D_LED before analog. Apply All waits for the in-flight tick (`paintGen`) then broadcasts SOLID. Keychron SOLID retries until VIA GET effect is 1; Direct Cycle All GET_COLOR-samples LED 0 and repaints once on miss. No OpenRGB C++.
+- **Alternatives considered:** Firmware Fusion `color-cycle` (rejected: unsynced). Per-device Promise.all apply (rejected: VIA/Fusion still staggered).
+- **Consequences:** Live smoke is `chromaflow rgb --broadcast --color RRGGBB --poll`. PWM unchanged. GPU `0x68` readback can still be dummy `0x3f`.
+
+### 2026-09-13 — CPU AIO all Fusion headers; GPU I2C static write; host Cycle All
+- **Status:** Accepted
+- **Context:** Splitting CPU AIO to analog `led6`/`led7` (Z490 guess) left the pump dark. This X570S AORUS MASTER CPU cooler is LED_CPU (12V) plus D_LED ARGB, firmware IT5701 V4.0.8.0. GPU `0x68` enumerates on NVIDIA i2c-0 but SMBus readback is dummy `0x3f`. Firmware Fusion `color-cycle` was unsynced from Keychron host ticks.
+- **Decision:** CPU AIO apply uses HID feature `0xCC` on all eight analog channels plus a padded D_LED fill (`led6`/`led7`), liquidctl fallback. Motherboard Fusion stays onboard `led1`/`led3`/`led4`. GPU `set_color` writes idle `0x1C`, RGB `0x30–0x32`, static `0x13`, commit `0x3F` via `i2cset` when `i2cget` sees `0x68`. Cycle All is host-ticked `fixed`/`sync` on Fusion and GPU at 500 ms; Breathing/Flash stay firmware. No OpenRGB C++.
+- **Alternatives considered:** Keep firmware Cycle All on Fusion (rejected: unsynced and missed AIO). Translate MSIGPUv2 C++ (rejected: ADR-0007).
+- **Consequences:** Re-apply solid and Cycle All on the debug GUI. If the pump is still dark, analog Fusion cannot drive that header (needs a captured digital stream). GPU write can succeed on the bus and still leave the shroud unchanged if the ITE ignores dummy ACKs.
+
+### 2026-09-13 — CPU AIO row; Fusion firmware Cycle All; Combined on every lamp
+- **Status:** Accepted
+- **Context:** Apply All solid white left the GPU and CPU AIO green. Fusion was one liquidctl row (`sync` + led1–led8). Cycle All host-ticked analog `fixed` colors and fought firmware. Combined from All Devices / the Hardware cube skipped Fusion (CPU lane) and GPU (`hostOk`). Dual Beacon was Rainbow Beacon with a 2× offset.
+- **Decision:** List Motherboard Fusion (`led1`–`led5`,`led8`) and CPU AIO (`led6`/`led7`) as separate liquidctl devices. Cycle All/Breathing/Flash on Fusion use liquidctl `color-cycle`/`pulse`/`flash` once; host ticks stay on gauges. Combined applies to every host-ok lamp. Apply All continues after a GPU I2C error. Drop Dual Beacon. GPU `0x68` is flaky on this NVIDIA adapter; no OpenRGB C++ map (ADR-0007).
+- **Alternatives considered:** OpenRGB D_LED Direct (rejected: SDK off). Translate MSIGPUv2 registers (rejected: ADR-0021).
+- **Consequences:** Re-apply white / Cycle All / Combined on the debug GUI. If AIO mapping is wrong, swap which Fusion row lights the pump. GPU shroud stays unpainted until `0x68` stays up.
+
+### 2026-09-13 — Curves from 25 °C; native host effects without OpenRGB
+- **Status:** Accepted
+- **Context:** Preset PWM graphs started at 30 °C / 20 °C axis, so a GPU in the high 20s sat left of the polyline. After OpenRGB was off, Keychron rainbow-style effects looked broken: uniform SOLID hid per-key frames, SET_BATCH 1 could not keep 108 keys at 100 ms, and re-entering custom `0x17` every paint restarted firmware motion.
+- **Decision:** Preset points and the graph axis start at 25 °C. Per-key VIA SET batches 9 (verified GET_COLOR). Stay in Direct until the next SOLID fill. Host frames include Arena’s 4 zones. Fusion stays `sync` on ticks.
+- **Alternatives considered:** Keep 1-LED SET (rejected: ~1 s/frame). Firmware QMK effects without host paint (rejected: IDs on this Q6 HE are not a stable Direct).
+- **Consequences:** Re-apply a spatial effect on the keyboard in the debug GUI. Watchdog still running the previous recipe until that binary is restarted.
+
+### 2026-09-13 — Temp floor 25 °C; Keychron SOLID; Fusion sync ticks
+- **Status:** Accepted
+- **Context:** GPU °C regularly sits below 30 so the temp spark sat on the floor. Combined usage on the Q6 HE tracked load (GET_COLOR V stayed 255) but the keys breathed: VIA GET effect was `0x17` (the custom id we set), which this firmware animates. Fusion CPU usage never left the picker: host frames skip `liquidctl`, Lighting unmounts off-tab, and `set_fusion` ran eight CLI processes so the first hid tick often never landed.
+- **Decision:** Spark/lighting temp maps are 25–90 °C. Uniform Keychron fills set rgb_matrix SOLID `0x01` + HSV and GET the effect id. Fusion host ticks use `sync` only and apply on mode change; Apply still walks `led1`–`led8`.
+- **Alternatives considered:** Keep custom `0x17` and only zero speed (rejected: GET proved `0x17` is the animated mode). Keep Fusion on Lighting-only hidJobs (rejected: leaving the tab skipped the first apply).
+- **Consequences:** Re-apply Combined on the keyboard and CPU on the board after the debug GUI reload. PWM watchdog is untouched.
+
+### 2026-09-13 — Cooling 400 ms poll + Keychron 108 / Fusion led1–8
+- **Status:** Accepted
+- **Context:** Fan cards froze while a curve `<select>` was focused (`skipPoll` treated INPUT/SELECT as pause). Keychron Apply only changed ESC: VIA SET_TYPE Solid plus 9-LED SET packets wrote LED 0. Lighting hid the Q6 board because hidraw rows had `leds: 0` and OpenRGB overlay was skipped when 6742 was closed. Fusion `sync` alone left analog headers dark.
+- **Decision:** Cooling polls every 400 ms and skips only while scrolling. Conflict detect is cached 8 s. NVIDIA RPM is stale-while-revalidate (2 s). Keychron SET is per-key type and one LED per report; layout is 108 keys from hidraw. Fusion Apply sets `led1`–`led8`. Never restart `chromaflowd`.
+- **Alternatives considered:** Sub-100 ms Cooling poll (rejected: nvidia-settings hitch). Keep 9-LED SET batches (rejected: firmware kept LED 0).
+- **Consequences:** Identify 100% RPM still holds. Apply All on Lighting paints the whole board plus motherboard analog zones. Addressable D_LED strips stay unmapped in Mint liquidctl.
+
+### 2026-09-13 — 100% curve vs packaged watchdog
+- **Status:** Accepted
+- **Context:** FAN6/FAN7 set to `full` spun up then dropped to ~35%/27% duty. GUI `pwm_takeover` writes 100%; `chromaflowd` is still `/usr/bin/chromaflow` (03:31) which does not hold `full`, and channel `step_down=5` winds duty back every 2s.
+- **Decision:** `flat_full` skips hysteresis/step and still writes 100% if the temp gauge is missing. This session’s user unit `ExecStart` is the debug `chromaflow` so the live watchdog matches the GUI. Failsafe `ExecStopPost` stays. Never restart by `systemctl stop` without a neutralized failsafe blip plan.
+- **Alternatives considered:** Leave packaged watchdog (rejected: 100% cannot hold). Failsafe-to-100% (rejected, ADR-0018).
+- **Consequences:** Identify headers stay at duty 255 until the curve changes. Reinstall `.deb` before relying on `/usr/bin/chromaflow`.
+
+### 2026-09-13 — Classic IIFE for WebKit custom-protocol UI
+- **Status:** Accepted
+- **Context:** The GUI window painted only `:root` `#121418`. An inline classic script turned the surface brick-red, so HTML+CSS ran and ES `type="module"` did not (custom-protocol CORS). Vite 8 also put a classic IIFE in `<head>` before `#app`.
+- **Decision:** Production Vite output is one deferred IIFE (`inlineDynamicImports`, no `type="module"`). `main.js` uses Svelte 5 `mount` after `DOMContentLoaded`. Keep WebKit DMA-BUF + compositing disabled on this NVIDIA host.
+- **Alternatives considered:** Keep ES modules and relax CSP (rejected: WebKit still CORS-fetches modules). `new App()` constructor (rejected: Svelte 5).
+- **Consequences:** Debug `chromaflow-gui` shows Cooling chrome. Installed `/usr/bin/chromaflow-gui` stays stale until the `.deb` is rebuilt.
+
+### 2026-09-13 — Native lighting without OpenRGB (ADR-0021)
+- **Status:** Accepted
+- **Context:** OpenRGB respawned from GUI/`chromaflow-sdk.service`, held GPU I2C, and still failed SMBus `EIO` at `0x68`. Keychron/Arena/Prime/Fusion already had native or liquidctl paths.
+- **Decision:** Do not spawn OpenRGB unless `CHROMAFLOW_OPENRGB_SDK=1`. Disable the SDK user unit. Lighting lists hidraw + Fusion + PCI GPU. Fusion apply is liquidctl only. GPU color waits on a live I2C map (no OpenRGB C++). Never restart `chromaflowd`.
+- **Alternatives considered:** Keep OpenRGB as silent fallback (rejected). Copy MSIGPUv2 registers (rejected, ADR-0007).
+- **Consequences:** Motherboard and USB RGB work with 6742 closed. GPU shroud RGB is listed but not painted until `0x68` is verified.
+
+### 2026-09-13 — Native lighting ports + OpenRGB identity catalog (ADR-0020)
+- **Status:** Accepted
+- **Context:** MIT cannot vendor OpenRGB controllers, but the lighting gap list should be every device OpenRGB 1.0 already supports. USB color on this host should not depend on Qt/TCP for Keychron.
+- **Decision:** Extract detector identity (name/bus/IDs) from the AppImage-pinned git revision into `data/openrgb-device-index.csv`. Overlay marks native/extra/sdk. `lighting_port` + Keychron VIA SET `0x0A` with GET_COLOR verify. OpenRGB sibling stays. Relicense remains off.
+- **Alternatives considered:** GPL the product and copy Controllers (rejected). Dump thousands of rows into PRODUCT_GAPS.md (rejected).
+- **Consequences:** Fusion/GPU stay sdk-fallback until independent captures. `CHROMAFLOW_NATIVE_RGB=0` rolls back to SDK-only.
+
+### 2026-09-13 — OpenRGB reap + skip unchanged nvidia-settings
+- **Status:** Accepted
+- **Context:** OpenRGB AppImage aborted in Qt/X11 and was left as a zombie (`mem::forget`). Watchdog called `nvidia-settings -a` every ~2s at the same 20%, hitching Cinnamon.
+- **Decision:** Keep a `Child` and `try_wait`; treat `/proc` state `Z` as dead; 30s backoff after a failed spawn; `libxcb-cursor0` in `.deb` Depends. GPU fan apply is skipped when percent is unchanged; nvidia query TTL is 8s. Never restart `chromaflowd` for lighting.
+- **Alternatives considered:** Protocol-5 OpenRGB rescan (still deferred). NVML instead of nvidia-settings (not this slice).
+- **Consequences:** Existing zombie is cleared by `systemctl --user restart chromaflow-sdk` after the new binary is installed.
+
+### 2026-09-13 — Lighting SDK after graphical session (ADR-0019)
+- **Status:** Accepted
+- **Context:** After reboot, OpenRGB started at `default.target` with no `DISPLAY`, so the GPU and Keychron were missing and hidraw leftovers froze on the Lighting tab.
+- **Decision:** SDK/GUI units follow `graphical-session.target` with X11 env; one `openrgb.pid` SIGTERM restart in a 45s boot window; Lighting keeps polling while research leftovers exist. PWM watchdog stays on `default.target`.
+- **Alternatives considered:** OpenRGB protocol-5 rescan packet 140 (DATA layout risk). Restarting `chromaflowd` (rejected).
+- **Consequences:** Existing installs need `daemon-reload` + `systemctl --user restart chromaflow-sdk` (not the watchdog) until the next `.deb`.
 
 ### 2026-09-13 — Ship with Vite 5.4 / Svelte 4 despite GHSA High on `vite`
 - **Status:** Accepted

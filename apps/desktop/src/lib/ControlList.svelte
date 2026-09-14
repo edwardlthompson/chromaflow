@@ -1,6 +1,6 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import { pwmPercent } from "./cooling.js";
+  import { fanDutyPct } from "./cooling.js";
   import { defaultKind, defaultName, defaultTempId } from "./coolingBoard.js";
   import { PRESETS, curveLabel } from "./coolingCurves.js";
   import { canControl } from "./pwm.js";
@@ -27,7 +27,7 @@
 
 <div class="fc-board">
   {#each cards as card (card.id)}
-    {@const pct = card.pwm ? pwmPercent(card.pwm.value) : null}
+    {@const pct = fanDutyPct(card)}
     <article class="fc-tile fc-ctrl">
       <header class="fc-tile-head">
         <label>

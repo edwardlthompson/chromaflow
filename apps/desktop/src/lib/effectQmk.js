@@ -1,6 +1,7 @@
 /** QMK RGB-matrix-style host effects. Coordinates are 0–224 like firmware `point`. */
 
-import { hsvToHex } from "./color.js";
+import { hsvToHex, rgbToHex, rgb16, phase16 } from "./color.js";
+import { q6heKeys } from "./keyboard.js";
 
 export const CX = 112;
 export const CY = 32;
@@ -55,6 +56,20 @@ export function ledPoints(device) {
     ((device && device.led_names) || []).length,
     ((device && device.led_colors) || []).length,
   );
+  const q6n = String((device && device.name) || "").toLowerCase();
+  if (/keychron|q6/.test(q6n) && n >= 100) {
+    const { cells, w, h } = q6heKeys(device);
+    const count = Math.max(n, 108);
+    const pts = Array.from({ length: count }, () => ({ x: CX, y: CY }));
+    const xmax = Math.max(1, w - 1);
+    const ymax = Math.max(1, h - 1);
+    for (const c of cells) {
+      if (c.idx >= 0 && c.idx < count) {
+        pts[c.idx] = { x: (c.x / xmax) * 224, y: (c.y / ymax) * 64 };
+      }
+    }
+    return pts;
+  }
   const pts = Array.from({ length: n }, (_, i) => ({
     x: n > 1 ? (i / (n - 1)) * 224 : CX,
     y: CY,
@@ -103,7 +118,7 @@ export function paintKind(kind, pts, nowMs, hsv, speed = 128) {
       case "breathing":
         return rgb(hue0, sat, val * pulse);
       case "cycle_all":
-        return rgb(time, sat, val);
+        return rgbToHex(...rgb16(phase16(nowMs, speed)));
       case "cycle_lr":
         return rgb(p.x - time, sat, val);
       case "cycle_ud":

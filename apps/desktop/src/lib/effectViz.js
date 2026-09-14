@@ -6,32 +6,7 @@ import { gaugeHex, gaugeLane, laneRatio } from "./gauges.js";
 import { ui } from "./ui.js";
 
 export { classify, ledPoints, time8 };
-
-export const HOST_EFFECTS = [
-  "Solid Color",
-  "Breathing",
-  "Band Spiral",
-  "Cycle All",
-  "Cycle Left Right",
-  "Cycle Up Down",
-  "Rainbow Moving Chevron",
-  "Cycle Out In",
-  "Cycle Out In Dual",
-  "Cycle Pinwheel",
-  "Cycle Spiral",
-  "Dual Beacon",
-  "Rainbow Beacon",
-  "Jellybean Raindrops",
-  "Pixel Rain",
-  "Flashing",
-  "Splash",
-  "Hardware gauges",
-  "CPU",
-  "GPU",
-  "Combined",
-  "RAM",
-  "Disk",
-];
+export { HOST_EFFECTS, SHARED_MODES, deviceModes, groupedModes } from "./effectCatalog.js";
 
 export function preferMode(announced, hint) {
   const a = String(announced || "");
@@ -110,7 +85,7 @@ export function effectFrame(device, nowMs, hex, speed = 128) {
 export function hostOpenRgbFrames(devices, lastMode, lastColor, nowMs, speed = 128) {
   const out = [];
   for (const d of devices || []) {
-    if ((d && d.backend) !== "openrgb") continue;
+    if ((d && d.backend) !== "openrgb" && (d && d.backend) !== "keychron" && (d && d.backend) !== "arena") continue;
     const key = `${d.backend}:${d.name}`;
     const mode = lastMode && lastMode[key];
     if (!isHostEffect(mode)) continue;

@@ -1,6 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import ChannelRow from "./ChannelRow.svelte";
+  import { groupedModes } from "./effectCatalog.js";
   import { classify } from "./effectQmk.js";
   import { persistSession } from "./session.js";
   import { ui } from "./ui.js";
@@ -39,14 +40,19 @@
   }
   $: if (modes.length && !modes.includes(mode)) mode = firstMode(modes);
   $: if (!modes.length) mode = "";
+  $: groups = groupedModes(modes);
   $: gauge = String(classify(mode)).startsWith("gauge");
 </script>
 
 {#if modes.length}
   <div class="effect-row">
-    <select bind:value={mode} data-applied={selected} disabled={busy} title={t["lighting.effectHint"]} aria-label={t["lighting.effect"]}>
-      {#each modes as name}
-        <option value={name}>{name}</option>
+    <select bind:value={mode} data-applied={selected} disabled={busy} title={t["lighting.effectHint"]} aria-label={t["lighting.effect"]} on:change={() => { if (mode && mode !== selected) dispatch("mode", { mode, color: hex, speed }); }}>
+      {#each groups as group}
+        <optgroup label={t[`lighting.group.${group.id}`]}>
+          {#each group.modes as name}
+            <option value={name}>{name}</option>
+          {/each}
+        </optgroup>
       {/each}
     </select>
     <ChannelRow

@@ -21,6 +21,13 @@ export function pwmPercent(raw) {
   return Math.max(0, Math.min(100, Math.round((n / 255) * 100)));
 }
 
+export function fanDutyPct(card) {
+  if (!card) return null;
+  const live = Number(card.percent);
+  if (Number.isFinite(live)) return Math.max(0, Math.min(100, Math.round(live)));
+  return card.pwm ? pwmPercent(card.pwm.value) : null;
+}
+
 export function emptyHeader(card) {
   if (!card || card.backend === "nvidia") return false;
   const n = Number(card.fan && card.fan.value);
@@ -122,6 +129,7 @@ export function controlCards(chips, gpuFans) {
     out.push({
       id: fan.id,
       backend: "nvidia",
+      percent: Number.isFinite(pct) ? Math.round(pct) : null,
       chip: { name: "nvidia", path: "nvidia" },
       pwm: { name: `fan${idx}`, value: duty, enable_exists: true, writable: Boolean(fan.writable) },
       fan: { label: fan.label || `GPU fan ${idx}`, value: String(fan.rpm ?? "") },

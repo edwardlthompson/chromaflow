@@ -1,6 +1,6 @@
 /** HID leftover after OpenRGB, liquidctl, and known VID:PID backends. */
 
-import { hidList, liquidctlList, sdkTargets, arenaTargets, primeTargets, fusionFallback } from "./lighting.js";
+import { hidList, liquidctlList, sdkTargets, arenaTargets, primeTargets, fusionTargets, keychronTargets } from "./lighting.js";
 
 function sdkBlob(inventory) {
   return ((inventory && inventory.openrgb && inventory.openrgb.controllers) || [])
@@ -23,12 +23,12 @@ export function hidHasBackend(d, inventory) {
   const vid = String((d && d.vendor_id) || "").toLowerCase();
   const pid = String((d && d.product_id) || "").toLowerCase();
   if (vid === "1038" && (pid === "1a00" || pid === "1856")) return true;
+  if (vid === "3434") return Boolean(d && d.readable);
   const sdk = sdkBlob(inventory);
   const liquid = liquidBlob(inventory);
   if (vid === "048d" && pid === "5702") {
     return /aorus|gigabyte|fusion/.test(sdk) || liquid.includes("fusion");
   }
-  if (vid === "3434" && sdk.includes("keychron")) return true;
   const name = String((d && d.name) || "").toLowerCase();
   if (!name) return false;
   return sdk.includes(name) || controlledNames(inventory).includes(name);
@@ -38,7 +38,8 @@ function controlledNames(inventory) {
   return sdkTargets(inventory)
     .concat(arenaTargets(inventory))
     .concat(primeTargets(inventory))
-    .concat(fusionFallback(inventory))
+    .concat(keychronTargets(inventory))
+    .concat(fusionTargets(inventory))
     .map((d) => String((d && d.name) || "").toLowerCase());
 }
 

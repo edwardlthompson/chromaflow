@@ -1,4 +1,4 @@
-//! Dispatch Lighting color apply. OpenRGB, Arena HID, Prime Neo HID, or liquidctl Fusion.
+//! Dispatch Lighting color apply. Native HID, liquidctl Fusion, optional OpenRGB.
 
 pub fn parse_rrggbb(raw: &str) -> Result<[u8; 3], String> {
     let s = raw.trim().trim_start_matches('#');
@@ -13,57 +13,87 @@ pub fn parse_rrggbb(raw: &str) -> Result<[u8; 3], String> {
     ])
 }
 
-fn fusionish(name: &str) -> bool {
-    let n = name.to_ascii_lowercase();
-    n.contains("fusion") || n.contains("aorus") || n.contains("gigabyte")
-}
-
 fn ready(backend: &str) {
     if backend == "openrgb" {
         crate::openrgb_spawn::ensure_sdk();
         crate::openrgb_preview::drop_session();
         crate::keychron_preview::drop_session();
     }
+    if backend == "keychron" {
+        crate::keychron_preview::drop_session();
+    }
 }
 
 pub fn apply(backend: &str, device: &str, color: &str) -> Result<String, String> {
-    ready(backend);
+    crate::lighting_broadcast::with_paint(|| apply_unlocked(backend, device, color))
+}
+
+fn apply_unlocked(backend: &str, device: &str, color: &str) -> Result<String, String> {
+    if color.trim().is_empty() {
+        return Err("color must be RRGGBB".into());
+    }
+    let backend = crate::lighting_port::rewrite(backend, device);
+    ready(&backend);
     let rgb = parse_rrggbb(color)?;
     let hex = format!("{:02X}{:02X}{:02X}", rgb[0], rgb[1], rgb[2]);
-    match backend {
-        "openrgb" => {
-            let msg = crate::openrgb_apply::set_color(device, rgb)?;
-            if fusionish(device) {
-                match crate::liquidctl_apply::set_fusion(&hex) {
-                    Ok(extra) => Ok(format!("{msg}; {extra}")),
-                    Err(_) => Ok(msg),
-                }
-            } else {
-                Ok(msg)
-            }
-        }
+    match backend.as_str() {
+        "openrgb" => crate::openrgb_apply::set_color(device, rgb),
         "arena" => crate::arena_apply::set_color(rgb),
         "prime" => crate::prime_apply::set_color(rgb),
-        "liquidctl" => crate::liquidctl_apply::set_fusion(&hex),
+        "liquidctl" => crate::liquidctl_apply::set_device(device, &hex, "fixed"),
+        "keychron" => crate::keychron_apply::set_color(rgb),
+        "msi_gpu" => crate::gpu_apply::set_color(rgb),
         _ => Err("unknown lighting backend".into()),
     }
 }
 
 pub fn apply_mode(backend: &str, device: &str, mode: &str, color: &str) -> Result<String, String> {
-    ready(backend);
+    crate::lighting_broadcast::with_paint(|| apply_mode_unlocked(backend, device, mode, color))
+}
+
+fn apply_mode_unlocked(backend: &str, device: &str, mode: &str, color: &str) -> Result<String, String> {
+    let backend = crate::lighting_port::rewrite(backend, device);
+    ready(&backend);
+    if backend == "liquidctl" {
+        let hex = parse_rrggbb(color)
+            .map(|rgb| format!("{:02X}{:02X}{:02X}", rgb[0], rgb[1], rgb[2]))
+            .unwrap_or_else(|_| "FFFFFF".into());
+        return crate::liquidctl_apply::set_device(device, &hex, mode);
+    }
+    let rgb = parse_rrggbb(color)?;
+    if backend == "msi_gpu" {
+        return crate::gpu_apply::set_color(rgb);
+    }
     if backend != "openrgb" {
         return Err("effects need OpenRGB SDK".into());
     }
-    let rgb = parse_rrggbb(color)?;
     crate::openrgb_mode::set_mode(device, mode, rgb)
 }
 
 pub fn apply_led(backend: &str, device: &str, led: u16, color: &str) -> Result<String, String> {
-    ready(backend);
+    crate::lighting_broadcast::with_paint(|| apply_led_unlocked(backend, device, led, color))
+}
+
+fn apply_led_unlocked(backend: &str, device: &str, led: u16, color: &str) -> Result<String, String> {
+    if color.trim().is_empty() {
+        return Err("color must be RRGGBB".into());
+    }
+    let backend = crate::lighting_port::rewrite(backend, device);
+    ready(&backend);
+    let rgb = parse_rrggbb(color)?;
+    if backend == "keychron" {
+        return crate::keychron_apply::set_led(led, rgb);
+    }
+    if backend == "liquidctl" {
+        return crate::liquidctl_apply::set_led(
+            device,
+            led,
+            &format!("{:02X}{:02X}{:02X}", rgb[0], rgb[1], rgb[2]),
+        );
+    }
     if backend != "openrgb" {
         return Err("per-LED needs OpenRGB SDK".into());
     }
-    let rgb = parse_rrggbb(color)?;
     crate::openrgb_mode::set_led(device, led, rgb)
 }
 
@@ -79,6 +109,7 @@ mod tests {
         assert!(parse_rrggbb("xyzxyz").is_err());
         assert!(apply("hidraw", "Arena", "0052FF").is_err());
         assert!(apply("openrgb", "", "0052FF").is_err());
+        assert!(apply("keychron", "Q6", "").is_err());
         let zone = crate::openrgb_dled::zone_body(0, 2, [0, 0x52, 0xff]);
         assert_eq!(zone.len(), 18);
         assert_eq!(&zone[0..4], &(zone.len() as u32).to_le_bytes());

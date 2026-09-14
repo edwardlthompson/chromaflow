@@ -4,7 +4,7 @@
 
 ## Acceptance criteria
 
-- ✅ User-visible behavior: Lighting uses the OpenRGB AppImage shipped at `/usr/libexec/chromaflow/OpenRGB.AppImage`; `chromaflow daemon --sdk` keeps `127.0.0.1:6742` up (no Start-menu `.desktop`); Install remains a fallback download into `~/.local/share/chromaflow/`
+- ✅ User-visible behavior: Lighting uses the OpenRGB AppImage shipped at `/usr/libexec/chromaflow/OpenRGB.AppImage`; `chromaflow daemon --sdk` keeps `127.0.0.1:6742` up after `graphical-session.target` (no Start-menu `.desktop`); Install remains a fallback download into `~/.local/share/chromaflow/`
 - ✅ Offline/error behavior: missing binary is a no-op spawn; hash/timeout/wrong host is `role="alert"`; `CHROMAFLOW_NO_SPAWN=1` never execs; FUSE failures mention `libfuse2`
 - ✅ Accessibility: engine-missing banner uses `role="alert"`; Install is a labelled button
 - ✅ i18n: `lighting.engineMissing` `lighting.installEngine` in `apps/desktop/src/locales/en.json`
@@ -23,7 +23,6 @@
 | View | `apps/desktop/src/pages/Lighting.svelte` |
 | Pin | `data/openrgb-engine.yaml` |
 | Tests | `openrgb_spawn` / `openrgb_engine` unit tests + `tests/test_chromaflow_lighting.py` |
-
 ## Tests
 
 - Automated: yes — path order, refuse Flatpak/bwrap, hash reject, `CHROMAFLOW_NO_SPAWN`, no `set_pwm`
@@ -35,4 +34,4 @@
 
 ## Definition of Done
 
-Sibling engine may replace the OpenRGB desktop app. No OpenRGB C++ in this tree. PWM remains ADR-0010.
+Sibling engine may replace the OpenRGB desktop app. No OpenRGB C++ in this tree. PWM remains ADR-0010. After reboot, prefer `systemctl --user restart chromaflow-sdk` if devices are still missing; never restart `chromaflowd` for lighting. The SDK daemon reaps the AppImage child (`try_wait`) instead of `mem::forget`.

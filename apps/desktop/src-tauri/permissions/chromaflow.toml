@@ -21,7 +21,7 @@ commands.allow = ["competitors_plan", "competitors_remove"]
 [[permission]]
 identifier = "allow-lighting-apply"
 description = "OpenRGB/liquidctl color apply and LED color snapshot (no PWM)"
-commands.allow = ["lighting_apply", "lighting_preview", "lighting_sync"]
+commands.allow = ["lighting_apply", "lighting_preview", "lighting_sync", "lighting_broadcast", "lighting_cycle"]
 
 [[permission]]
 identifier = "allow-profiles-load"

@@ -8,22 +8,43 @@ const VID: &str = "1038";
 const PID: &str = "1a00";
 
 pub fn set_color(rgb: [u8; 3]) -> Result<String, String> {
-    let report = color_report(rgb);
+    write_report(&color_report(rgb))
+}
+
+pub fn set_zones(hexes: &[String]) -> Result<String, String> {
+    if hexes.is_empty() {
+        return Err("color must be RRGGBB".into());
+    }
+    let mut cols = [[0u8; 3]; 4];
+    for i in 0..4 {
+        let raw = hexes.get(i).unwrap_or(&hexes[0]);
+        cols[i] = crate::lighting_apply::parse_rrggbb(raw)?;
+    }
+    write_report(&zones_report(&cols))?;
+    Ok("set Arena 7 4 zones".into())
+}
+
+fn write_report(report: &[u8; 64]) -> Result<String, String> {
     let path = vendor_hidraw().ok_or_else(|| "Arena 7 vendor hidraw not found".to_string())?;
     let mut f = OpenOptions::new()
         .write(true)
         .open(&path)
         .map_err(|e| e.to_string())?;
-    f.write_all(&report).map_err(|e| e.to_string())?;
+    f.write_all(report).map_err(|e| e.to_string())?;
     Ok(format!("set Arena 7 via {}", path.display()))
 }
 
 /// 64-byte output report (ID 0x06). Layout from the public Prismatic Arena 7 notes.
 pub fn color_report(rgb: [u8; 3]) -> [u8; 64] {
+    zones_report(&[rgb, rgb, rgb, rgb])
+}
+
+pub fn zones_report(cols: &[[u8; 3]; 4]) -> [u8; 64] {
     let mut r = [0u8; 64];
     r[0] = 0x06;
     r[1] = 0xa1;
     for z in 0..4 {
+        let rgb = cols[z];
         let o = 2 + z * 6;
         r[o] = rgb[0];
         r[o + 1] = rgb[1];
@@ -68,7 +89,7 @@ fn is_arena_vendor(sys: &Path, name: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::color_report;
+    use super::{color_report, zones_report};
 
     #[test]
     fn static_report_layout() {
@@ -79,5 +100,9 @@ mod tests {
         assert_eq!(&r[20..26], &[0x00, 0xe5, 0xff, 0x01, 0x1e, 10]);
         assert_eq!(r[26], 0x0f);
         assert!(r[27..].iter().all(|b| *b == 0));
+        let z = zones_report(&[[255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 0]]);
+        assert_eq!(&z[2..5], &[255, 0, 0]);
+        assert_eq!(&z[8..11], &[0, 255, 0]);
+        assert!(super::set_zones(&[]).is_err());
     }
 }

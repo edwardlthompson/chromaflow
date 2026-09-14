@@ -1,9 +1,9 @@
-/** Full-width 60s sparks. Temp 30–90 °C; usage 0–100%. Never write PWM. */
+/** Full-width 60s sparks. Temp 25–90 °C; usage 0–100%. Never write PWM. */
 
 export function tempBand(c) {
   const n = Number(c);
   if (!Number.isFinite(n)) return null;
-  return Math.max(0, Math.min(1, (n - 30) / 60));
+  return Math.max(0, Math.min(1, (n - 25) / 65));
 }
 
 export function usageBand(v) {

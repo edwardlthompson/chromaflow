@@ -25,7 +25,6 @@
 | Launcher | `packaging/` (`.desktop`, icon) |
 | Tests | `tests/test_chromaflow_tauri.py` |
 | Wiring | Tauri `invoke_handler` ≤10 extra lines |
-
 ## Tests
 
 - Automated: yes — `tests/test_chromaflow_tauri.py` (window label `main`, Vite `base: "./"`, DMA-BUF env, no `set_pwm`, `.desktop` Exec points at the GUI, docs do not treat `xdg-open http://` as product launch)
@@ -44,4 +43,4 @@ See [`docs/PRODUCT_GAPS.md`](../PRODUCT_GAPS.md) G-APP and BUILD_PLAN Sprint 2.
 
 - After each AGENT step: `python3 scripts/agent-run.py watch-agent-gates --once --autofix --scope auto`
 - Do not vendor Fan Control or OpenRGB UI code
-- Release `chromaflow-gui` embeds `apps/desktop/dist` after `npm run build` and `cargo build -p chromaflow-desktop --features custom-protocol`. Without that feature the webview loads Vite at `http://127.0.0.1:1420` (connection refused = white error page). Vite `base` must be `./` so `./assets/…` loads. On NVIDIA + Cinnamon, `main` sets `WEBKIT_DISABLE_DMABUF_RENDERER=1` unless the user already set it. Do not default `WEBKIT_DISABLE_COMPOSITING_MODE`.
+- Release `chromaflow-gui` embeds `apps/desktop/dist` after `npm run build` and `cargo build -p chromaflow-desktop --features custom-protocol`. Without that feature the webview loads Vite at `http://127.0.0.1:1420` (connection refused = white error page). Vite `base` must be `./` so `./assets/…` loads. Production JS is a classic IIFE (`inlineDynamicImports`) because WebKit custom-protocol CORS skips `type="module"` (CSS still loads, so the window is `#121418` with no header). On NVIDIA + Cinnamon, `main` sets `WEBKIT_DISABLE_DMABUF_RENDERER=1` and `WEBKIT_DISABLE_COMPOSITING_MODE=1` unless the user already set them (DMA-BUF off alone can still be a blank `#121418` surface).

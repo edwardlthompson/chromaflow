@@ -13,4 +13,4 @@ Environment=XAUTHORITY=%h/.Xauthority
 NoNewPrivileges=yes
 
 [Install]
-WantedBy=default.target
+WantedBy=graphical-session.target

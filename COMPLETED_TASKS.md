@@ -2,6 +2,22 @@
 
 > Archive of finished BUILD_PLAN items.
 
+## Sprint 33 — Lighting without OpenRGB (2026-09-14)
+
+- ✅ [AGENT] Kill OpenRGB by default; native Fusion/Keychron/Arena/Prime lighting
+
+## Sprint 32 — Native lighting independence (2026-09-14)
+
+- ✅ [AGENT] OpenRGB identity catalog + native lighting port + Keychron VIA SET
+
+## Sprint 31 — Desktop stability (OpenRGB reap + NVIDIA skip) (2026-09-14)
+
+- ✅ [AGENT] Reap/respawn OpenRGB on death; skip unchanged GPU fan nvidia-settings
+
+## Sprint 30 — Boot-stable lighting inventory (2026-09-14)
+
+- ✅ [AGENT] Start lighting SDK after graphical-session with DISPLAY; one OpenRGB pid restart if GPU/Keychron missing; keep polling Lighting leftovers
+
 ## Sprint 29 — Equal Cooling cards (2026-09-13)
 
 - ✅ [AGENT] Fans/Pumps/Temps/Curves tiles share fan-card size

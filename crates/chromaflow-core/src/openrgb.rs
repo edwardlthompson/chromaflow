@@ -21,7 +21,20 @@ static CACHE: Mutex<Cache> = Mutex::new(Cache {
 static CONNECTS: AtomicU32 = AtomicU32::new(0);
 
 pub fn probe() -> OpenRgbProbe {
+    if !crate::openrgb_spawn::sdk_opt_in() {
+        return disabled_probe();
+    }
     probe_cached(false)
+}
+
+fn disabled_probe() -> OpenRgbProbe {
+    OpenRgbProbe {
+        status: "disabled".into(),
+        detail: "OpenRGB spawn off; native lighting".into(),
+        controllers: Vec::new(),
+        sandboxed: crate::openrgb_sandbox::sandboxed(),
+        engine_missing: false,
+    }
 }
 
 pub fn probe_fresh() -> OpenRgbProbe {

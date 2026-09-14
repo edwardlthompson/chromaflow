@@ -1,4 +1,4 @@
-/** Group USB/ARGB inventory. Apply uses OpenRGB, liquidctl, Arena 7, and Prime Neo. */
+/** Group USB/ARGB inventory. Apply uses hidraw, liquidctl Fusion, and optional OpenRGB. */
 
 import { normalizeHex } from "./color.js";
 
@@ -27,6 +27,12 @@ export function sizeLabel(d) {
   const n = Number(d && d.leds) || 0;
   if (d && d.backend === "arena") return "4 HID zones";
   if (d && d.backend === "prime") return "wheel LED";
+  if (d && d.backend === "keychron") return n ? `${n} LEDs` : "VIA HID";
+  if (d && d.backend === "liquidctl") {
+    if (/aio/i.test((d && d.name) || "")) return "LED_CPU + D_LED";
+    return n ? `${n} analog zones` : "Fusion USB";
+  }
+  if (d && d.backend === "msi_gpu") return "GPU I2C";
   return n ? `${n} LEDs` : "size unknown";
 }
 
@@ -78,26 +84,43 @@ export function arenaTargets(inventory) {
     }));
 }
 
+export function fusionTargets(inventory) {
+  if (!liquidctlList(inventory).some((n) => /fusion/i.test(n))) return [];
+  const row = (name, protocol, leds, led_names) => ({
+    backend: "liquidctl",
+    name,
+    protocol,
+    leds,
+    color: "",
+    modes: [],
+    led_names,
+    grid_w: 0,
+    grid_h: 0,
+    grid: [],
+  });
+  return [
+    row("Motherboard Fusion", "liquidctl analog", 3, ["led1", "led3", "led4"]),
+    row("CPU AIO", "Fusion headers", 5, ["led2", "led5", "led6", "led7", "led8"]),
+  ];
+}
+
 export function fusionFallback(inventory) {
-  const listed = ((inventory && inventory.openrgb && inventory.openrgb.controllers) || [])
-    .map(controllerName)
-    .join(" ")
-    .toLowerCase();
-  const hasSdk = /fusion|aorus|gigabyte/i.test(listed);
-  return liquidctlList(inventory)
-    .filter((n) => /fusion/i.test(n) && !hasSdk)
-    .map((name) => ({
-      backend: "liquidctl",
-      name,
-      protocol: "liquidctl",
-      leds: 0,
-      color: "",
-      modes: [],
-      led_names: [],
-      grid_w: 0,
-      grid_h: 0,
-      grid: [],
-    }));
+  return fusionTargets(inventory);
+}
+
+export function gpuTargets(inventory) {
+  return (Array.isArray(inventory && inventory.gpu_rgb) ? inventory.gpu_rgb : []).map((row) => ({
+    backend: "msi_gpu",
+    name: controllerName(row),
+    protocol: (row && row.protocol) || "NVIDIA I2C",
+    leds: Number(row && row.leds) || 1,
+    color: "",
+    modes: [],
+    led_names: [],
+    grid_w: 0,
+    grid_h: 0,
+    grid: [],
+  }));
 }
 
 export function primeTargets(inventory) {
@@ -117,11 +140,38 @@ export function primeTargets(inventory) {
     }));
 }
 
+export function keychronTargets(inventory) {
+  return hidList(inventory)
+    .filter((d) => d.readable && d.vendor_id === "3434")
+    .map((d) => ({
+      backend: "keychron",
+      name: d.name,
+      protocol: "VIA 0xA8",
+      leds: d.product_id === "0b60" ? 108 : Number(d.leds) || 108,
+      color: "",
+      modes: [],
+      led_names: [],
+      grid_w: 0,
+      grid_h: 0,
+      grid: [],
+    }));
+}
+
 export function lightingDevices(inventory) {
-  return sdkTargets(inventory)
-    .concat(arenaTargets(inventory))
+  const nativeK = keychronTargets(inventory);
+  const sdk = sdkTargets(inventory).filter((d) => {
+    const n = String(d.name || "").toLowerCase();
+    if (n.includes("keychron") || n.includes("q6")) return false;
+    if (/fusion|aorus|gigabyte/.test(n)) return false;
+    if (n.includes("suprim liquid") || (n.includes("msi") && n.includes("4090"))) return false;
+    return true;
+  });
+  return arenaTargets(inventory)
     .concat(primeTargets(inventory))
-    .concat(fusionFallback(inventory));
+    .concat(nativeK)
+    .concat(fusionTargets(inventory))
+    .concat(gpuTargets(inventory))
+    .concat(sdk);
 }
 
 export { researchDevices, fusionUsbListed, hidHasBackend } from "./research.js";

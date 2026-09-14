@@ -37,7 +37,7 @@
 
 ### Project Purpose
 
-ChromaFlow: Linux Mint cooling (hwmon + NVIDIA GPU fans) and lighting (OpenRGB SDK localhost color/mode/per-LED apply plus USB/ARGB hidraw names) with a polkit install-support path. No bundled kernel modules. GUI never root. This Gigabyte X570S sees Fusion 2.0, Keychron Q6 HE, SteelSeries mouse/Arena 7, and the 4090 hybrid AIO; hidraw for those VID:PIDs is plugdev `0660` (udev also ships in the `.deb`). Support Extra kernel support lists `it87-dkms` first (DKMS srcversion, not in-tree) and `liquidctl` second. Live host has IT8689 + IT87952 after frankcrawford DKMS; Super I/O `pwm*` is plugdev `0660`. Take-over is live: `chromaflowd --watchdog` owns ITE PWM + NVIDIA fans (min 20%, never silent 0%). Quiet **Apply to all** persists in `curves.json` after this-machine inventory hydrates (not the sample fixture). Login autostart + Cinnamon favorite + color tray. Product GUI is the `chromaflow_*.deb` `chromaflow-gui` (one window per session). Locked brand: `branding/assets/chromaflow-icon.png` and `chromaflow-icon-hero-glass.png`. Lighting engine at `/usr/libexec/chromaflow/OpenRGB.AppImage`; `chromaflow daemon --sdk` keeps `127.0.0.1:6742` up. Desktop stays Vite 5.4 / Svelte 4 until the Windows port (GHSA-fx2h-pf6j-xcff is Windows `vite --host` only).
+ChromaFlow: Linux Mint cooling (hwmon + NVIDIA GPU fans) and lighting (native hidraw + liquidctl Fusion; OpenRGB only if `CHROMAFLOW_OPENRGB_SDK=1`) with a polkit install-support path. No bundled kernel modules. GUI never root. This Gigabyte X570S sees Fusion 2.0, Keychron Q6 HE, SteelSeries mouse/Arena 7, and the 4090 hybrid AIO; hidraw for those VID:PIDs is plugdev `0660` (udev also ships in the `.deb`). Support Extra kernel support lists `it87-dkms` first (DKMS srcversion, not in-tree) and `liquidctl` second. Live host has IT8689 + IT87952 after frankcrawford DKMS; Super I/O `pwm*` is plugdev `0660`. Take-over is live: `chromaflowd --watchdog` owns ITE PWM + NVIDIA fans (min 20%, never silent 0%). Quiet **Apply to all** persists in `curves.json` after this-machine inventory hydrates (not the sample fixture). Login autostart + Cinnamon favorite + color tray. Product GUI is the `chromaflow_*.deb` `chromaflow-gui` (one window per session). Locked brand: `branding/assets/chromaflow-icon.png` and `chromaflow-icon-hero-glass.png`. OpenRGB AppImage may remain on disk but is not spawned (ADR-0021). Native Keychron VIA, Arena/Prime HID, Fusion HID `0xCC` (liquidctl fallback), and GPU I2C `0x68` static RGB when the ITE enumerates. Desktop stays Vite 5.4 / Svelte 4 until the Windows port (GHSA-fx2h-pf6j-xcff is Windows `vite --host` only).
 
 ### Key Constraints
 
@@ -53,6 +53,13 @@ Cline is the first-run agent in Cursor: GitHub sign-in, FREE models, no API keys
 
 Golden Path Settings/About/Feedback are a route stack, not three booleans. Web History API and Android BackHandler pop one level; at home Back stays in the app. Persist key `gp.nav.v1` restores location after theme/crash/share-target (web) and rotation/process death (Android). Home chrome is Settings-only; theme, About, and donate live in sectioned Settings/About menus with dropdowns.
 
+| 2026-09-14 | Ship 0.2.0 native lighting | OpenRGB opt-in; GPU I2C double-buffer; Vite 8.3.0 | Never dump GPU I2C; never chromaflowd |
+| 2026-09-13 | Cycle All Direct fill + Prime live | `set_fill` 108 keys / 120 ms; Prime `0x62` no `0x59` | GPU I2C still off cycle; never chromaflowd |
+| 2026-09-13 | Cycle All SOLID hue clock | `lighting_cycle` walks VIA HSV; poll GET id 4 | GET_COLOR store can stay stale; never chromaflowd |
+| 2026-09-13 | Buffer-then-broadcast + GET_COLOR retry | `lighting_broadcast` + Fusion `serve`; SOLID/Direct readback | GPU `0x68` ACK can be dummy `0x3f`; never chromaflowd |
+| 2026-09-13 | CPU AIO HID + GPU I2C write | Fusion `0xCC` all headers; ITE static `0x13` at `0x68`; host Cycle All | Analog may still miss D_LED Direct; NVIDIA ACK can be dummy `0x3f`; never chromaflowd |
+| 2026-09-13 | Sprint 31 desktop stability | Reap OpenRGB Child; skip same GPU percent; libxcb-cursor0 | Restart chromaflow-sdk after install; never chromaflowd |
+| 2026-09-13 | Sprint 30 lighting boot | SDK after graphical-session + DISPLAY; one OpenRGB pid restart; Lighting keeps polling leftovers | Do not restart chromaflowd for RGB; proto-5 rescan still deferred |
 | 2026-09-13 | ITE pwm4 + GPU DISPLAY | Inventory lists ENODATA pwm4/5; chromaflowd DISPLAY=:0 | Empty SYS_FAN* stay 0 RPM; pump tach is FAN7 |
 | 2026-09-13 | Live Balanced take-over | Watchdog owns hwmon3/hwmon4 enable=1 | Cooling copy is conflict-only; tiles 22rem |
 | 2026-09-12 | Sprint 20 extras green + temp cards | PWM extra stays green; temp CPU/GPU cards; optional liquidctl apt | No NVML; USB AIO still needs liquidctl CLI |
@@ -137,6 +144,10 @@ Golden Path Settings/About/Feedback are a route stack, not three booleans. Web H
 - **Source template:** `edwardlthompson/agent-project-bootstrap` (self-maintained)
 - **Template version:** `1.4.0` (see `.template-version`)
 - **Last update check:** See `.template-update.json`
+
+### Retrospective — 2026-09-13 (Sprint 32)
+
+- AGENT row (OpenRGB identity CSV + native Keychron VIA SET `0x0A`; OpenRGB stays) ✅ and smoked. Fusion/GPU RGB remain sdk-fallback.
 
 ### Retrospective — 2026-09-13 (Sprint 26)
 

@@ -95,6 +95,7 @@ class LightingHidTests(unittest.TestCase):
         self.assertIn("1856", (ROOT / "apps/desktop/src/lib/research.js").read_text(encoding="utf-8"))
         spawn = (ROOT / "crates/chromaflow-core/src/openrgb_spawn.rs").read_text(encoding="utf-8")
         self.assertIn("CHROMAFLOW_NO_SPAWN", spawn)
+        self.assertIn("CHROMAFLOW_OPENRGB_SDK", spawn)
         self.assertIn("--startminimized", spawn)
         self.assertIn("AtomicBool", spawn)
         self.assertNotIn("QT_QPA_PLATFORM", spawn)
@@ -145,6 +146,7 @@ class LightingHidTests(unittest.TestCase):
         self.assertIn("ChannelRow", (ROOT / "apps/desktop/src/lib/EffectList.svelte").read_text(encoding="utf-8"))
         self.assertIn("chan-speed", (ROOT / "apps/desktop/src/lib/EffectList.svelte").read_text(encoding="utf-8"))
         self.assertIn("export let selected", (ROOT / "apps/desktop/src/lib/EffectList.svelte").read_text(encoding="utf-8"))
+        self.assertIn("on:change", (ROOT / "apps/desktop/src/lib/EffectList.svelte").read_text(encoding="utf-8"))
         self.assertIn("selected={d.mode}", (ROOT / "apps/desktop/src/lib/DeviceList.svelte").read_text(encoding="utf-8"))
         self.assertIn("selected={sharedMode}", (ROOT / "apps/desktop/src/lib/DeviceList.svelte").read_text(encoding="utf-8"))
         self.assertIn("persistSession", (ROOT / "apps/desktop/src/pages/Lighting.svelte").read_text(encoding="utf-8"))
@@ -225,6 +227,7 @@ class LightingHidTests(unittest.TestCase):
         self.assertIn("hostOpenRgbFrames", page)
         self.assertIn("stampHostFrames", page)
         self.assertIn("ui.lastMode", page)
+        self.assertIn('mode || "Direct"', page)
         self.assertIn("ui.tickId", tick)
         self.assertIn("MOTION_MS = 100", tick)
         self.assertIn("GAUGE_MS = 500", tick)
@@ -244,24 +247,36 @@ class LightingHidTests(unittest.TestCase):
         qmk = (ROOT / "apps/desktop/src/lib/effectQmk.js").read_text(encoding="utf-8")
         self.assertIn("layoutColors", viz)
         self.assertIn("effectFrame", viz)
+        catalog = (ROOT / "apps/desktop/src/lib/effectCatalog.js").read_text(encoding="utf-8")
         self.assertIn("HOST_EFFECTS", viz)
-        self.assertIn("Hardware gauges", viz)
-        self.assertIn('"CPU"', viz)
-        self.assertIn('"GPU"', viz)
-        self.assertIn('"Combined"', viz)
-        self.assertIn('"RAM"', viz)
-        self.assertIn('"Disk"', viz)
-        self.assertNotIn("CPU temp", viz)
-        self.assertNotIn("GPU temp", viz)
-        self.assertNotIn("CPU + GPU temp", viz)
-        self.assertNotIn("RAM used", viz)
-        self.assertNotIn("Disk used", viz)
+        self.assertIn("Hardware gauges", catalog)
+        self.assertIn('"CPU"', catalog)
+        self.assertIn('"GPU"', catalog)
+        self.assertIn('"Combined"', catalog)
+        self.assertIn('"RAM"', catalog)
+        self.assertIn('"Disk"', catalog)
+        self.assertIn("SHARED_MODES", catalog)
+        self.assertIn("deviceModes", catalog)
+        self.assertNotIn("CPU temp", catalog)
+        self.assertNotIn("GPU temp", catalog)
+        self.assertNotIn("CPU + GPU temp", catalog)
+        self.assertNotIn("RAM used", catalog)
+        self.assertNotIn("Disk used", catalog)
         self.assertIn("gauge_route", qmk)
         self.assertIn("gauge_gpu", qmk)
         self.assertIn("gauge_cpu", qmk)
         self.assertIn("gauge_temp", qmk)
         self.assertIn("gaugeHex", (ROOT / "apps/desktop/src/lib/gauges.js").read_text(encoding="utf-8"))
         self.assertIn("gaugeLane", (ROOT / "apps/desktop/src/lib/gauges.js").read_text(encoding="utf-8"))
+        gauges_tick = (ROOT / "apps/desktop/src/lib/gaugesTick.js").read_text(encoding="utf-8")
+        self.assertIn("hardware_gauges", gauges_tick)
+        self.assertIn("GAUGE_POLL_MS = 400", gauges_tick)
+        self.assertNotIn("cycleOn", gauges_tick)
+        self.assertNotIn("hardware_gauges", tick)
+        self.assertNotIn("lastMeter", tick)
+        self.assertIn("startGaugeTick", (ROOT / "apps/desktop/src/App.svelte").read_text(encoding="utf-8"))
+        self.assertNotIn("histKey", page)
+        self.assertNotIn("{hist}", page)
         self.assertIn("hardware_gauges", (ROOT / "apps/desktop/src-tauri/src/main.rs").read_text(encoding="utf-8"))
         self.assertIn("hardware_gauges", (ROOT / "apps/desktop/src-tauri/permissions/chromaflow.toml").read_text(encoding="utf-8"))
         smi = (ROOT / "crates/chromaflow-core/src/nvidia_smi.rs").read_text(encoding="utf-8")
@@ -271,7 +286,8 @@ class LightingHidTests(unittest.TestCase):
         self.assertNotIn("nvidia-smi", (ROOT / "crates/chromaflow-core/src/scan.rs").read_text(encoding="utf-8"))
         self.assertNotIn("set_pwm", (ROOT / "crates/chromaflow-core/src/gauges.rs").read_text(encoding="utf-8"))
         self.assertNotIn("set_pwm", smi)
-        self.assertIn("pollMs: 15000", (ROOT / "apps/desktop/src/lib/ui.js").read_text(encoding="utf-8"))
+        self.assertIn("pollMs: 1000", (ROOT / "apps/desktop/src/lib/ui.js").read_text(encoding="utf-8"))
+        self.assertIn("tab === \"Cooling\"", (ROOT / "apps/desktop/src/App.svelte").read_text(encoding="utf-8"))
         self.assertIn('tab === "Lighting"', (ROOT / "apps/desktop/src/App.svelte").read_text(encoding="utf-8"))
         self.assertIn("lastPaint", tick)
         self.assertIn("applyGaugeMode", page)
@@ -287,6 +303,7 @@ class LightingHidTests(unittest.TestCase):
         self.assertNotIn("gaugesApplyAll", meter)
         self.assertNotIn("gaugeHex", meter)
         self.assertIn("gauge-marker", meter)
+        self.assertNotIn("SparkGraph", meter)
         self.assertIn('role="switch"', meter)
         self.assertIn("gaugePalette", meter)
         self.assertIn("lighting.gaugePalette", locales)
@@ -305,7 +322,7 @@ class LightingHidTests(unittest.TestCase):
         self.assertIn("ADR-0017", (ROOT / "docs/adr/0017-host-hardware-gauges.md").read_text(encoding="utf-8"))
         self.assertIn("lighting.tip.gaugeSpeed", locales)
         self.assertIn("lighting.gauges", locales)
-        self.assertIn("hardware_gauges", tick)
+        self.assertIn("hardware_gauges", gauges_tick)
         self.assertIn("scan_temps", (ROOT / "apps/desktop/src-tauri/src/main.rs").read_text(encoding="utf-8"))
         self.assertIn("DISK_TTL", (ROOT / "crates/chromaflow-core/src/gauges.rs").read_text(encoding="utf-8"))
         self.assertIn("Value::Array", (ROOT / "apps/desktop/src-tauri/src/main.rs").read_text(encoding="utf-8"))
@@ -315,7 +332,12 @@ class LightingHidTests(unittest.TestCase):
         self.assertIn("tickId", (ROOT / "apps/desktop/src/lib/ui.js").read_text(encoding="utf-8"))
         self.assertIn("classify", qmk)
         self.assertIn("paintKind", qmk)
-        self.assertIn("HOST_EFFECTS", (ROOT / "apps/desktop/src/lib/DeviceList.svelte").read_text(encoding="utf-8"))
+        self.assertIn("deviceModes", (ROOT / "apps/desktop/src/lib/DeviceList.svelte").read_text(encoding="utf-8"))
+        self.assertIn("SHARED_MODES", (ROOT / "apps/desktop/src/lib/DeviceList.svelte").read_text(encoding="utf-8"))
+        self.assertIn("optgroup", (ROOT / "apps/desktop/src/lib/EffectList.svelte").read_text(encoding="utf-8"))
+        self.assertIn("lighting.group.solid", locales)
+        self.assertIn("lighting.group.rainbow", locales)
+        self.assertIn("lighting.group.hardware", locales)
         preview_rs = (ROOT / "crates/chromaflow-core/src/openrgb_preview.rs").read_text(encoding="utf-8")
         self.assertIn("use_hid", preview_rs)
         self.assertIn("written_rows", preview_rs)
@@ -323,6 +345,10 @@ class LightingHidTests(unittest.TestCase):
         self.assertIn("overlay(rows, true)", preview_rs)
         self.assertIn("GET_COLOR", (ROOT / "crates/chromaflow-core/src/keychron_preview.rs").read_text(encoding="utf-8"))
         self.assertIn("hsv255", (ROOT / "crates/chromaflow-core/src/keychron_preview.rs").read_text(encoding="utf-8"))
+        self.assertIn("lighting_broadcast", (ROOT / "apps/desktop/src-tauri/src/main.rs").read_text(encoding="utf-8"))
+        self.assertIn("lighting_cycle", (ROOT / "apps/desktop/src-tauri/src/main.rs").read_text(encoding="utf-8"))
+        self.assertIn("lighting_broadcast", (ROOT / "apps/desktop/src-tauri/permissions/chromaflow.toml").read_text(encoding="utf-8"))
+        self.assertIn("lighting_cycle", (ROOT / "apps/desktop/src-tauri/permissions/chromaflow.toml").read_text(encoding="utf-8"))
         self.assertIn("lighting_sync", (ROOT / "apps/desktop/src-tauri/src/main.rs").read_text(encoding="utf-8"))
         self.assertIn("lighting_sync", (ROOT / "apps/desktop/src-tauri/permissions/chromaflow.toml").read_text(encoding="utf-8"))
         self.assertIn("update_leds_colors", (ROOT / "crates/chromaflow-core/src/openrgb_apply.rs").read_text(encoding="utf-8"))
@@ -344,16 +370,23 @@ class LightingHidTests(unittest.TestCase):
         self.assertNotIn("set_pwm", apply)
         core_apply = (ROOT / "crates/chromaflow-core/src/lighting_apply.rs").read_text(encoding="utf-8")
         self.assertNotIn("set_pwm", core_apply)
-        self.assertIn("aorus", core_apply)
         self.assertIn("arena", core_apply)
         self.assertIn("prime", core_apply)
-        self.assertIn("set_fusion", core_apply)
+        self.assertIn("keychron", core_apply)
+        self.assertIn("msi_gpu", core_apply)
+        self.assertIn("keychron_apply::set_color", core_apply)
+        self.assertIn("rewrite", core_apply)
+        self.assertIn("set_device", core_apply)
+        port = (ROOT / "crates/chromaflow-core/src/lighting_port.rs").read_text(encoding="utf-8")
+        self.assertIn("aorus", port)
         arena = (ROOT / "crates/chromaflow-core/src/arena_apply.rs").read_text(encoding="utf-8")
         self.assertIn("0x06", arena)
         self.assertNotIn("set_pwm", arena)
         prime = (ROOT / "crates/chromaflow-core/src/prime_apply.rs").read_text(encoding="utf-8")
         self.assertIn("0x62", prime)
         self.assertIn("0x59", prime)
+        self.assertIn("fn set_live", prime)
+        self.assertIn("fn save", prime)
         self.assertNotIn("set_pwm", prime)
         adr14 = (ROOT / "docs/adr/0014-prime-neo-hid-write.md").read_text(encoding="utf-8")
         self.assertIn("0x62", adr14)
@@ -491,10 +524,21 @@ class LightingHidTests(unittest.TestCase):
                 "import { keyColSpan, matrixKeys, q6heKeys, boardLayout, packBoard } from './apps/desktop/src/lib/keyboard.js';"
                 "import { liveSwatch, mergePreview } from './apps/desktop/src/lib/lighting.js';"
                 "import { layoutColors, effectFrame, preferMode, classify, hostOpenRgbFrames, stampHostFrames } from './apps/desktop/src/lib/effectViz.js';"
-                "import { time8 } from './apps/desktop/src/lib/effectQmk.js';"
+                "import { time8, ledPoints } from './apps/desktop/src/lib/effectQmk.js';"
+                "import { rgb16, phase16, periodMs } from './apps/desktop/src/lib/color.js';"
                 "import { gaugeHex, combinedTempRatio, tempRatio, combinedCelsius, laneRatio, pushSample, fmtTemp, fromHwmon, mergeGauges, gaugeLane } from './apps/desktop/src/lib/gauges.js';"
+                "import { snapshot, GAUGE_POLL_MS, GAUGE_HIST } from './apps/desktop/src/lib/gaugesTick.js';"
+                "import { pick } from './apps/desktop/src/lib/spark.js';"
                 "import { ui } from './apps/desktop/src/lib/ui.js';"
-                "import { hostCadence, frameSig, MOTION_MS, GAUGE_MS } from './apps/desktop/src/lib/lightingTick.js';"
+                "import { hostCadence, frameSig, MOTION_MS, GAUGE_MS, METER_MS, PREVIEW_MS, fusionFirmware, uniformMode, wantsCycle } from './apps/desktop/src/lib/lightingTick.js';"
+                "import { SHARED_MODES, deviceModes, groupedModes, HOST_EFFECTS } from './apps/desktop/src/lib/effectCatalog.js';"
+                "if (SHARED_MODES.includes('Cycle Left Right')) throw new Error('shared spatial');"
+                "if (deviceModes({ backend: 'liquidctl' }).includes('Cycle Left Right')) throw new Error('fusion spatial');"
+                "if (!deviceModes({ backend: 'keychron' }).includes('Rainbow Moving Chevron')) throw new Error('key rainbow');"
+                "if (groupedModes(SHARED_MODES).map((g) => g.id).join() !== 'solid,rainbow,hardware') throw new Error('shared groups');"
+                "if (HOST_EFFECTS[0] !== 'Solid Color') throw new Error('host order');"
+                "if (HOST_EFFECTS.includes('Dual Beacon')) throw new Error('dup beacon');"
+                "if (!HOST_EFFECTS.includes('Rainbow Beacon')) throw new Error('beacon');"
                 "if (keyColSpan('Key: Space') !== 6) throw new Error('space');"
                 "if (keyColSpan('Key: Left Shift') !== 2) throw new Error('shift');"
                 "const packed = matrixKeys({ grid_w: 7, grid_h: 1, grid: [0,-1,-1,-1,-1,-1,1], led_names: ['Key: Space','Key: A'] });"
@@ -529,7 +573,9 @@ class LightingHidTests(unittest.TestCase):
                 "if (gaugeHex(0, 'blue').toLowerCase() !== '#0000ff') throw new Error('blue '+gaugeHex(0, 'blue'));"
                 "if (gaugeHex(0.5, 'blue').toLowerCase() !== '#ff00ff') throw new Error('magenta '+gaugeHex(0.5, 'blue'));"
                 "if (gaugeHex(1, 'blue').toLowerCase() !== '#ff0000') throw new Error('blue red '+gaugeHex(1, 'blue'));"
-                "if (combinedTempRatio(35, 90) !== 0.5) throw new Error('avg gpu');"
+                "if (tempRatio(25) !== 0) throw new Error('temp floor');"
+                "if (tempRatio(90) !== 1) throw new Error('temp ceil');"
+                "if (combinedTempRatio(25, 90) !== 0.5) throw new Error('avg gpu');"
                 "if (combinedTempRatio(90, null) !== 1) throw new Error('cpu only');"
                 "if (combinedTempRatio(null, null) !== 0) throw new Error('empty temp');"
                 "if (tempRatio(null) !== null) throw new Error('null temp');"
@@ -539,17 +585,35 @@ class LightingHidTests(unittest.TestCase):
                 "if (hostCadence({ 'openrgb:K': 'Rainbow Moving Chevron' }) !== MOTION_MS) throw new Error('cadence motion');"
                 "if (hostCadence({ 'openrgb:K': 'Hardware gauges' }) !== GAUGE_MS) throw new Error('cadence route');"
                 "if (hostCadence({ 'openrgb:K': 'Combined' }) !== GAUGE_MS) throw new Error('cadence gauge');"
+                "ui.cycleOn = true;"
+                "if (hostCadence({ 'openrgb:K': 'Cycle All' }) !== PREVIEW_MS) throw new Error('cadence cycle');"
+                "ui.cycleOn = false;"
                 "if (hostCadence({}) !== 0) throw new Error('cadence idle');"
+                "if (fusionFirmware('Cycle All')) throw new Error('cycle is host');"
+                "if (fusionFirmware('Breathing')) throw new Error('breath is host');"
+                "if (!fusionFirmware('Flashing')) throw new Error('flash fw');"
+                "const kb = { backend: 'keychron', name: 'Q6' };"
+                "const fz = { backend: 'liquidctl', name: 'Fusion' };"
+                "if (uniformMode([kb, fz], { 'keychron:Q6': 'Cycle All', 'liquidctl:Fusion': 'Cycle All' }) !== 'Cycle All') throw new Error('uniform');"
+                "if (uniformMode([kb, fz], { 'keychron:Q6': 'Cycle All', 'liquidctl:Fusion': 'Direct' }) !== '') throw new Error('mixed');"
+                "if (!wantsCycle({ 'keychron:Q6': 'Cycle All' })) throw new Error('wantsCycle');"
+                "if (wantsCycle({ 'keychron:Q6': 'Direct' })) throw new Error('idle cycle');"
                 "const sigA = frameSig([{ name: 'K', colors: ['#00ff00','#00ff00'] }]);"
                 "const sigB = frameSig([{ name: 'K', colors: ['#00ff00','#00ff00'] }]);"
                 "if (sigA !== sigB) throw new Error('sig');"
                 "const hist = pushSample(pushSample([], { cpu_c: 35, gpu_c: 35 }), { cpu_c: 90, gpu_c: 40 });"
                 "if (hist.length !== 2) throw new Error('hist');"
-                "if (laneRatio({ cpu_c: 35, cpu_load: 1 }, 'gauge_cpu', 'temp') !== 0) throw new Error('lane temp');"
-                "if (laneRatio({ cpu_c: 35, cpu_load: 1 }, 'gauge_cpu', 'usage') !== 1) throw new Error('lane usage');"
-                "if (laneRatio({ ram_c: 35, ram: 1 }, 'gauge_ram', 'temp') !== 0) throw new Error('ram temp');"
+                "if (GAUGE_POLL_MS !== 400) throw new Error('gauge poll');"
+                "if (GAUGE_HIST !== 150) throw new Error('gauge hist');"
+                "if (snapshot({ cpu_load: 0.4 }).cpu_load !== 0.4) throw new Error('snapshot load');"
+                "const loadHist = pushSample([], { cpu_c: 40, cpu_load: 0.5, gpu_c: 50, gpu_load: 0.25 }, GAUGE_HIST);"
+                "if (pick(loadHist, 'gauge:cpu', 'usage')[0] !== 0.5) throw new Error('cpu usage hist');"
+                "if (laneRatio({ cpu_c: 25, cpu_load: 1 }, 'gauge_cpu', 'temp') !== 0) throw new Error('lane temp');"
+                "if (laneRatio({ cpu_c: 25, cpu_load: 1 }, 'gauge_cpu', 'usage') !== 1) throw new Error('lane usage');"
+                "if (laneRatio({ ram_c: 25, ram: 1 }, 'gauge_ram', 'temp') !== 0) throw new Error('ram temp');"
                 "if (laneRatio({ disk_c: 90, disk: 0 }, 'gauge_disk', 'temp') !== 1) throw new Error('disk temp');"
                 "if (gaugeLane({ name: 'MSI 4090 AIO' }) !== 'gpu') throw new Error('lane gpu');"
+                "if (gaugeLane({ name: 'CPU AIO' }) !== 'cpu') throw new Error('lane aio');"
                 "if (gaugeLane({ name: 'X570S AORUS MASTER' }) !== 'cpu') throw new Error('lane cpu');"
                 "if (gaugeLane({ name: 'Keychron Q6 HE' }) !== 'combined') throw new Error('lane key');"
                 "if (gaugeLane({ backend: 'arena', name: 'Arena 7' }) !== 'combined') throw new Error('lane arena');"
@@ -568,14 +632,14 @@ class LightingHidTests(unittest.TestCase):
                 "if (smiLive.gpu_c !== 46) throw new Error('merge smi gpu');"
                 "if (smiLive.note) throw new Error('stale gpu note '+smiLive.note);"
                 "const row = { leds: 8, grid_w: 8, grid_h: 1, grid: [0,1,2,3,4,5,6,7] };"
-                "ui.gauges = { cpu_c: 35, gpu_c: 35, ram: 0, disk: 1, note: '' };"
+                "ui.gauges = { cpu_c: 25, gpu_c: 25, ram: 0, disk: 1, note: '' };"
                 "ui.gaugePalette = 'green';"
                 "const meter = effectFrame({ ...row, mode: 'Combined' }, 0, '#0052ff', 255);"
                 "if (new Set(meter).size !== 1) throw new Error('gauge solid');"
                 "if (meter[0] !== gaugeHex(0)) throw new Error('gauge green');"
                 "const fast = effectFrame({ ...row, mode: 'Combined' }, 8000, '#0052ff', 255);"
                 "if (fast.join() !== meter.join()) throw new Error('gauge ignores speed');"
-                "ui.gauges = { cpu_c: 35, gpu_c: 90, ram: 0, disk: 0, note: '' };"
+                "ui.gauges = { cpu_c: 25, gpu_c: 90, ram: 0, disk: 0, note: '' };"
                 "const routedGpu = effectFrame({ ...row, name: 'MSI 4090 AIO', mode: 'Hardware gauges' }, 0, '#0052ff', 255);"
                 "if (routedGpu[0] !== gaugeHex(1)) throw new Error('route gpu '+routedGpu[0]);"
                 "const routedCpu = effectFrame({ ...row, name: 'X570S AORUS MASTER', mode: 'Hardware gauges' }, 0, '#0052ff', 255);"
@@ -600,8 +664,25 @@ class LightingHidTests(unittest.TestCase):
                 "if (chev.join() === wave.join()) throw new Error('chevron vs wave');"
                 "const all = effectFrame({ ...row, mode: 'Cycle All' }, 0, '#0052ff');"
                 "if (new Set(all).size !== 1) throw new Error('cycle all');"
+                "if (all[0] !== '#ff0000') throw new Error('cycle rgb16 start '+all[0]);"
+                "const later = effectFrame({ ...row, mode: 'Cycle All' }, 120, '#0052ff', 128);"
+                "if (later[0] === all[0]) throw new Error('cycle rgb16 step');"
+                "if (periodMs(128) < 16000) throw new Error('period');"
+                "if (rgb16(0).join() !== '255,0,0') throw new Error('rgb16 red');"
+                "if (rgb16(0).join() === rgb16(4000).join()) throw new Error('rgb16 walk');"
+                "if (phase16(0, 128) !== 0) throw new Error('phase0');"
+                "const qpts = ledPoints({ name: 'Keychron Q6 HE', leds: 108 });"
+                "if (qpts.length < 108) throw new Error('q6 pts');"
+                "if (new Set(qpts.map((p) => Math.round(p.y))).size < 4) throw new Error('q6 rows');"
+                "const arf = hostOpenRgbFrames([{ backend: 'arena', name: 'Arena', leds: 4 }], { 'arena:Arena': 'Rainbow Wave' }, {}, 0);"
+                "if (!arf.length || new Set(arf[0].colors).size < 2) throw new Error('arena rainbow');"
                 "const pushed = hostOpenRgbFrames([{ backend: 'openrgb', name: 'Aorus', leds: 4 }, { backend: 'arena', name: 'Arena', leds: 4 }], { 'openrgb:Aorus': 'Rainbow Wave' }, {}, 0);"
                 "if (pushed.length !== 1 || pushed[0].name !== 'Aorus') throw new Error('host frames '+JSON.stringify(pushed));"
+                "const gpu = { backend: 'openrgb', name: 'NVIDIA GeForce RTX 4090', leds: 4 };"
+                "const gauged = hostOpenRgbFrames([gpu], { 'openrgb:NVIDIA GeForce RTX 4090': 'GPU' }, {}, 0);"
+                "if (!gauged.length) throw new Error('gpu gauge frames');"
+                "const held = hostOpenRgbFrames([gpu], { 'openrgb:NVIDIA GeForce RTX 4090': 'Direct' }, {}, 0);"
+                "if (held.length) throw new Error('direct must not host-overwrite');"
                 "const black = effectFrame({ ...row, mode: 'Rainbow Wave' }, 0, '#000000');"
                 "if (black[0] === '#000000') throw new Error('black picker');"
                 "const white = effectFrame({ ...row, mode: 'Rainbow Wave' }, 0, '#ffffff');"
@@ -630,12 +711,184 @@ class LightingHidTests(unittest.TestCase):
                 "openrgb: { controllers: [{ name: 'X570S AORUS MASTER' }] } };"
                 "if (!hidHasBackend(inv.hid_rgb[0], inv)) throw new Error('fusion');"
                 "if (!fusionUsbListed(inv)) throw new Error('listed');"
-                "if (researchDevices(inv).length) throw new Error('leftover '+JSON.stringify(researchDevices(inv)));",
+                "if (researchDevices(inv).length) throw new Error('leftover '+JSON.stringify(researchDevices(inv)));"
+                "const k = { name: 'Q6 HE', vendor_id: '3434', product_id: '0b60', readable: true };"
+                "if (!hidHasBackend(k, { openrgb: { controllers: [{ name: 'Q6 HE' }] } })) throw new Error('q6');"
+                "if (!hidHasBackend(k, { openrgb: { controllers: [{ name: 'Aorus' }] } })) throw new Error('native');",
             ],
             cwd=ROOT,
             text=True,
         )
         self.assertEqual(discover.strip(), "")
+
+    def test_native_lighting_index_and_port(self) -> None:
+        csv = (ROOT / "data/openrgb-device-index.csv").read_text(encoding="utf-8")
+        self.assertIn("OpenRGB detector identity", csv)
+        self.assertIn("GPL-2.0-or-later", csv)
+        self.assertIn("Keychron RGB QMK/ZMK Keyboard", csv)
+        self.assertIn("3434", csv)
+        self.assertIn("MSI GeForce RTX 4090 Suprim Liquid X", csv)
+        self.assertIn("I2C", csv)
+        self.assertNotIn("set_pwm", csv)
+        overlay = (ROOT / "data/native-lighting.yaml").read_text(encoding="utf-8")
+        self.assertIn("3434:0b60", overlay)
+        self.assertIn("status: native", overlay)
+        self.assertIn("1038:1a00", overlay)
+        self.assertIn("status: extra", overlay)
+        port = (ROOT / "crates/chromaflow-core/src/lighting_port.rs").read_text(encoding="utf-8")
+        self.assertIn("CHROMAFLOW_NATIVE_RGB", port)
+        self.assertIn("keychron", port)
+        self.assertNotIn("set_pwm", port)
+        self.assertNotIn("#include", port)
+        apply_k = (ROOT / "crates/chromaflow-core/src/keychron_apply.rs").read_text(encoding="utf-8")
+        self.assertIn("SET_COLOR", apply_k)
+        self.assertIn("via_direct_packets", apply_k)
+        self.assertIn("via_solid_packets", apply_k)
+        self.assertIn("via_effect_get", apply_k)
+        self.assertIn("first_hsv", apply_k)
+        self.assertIn("poll_effect", apply_k)
+        self.assertIn("hsv_close", apply_k)
+        self.assertNotIn("cols.iter().all", apply_k)
+        self.assertIn("const SET_BATCH: u8 = 9", apply_k)
+        self.assertIn("set_zones", (ROOT / "crates/chromaflow-core/src/arena_apply.rs").read_text(encoding="utf-8"))
+        fusion_rs = (ROOT / "crates/chromaflow-core/src/liquidctl_apply.rs").read_text(encoding="utf-8")
+        self.assertIn("set_fusion_sync", fusion_rs)
+        self.assertIn("set_device", fusion_rs)
+        self.assertIn("led6", fusion_rs)
+        self.assertIn("fusion-hid.py", fusion_rs)
+        hid_py = (ROOT / "scripts/fusion-hid.py").read_text(encoding="utf-8")
+        self.assertIn("digital", hid_py)
+        self.assertIn("uniform", hid_py)
+        self.assertIn("soft", hid_py)
+        self.assertIn("serve", hid_py)
+        self.assertIn("digital(dev, rgb)", hid_py)
+        self.assertLess(hid_py.find("digital(dev, rgb)"), hid_py.find("analog(dev, rgb)"))
+        self.assertIn("0xCC", hid_py)
+        self.assertIn("0x28", hid_py)
+        self.assertNotIn("set_pwm", hid_py)
+        fusion_hid = (ROOT / "crates/chromaflow-core/src/fusion_hid.rs").read_text(encoding="utf-8")
+        self.assertIn("serve", fusion_hid)
+        self.assertIn("recv_timeout", fusion_hid)
+        self.assertIn('"-u"', fusion_hid)
+        page = (ROOT / "apps/desktop/src/pages/Lighting.svelte").read_text(encoding="utf-8")
+        tick = (ROOT / "apps/desktop/src/lib/lightingTick.js").read_text(encoding="utf-8")
+        self.assertIn("pushHidNow", page)
+        self.assertIn("pushFusionNow", page)
+        self.assertIn("lighting_broadcast", page)
+        self.assertIn("setHostCycle", page)
+        self.assertIn("lighting_cycle", tick)
+        self.assertIn("wantsCycle", tick)
+        self.assertIn("ui.cycleOn", tick)
+        self.assertIn("if (ui.cycleOn) return PREVIEW_MS", tick)
+        self.assertIn("PREVIEW_MS = 32", tick)
+        self.assertIn("bumpPaint", page)
+        self.assertIn("pushHidNow", tick)
+        self.assertIn("fusionFirmware", tick)
+        self.assertIn("msi_gpu", tick)
+        self.assertIn("lighting_broadcast", tick)
+        self.assertIn("uniformMode", tick)
+        self.assertIn('device: "sync"', tick)
+        self.assertIn("paintGen", tick)
+        self.assertIn('name === "Combined"', page)
+        preview_k = (ROOT / "crates/chromaflow-core/src/keychron_preview.rs").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("const SET_COLOR: u8 = 0x0a", preview_k)
+        self.assertIn("SET_TYPE", apply_k)
+        self.assertIn("TYPE_SOLID", apply_k)
+        self.assertIn("const TYPE_SOLID: u8 = 0", apply_k)
+        self.assertIn("SET_BATCH", apply_k)
+        self.assertIn("set_hue", apply_k)
+        self.assertIn("set_fill", apply_k)
+        self.assertIn("poll_hue", apply_k)
+        cycle_rs = (ROOT / "crates/chromaflow-core/src/lighting_cycle.rs").read_text(encoding="utf-8")
+        self.assertIn("hue_at", cycle_rs)
+        self.assertIn("rgb16", cycle_rs)
+        self.assertIn("period_ms", cycle_rs)
+        self.assertIn("current_hue", cycle_rs)
+        self.assertIn("run_lamps", cycle_rs)
+        self.assertIn("soft", cycle_rs)
+        self.assertIn("set_fill", cycle_rs)
+        self.assertIn("prime_apply::set_live", cycle_rs)
+        self.assertIn("prime_apply::save", cycle_rs)
+        self.assertIn("gpu_apply::set_snap", cycle_rs)
+        self.assertIn("GPU_MS", cycle_rs)
+        self.assertIn("500", cycle_rs)
+        self.assertIn("run_gpu", cycle_rs)
+        self.assertNotIn("set_rainbow", cycle_rs)
+        self.assertNotIn("thread::scope", cycle_rs)
+        self.assertIn("set_running", cycle_rs)
+        self.assertNotIn("set_hue", cycle_rs)
+        self.assertNotIn("set_pwm", cycle_rs)
+        cli = (ROOT / "crates/chromaflow-cli/src/main.rs").read_text(encoding="utf-8")
+        self.assertIn("--cycle", cli)
+        self.assertIn("print_keychron_poll", cli)
+        self.assertIn("current_hue", cli)
+        self.assertIn("with_via_lock", apply_k)
+        self.assertIn("0x07", apply_k)
+        self.assertNotIn("RGBController", apply_k)
+        self.assertNotIn("set_pwm", apply_k)
+        spec = (ROOT / "docs/features/native-lighting.md").read_text(encoding="utf-8")
+        self.assertIn("ADR-0020", spec)
+        adr = (ROOT / "docs/adr/0020-native-lighting-ports.md").read_text(encoding="utf-8")
+        self.assertIn("identity", adr)
+        lib = (ROOT / "apps/desktop/src/lib/lighting.js").read_text(encoding="utf-8")
+        self.assertIn("keychronTargets", lib)
+        self.assertIn("Motherboard Fusion", lib)
+        self.assertIn("CPU AIO", lib)
+        self.assertIn("product_id === \"0b60\" ? 108", lib)
+        self.assertIn("gpuTargets", lib)
+        spawn = (ROOT / "crates/chromaflow-core/src/openrgb_spawn.rs").read_text(encoding="utf-8")
+        self.assertIn("CHROMAFLOW_OPENRGB_SDK", spawn)
+        self.assertIn("sdk_opt_in", spawn)
+        gpu = (ROOT / "crates/chromaflow-core/src/gpu_apply.rs").read_text(encoding="utf-8")
+        self.assertIn("0x68", gpu)
+        self.assertIn("1462", gpu)
+        self.assertIn("i2cset", gpu)
+        self.assertIn("set_snap", gpu)
+        self.assertIn("snap_pairs", gpu)
+        self.assertIn("write_next", gpu)
+        self.assertIn("prefer_first", gpu)
+        self.assertIn("adapter 1 at", gpu)
+        self.assertIn("from_millis(20)", gpu)
+        self.assertIn("0x2e", gpu)
+        self.assertIn("0x08", gpu)
+        self.assertIn("0x13", gpu)
+        self.assertIn("0x27", gpu)
+        self.assertNotIn("i2ctransfer", gpu)
+        self.assertNotIn("skip_dummy", gpu)
+        self.assertNotIn("rgb_matches", gpu)
+        self.assertNotIn("i2cdump", gpu)
+        self.assertNotIn("set_pwm", gpu)
+        self.assertNotIn("#include", gpu)
+        adr21 = (ROOT / "docs/adr/0021-native-lighting-without-openrgb.md").read_text(encoding="utf-8")
+        self.assertIn("CHROMAFLOW_OPENRGB_SDK", adr21)
+        self.assertIn("048d:5702", overlay)
+        self.assertIn("backend: liquidctl", overlay)
+        self.assertIn("msi_gpu", overlay)
+        fetch = (ROOT / "scripts/fetch-openrgb-device-index.sh").read_text(encoding="utf-8")
+        self.assertIn("openrgb-device-index.csv", fetch)
+        self.assertNotIn("set_pwm", fetch)
+        listed = subprocess.check_output(
+            [
+                "node",
+                "--input-type=module",
+                "-e",
+                "import { lightingDevices } from './apps/desktop/src/lib/lighting.js';"
+                "const rows = lightingDevices({ hid_rgb: ["
+                "{ name: 'Keychron Q6 HE', vendor_id: '3434', product_id: '0b60', readable: true }"
+                "], openrgb: { controllers: [{ name: 'Keychron Q6 HE', leds: 108 }] } });"
+                "if (rows.filter((d) => /keychron|q6/i.test(d.name)).length !== 1) throw new Error('dup '+JSON.stringify(rows));"
+                "if (rows[0] && rows.find((d) => d.backend === 'keychron') == null) throw new Error('backend');"
+                "const fusion = lightingDevices({ liquidctl_devices: ['Gigabyte RGB Fusion 2.0 5702 Controller'], hid_rgb: [], openrgb: { controllers: [] } });"
+                "if (fusion.filter((d) => d.backend === 'liquidctl').length !== 2) throw new Error('fusion split');"
+                "if (!fusion.some((d) => d.name === 'CPU AIO')) throw new Error('aio');"
+                "if (!fusion.some((d) => d.name === 'Motherboard Fusion')) throw new Error('board');",
+            ],
+            cwd=ROOT,
+            text=True,
+        )
+        self.assertEqual(listed.strip(), "")
 
 
 if __name__ == "__main__":

@@ -20,6 +20,7 @@ class DebPackagingTests(unittest.TestCase):
         self.assertIn("chromaflow-gui", text)
         self.assertIn("libwebkit2gtk-4.1-0", text)
         self.assertIn("libfuse2", text)
+        self.assertIn("libxcb-cursor0", text)
         self.assertIn("chromaflow-sdk.service", text)
         self.assertIn("chromaflow-gui.service", text)
         self.assertIn("enable-session.sh", text)

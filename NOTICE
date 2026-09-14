@@ -27,6 +27,10 @@ OpenRGB
   `chromaflow daemon --sdk` keeps that sibling on localhost. OpenRGB source is
   not vendored. Linking OpenRGB in-process would require a license discussion
   (likely GPL) before any such change.
+  Detector identity (name, bus, VID/PID) for the lighting gap list is extracted
+  from the AppImage-pinned git revision into data/openrgb-device-index.csv
+  (GPL index of facts; not controller source). Refresh:
+  `python3 scripts/agent-run.py fetch-openrgb-device-index`.
 
 liquidctl
   https://github.com/liquidctl/liquidctl

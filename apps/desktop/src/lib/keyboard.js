@@ -35,9 +35,10 @@ export function keyCaption(name, idx) {
 }
 
 function isQ6(device) {
+  const n = String((device && device.name) || "").toLowerCase();
+  if (/keychron|q6/.test(n) && Number(device.leds) >= 100) return true;
   const w = Number(device && device.grid_w) || 0;
   const h = Number(device && device.grid_h) || 0;
-  const n = String((device && device.name) || "").toLowerCase();
   return w === 21 && h === 6 && (/keychron|q6/.test(n) || Number(device.leds) === 108);
 }
 
@@ -119,6 +120,7 @@ export function packBoard(n, names) {
 }
 
 export function boardLayout(device) {
+  if (isQ6(device)) return q6heKeys(device);
   const keys = matrixKeys(device);
   if (keys) return keys;
   const names = Array.isArray(device && device.led_names) ? device.led_names : [];

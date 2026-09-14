@@ -1,0 +1,27 @@
+# Overlay on data/openrgb-device-index.csv. Default status for every OpenRGB row is sdk.
+revision: 81bbe18a84c2e507006f19dd252e397e40a56bfe
+devices:
+  "1038:1a00":
+    status: extra
+    backend: arena
+    note: SteelSeries Arena 7 HID 0x06; OpenRGB 1.0 does not list this PID
+  "1038:1856":
+    status: extra
+    backend: prime
+    note: SteelSeries Prime Neo HID 0x62; OpenRGB 1.0 does not list this PID
+  "3434:0b60":
+    status: native
+    backend: keychron
+    note: Keychron Q6 HE VIA hidraw Direct write (subcommand 0x0A), verified by GET_COLOR 0x09
+  "3434:any":
+    status: sdk
+    backend: openrgb
+    note: OpenRGB QMK/ZMK Keychron class; other PIDs stay sdk until probed
+  "048d:5702":
+    status: native
+    backend: liquidctl
+    note: Gigabyte Fusion 2.0 USB; liquidctl sync color fixed, no OpenRGB
+  "10de:2684":
+    status: extra
+    backend: msi_gpu
+    note: MSI RTX 4090 Suprim Liquid X NVIDIA I2C 0x68; Cycle All double-buffers RGB1 then static+save

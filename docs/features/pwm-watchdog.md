@@ -23,7 +23,6 @@
 | View | `apps/desktop/src/pages/Cooling.svelte` `apps/desktop/src/lib/pwm.js` |
 | Tests | `tests/test_chromaflow_daemon.py` `tests/test_chromaflow_cooling_ui.py` |
 | Wiring | `crates/chromaflow-cli/src/daemon.rs` `packaging/pwm-failsafe.sh` Tauri `pwm_tick` |
-
 ## Tests
 
 - Automated: yes — fake sysfs apply + failsafe; daemon `--watchdog` once; no `set_pwm` symbol
@@ -35,7 +34,7 @@
 
 ## Definition of Done
 
-G-SAFE: watchdog + `ExecStopPost` failsafe; Cooling can apply when writable and unconflicted. GUI close skips failsafe while `chromaflowd` is active.
+G-SAFE: watchdog + `ExecStopPost` failsafe; Cooling can apply when writable and unconflicted. GUI close skips failsafe while `chromaflowd` is active. NVIDIA `nvidia-settings -a` runs only when the target percent changes.
 
 ## Notes
 

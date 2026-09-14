@@ -8,11 +8,18 @@ use std::sync::Mutex;
 use std::thread;
 
 const VID: &str = "3434";
-const CMD: u8 = 0xa8;
-const GET_COUNT: u8 = 0x05;
-const GET_COLOR: u8 = 0x09;
-const PACKET: usize = 33;
-const BATCH: u8 = 9;
+pub(crate) const CMD: u8 = 0xa8;
+pub(crate) const GET_COUNT: u8 = 0x05;
+pub(crate) const GET_COLOR: u8 = 0x09;
+pub(crate) const SET_COLOR: u8 = 0x0a;
+pub(crate) const PACKET: usize = 33;
+pub(crate) const BATCH: u8 = 9;
+static VIA: Mutex<()> = Mutex::new(());
+
+pub fn with_via_lock<T>(f: impl FnOnce() -> T) -> T {
+    let _g = VIA.lock().unwrap_or_else(|p| p.into_inner());
+    f()
+}
 
 enum Msg {
     Kick,
@@ -51,14 +58,15 @@ fn ensure() {
         };
         while rx.recv().is_ok() {
             while rx.try_recv().is_ok() {}
-            if let Some(cols) = read_all(&mut file) {
+            let cols = with_via_lock(|| read_all(&mut file));
+            if let Some(cols) = cols {
                 *LAST.lock().unwrap_or_else(|p| p.into_inner()) = cols;
             }
         }
     });
 }
 
-fn open_via() -> Option<File> {
+pub(crate) fn open_via() -> Option<File> {
     let sys = crate::lighting::hidraw_sys_root();
     let rd = fs::read_dir(&sys).ok()?;
     for ent in rd.flatten() {
@@ -91,6 +99,30 @@ fn is_via(sys: &Path, name: &str) -> bool {
     desc.len() >= 3 && desc[0] == 0x06 && desc[1] == 0x60 && desc[2] == 0xff
 }
 
+pub fn poll_colors() -> Option<Vec<String>> {
+    with_via_lock(|| {
+        let mut file = open_via()?;
+        read_all(&mut file)
+    })
+}
+
+pub fn hue_close(a: u8, b: u8) -> bool {
+    let d = u16::from(a.abs_diff(b));
+    d.min(256 - d) <= 16
+}
+
+pub fn hsv_close(got: [u8; 3], want: [u8; 3]) -> bool {
+    hue_close(got[0], want[0]) && got[1].abs_diff(want[1]) <= 48 && got[2].abs_diff(want[2]) <= 48
+}
+
+pub(crate) fn first_hsv(file: &mut File) -> Option<[u8; 3]> {
+    let resp = xfer(file, GET_COLOR, &[0, 3])?;
+    if resp.len() < 6 || resp[0] != CMD || resp[1] != GET_COLOR {
+        return None;
+    }
+    Some([resp[3], resp[4], resp[5]])
+}
+
 fn read_all(file: &mut File) -> Option<Vec<String>> {
     let n = led_count(file)?;
     let mut out = Vec::with_capacity(usize::from(n));
@@ -118,7 +150,7 @@ fn read_all(file: &mut File) -> Option<Vec<String>> {
     }
 }
 
-fn led_count(file: &mut File) -> Option<u16> {
+pub(crate) fn led_count(file: &mut File) -> Option<u16> {
     let resp = xfer(file, GET_COUNT, &[])?;
     if resp.len() < 4 || resp[0] != CMD {
         return None;
@@ -127,7 +159,7 @@ fn led_count(file: &mut File) -> Option<u16> {
     (n > 0 && n <= 255).then_some(n)
 }
 
-fn xfer(file: &mut File, sub: u8, data: &[u8]) -> Option<Vec<u8>> {
+pub(crate) fn xfer(file: &mut File, sub: u8, data: &[u8]) -> Option<Vec<u8>> {
     let mut buf = [0u8; PACKET];
     buf[1] = CMD;
     buf[2] = sub;
@@ -167,5 +199,10 @@ mod tests {
     #[test]
     fn red_hsv_is_ff0000() {
         assert_eq!(super::hsv255(0, 255, 255), "#ff0000");
+        assert!(super::hue_close(0, 8));
+        assert!(super::hue_close(0, 250));
+        assert!(!super::hue_close(0, 40));
+        assert!(super::hsv_close([0, 255, 255], [8, 240, 250]));
+        assert!(!super::hsv_close([0, 255, 255], [0, 0, 255]));
     }
 }

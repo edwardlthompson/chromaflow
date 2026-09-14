@@ -7,9 +7,9 @@
     deviceKey,
     researchDevices,
   } from "../lib/lighting.js";
-  import { preferMode, hostOpenRgbFrames, stampHostFrames } from "../lib/effectViz.js";
-  import { startLightingTick } from "../lib/lightingTick.js";
-  import { gaugeLane, mergeGauges, pushSample } from "../lib/gauges.js";
+  import { preferMode, hostOpenRgbFrames, stampHostFrames, classify } from "../lib/effectViz.js";
+  import { startLightingTick, pushHidNow, pushFusionNow, bumpPaint, uniformMode, sharedHex, setHostCycle, wantsCycle } from "../lib/lightingTick.js";
+  import { gaugeLane, mergeGauges } from "../lib/gauges.js";
   import DeviceList from "../lib/DeviceList.svelte";
   import ResearchList from "../lib/ResearchList.svelte";
   import { isTauri, invoke } from "../lib/tauri.js";
@@ -18,6 +18,7 @@
   import t from "../locales/en.json";
 
   export let inventory;
+  export let gauges = {};
 
   let error = "";
   let busy = false;
@@ -25,8 +26,6 @@
   let lastColor = { ...ui.lastColor };
   let lastMode = { ...ui.lastMode };
   let preview = [];
-  let gauges = ui.gauges;
-  let hist = ui.gaugeHist || [];
 
   $: orgb = (inventory && inventory.openrgb) || { status: "unreachable", detail: "", controllers: [] };
   $: devices = mergePreview(
@@ -41,15 +40,6 @@
   }));
   $: research = researchDevices(inventory);
   $: viewGauges = mergeGauges(gauges, inventory && inventory.hwmon);
-  let histKey = "";
-  $: {
-    const v = viewGauges;
-    const key = `${v.cpu_c}|${v.gpu_c}|${v.ram}|${v.disk}`;
-    if (key !== histKey) {
-      histKey = key;
-      hist = pushSample(hist, v);
-    }
-  }
 
   function remember() {
     persistSession(ui.page);
@@ -59,17 +49,13 @@
     loadSession().then((s) => {
       lastMode = { ...s.lastMode };
       lastColor = { ...s.lastColor };
+      if (wantsCycle(lastMode)) setHostCycle(true, invoke, isTauri);
     });
     return startLightingTick({
       getDevices: () => devices,
       getPreview: () => preview,
       setPreview: (rows) => {
         preview = rows;
-      },
-      setGauges: (next, nextHist) => {
-        if (ui.page !== "Lighting") return;
-        gauges = next;
-        hist = nextHist || [];
       },
       invoke,
       isTauri,
@@ -96,14 +82,19 @@
     applyMsg = (res && res.detail) || t["lighting.applyOk"];
     const key = `${backend}:${device}`;
     lastColor = { ...lastColor, [key]: use };
-    if (mode) lastMode = { ...lastMode, [key]: mode };
+    lastMode = { ...lastMode, [key]: mode || "Direct" };
     ui.lastColor = lastColor;
     ui.lastMode = lastMode;
     remember();
   }
 
-  function pushHostNow() {
-    const frames = hostOpenRgbFrames(devices, ui.lastMode, ui.lastColor, performance.now(), ui.effectSpeed);
+  function hostOk(d) {
+    return ["openrgb", "arena", "prime", "liquidctl", "keychron", "msi_gpu"].includes(d.backend);
+  }
+
+  function pushHostNow(now) {
+    const t = now == null ? performance.now() : now;
+    const frames = hostOpenRgbFrames(devices, ui.lastMode, ui.lastColor, t, ui.effectSpeed);
     if (frames.length) preview = stampHostFrames(preview, frames);
     if (!isTauri() || !frames.length) return;
     invoke("lighting_sync", { frames }).catch(() => {});
@@ -111,10 +102,11 @@
 
   async function applyColor(backend, device, nextHex) {
     busy = true;
-    ui.pausePoll = true;
     error = "";
     applyMsg = t["lighting.applying"];
     try {
+      await bumpPaint();
+      setHostCycle(false, invoke, isTauri);
       await applyOne(backend, device, nextHex);
     } catch (err) {
       error = String(err);
@@ -126,25 +118,42 @@
   }
 
   async function applyMode(backend, device, mode, nextHex) {
-    const key = `${backend}:${device}`;
-    const use = normalizeHex(nextHex);
-    if (use) {
-      lastColor = { ...lastColor, [key]: use };
-      ui.lastColor = lastColor;
+    await bumpPaint();
+    try {
+      const key = `${backend}:${device}`;
+      const use = normalizeHex(nextHex);
+      if (use) {
+        lastColor = { ...lastColor, [key]: use };
+        ui.lastColor = lastColor;
+      }
+      lastMode = { ...lastMode, [key]: mode };
+      ui.lastMode = lastMode;
+      remember();
+      if (classify(mode) === "cycle_all") {
+        setHostCycle(true, invoke, isTauri);
+        applyMsg = isTauri() ? t["lighting.applyOk"] : t["lighting.applyNeedGui"];
+        return;
+      }
+      if (!wantsCycle(lastMode)) setHostCycle(false, invoke, isTauri);
+      applyMsg = isTauri() ? t["lighting.applyOk"] : t["lighting.applyNeedGui"];
+      const t0 = performance.now();
+      pushHostNow(t0);
+      if (isTauri()) {
+        pushFusionNow(devices, lastMode, lastColor, invoke);
+        pushHidNow(devices, lastMode, lastColor, invoke, t0);
+      }
+    } finally {
+      ui.pausePoll = false;
     }
-    lastMode = { ...lastMode, [key]: mode };
-    ui.lastMode = lastMode;
-    remember();
-    applyMsg = isTauri() ? t["lighting.applyOk"] : t["lighting.applyNeedGui"];
-    pushHostNow();
   }
 
   async function applyLed(backend, device, led, nextHex) {
     busy = true;
-    ui.pausePoll = true;
     error = "";
     applyMsg = t["lighting.applying"];
     try {
+      await bumpPaint();
+      setHostCycle(false, invoke, isTauri);
       await applyOne(backend, device, nextHex, null, led);
     } catch (err) {
       error = String(err);
@@ -157,7 +166,6 @@
 
   async function applyAll(nextHex) {
     busy = true;
-    ui.pausePoll = true;
     error = "";
     applyMsg = t["lighting.applying"];
     try {
@@ -165,15 +173,33 @@
         applyMsg = t["lighting.empty"];
         return;
       }
-      const notes = [];
-      for (const d of devices) {
-        await applyOne(d.backend, d.name, nextHex);
-        notes.push(applyMsg);
+      const use = normalizeHex(nextHex);
+      if (!use) {
+        applyMsg = t["lighting.applyNeedColor"];
+        return;
       }
-      applyMsg = notes.filter(Boolean).join(" · ");
+      await bumpPaint();
+      const colors = { ...lastColor };
+      const modes = { ...lastMode };
+      for (const d of devices) {
+        const key = `${d.backend}:${d.name}`;
+        colors[key] = use;
+        modes[key] = "Direct";
+      }
+      lastColor = colors;
+      lastMode = modes;
+      ui.lastColor = colors;
+      ui.lastMode = modes;
+      remember();
+      setHostCycle(false, invoke, isTauri);
+      if (!isTauri()) {
+        applyMsg = t["lighting.applyNeedGui"];
+        return;
+      }
+      const res = await invoke("lighting_broadcast", { color: use, mode: "Solid Color" });
+      applyMsg = (res && res.detail) || t["lighting.applyOk"];
     } catch (err) {
       error = String(err);
-      applyMsg = "";
     } finally {
       busy = false;
       ui.pausePoll = false;
@@ -186,9 +212,7 @@
     const colors = { ...lastColor };
     let n = 0;
     for (const d of devices) {
-      if (d.backend !== "openrgb" && d.backend !== "arena" && d.backend !== "prime" && d.backend !== "liquidctl") {
-        continue;
-      }
+      if (!hostOk(d)) continue;
       const key = deviceKey(d);
       next[key] = mode;
       if (use) colors[key] = use;
@@ -200,12 +224,37 @@
     ui.lastColor = colors;
     remember();
     applyMsg = n ? (isTauri() ? t["lighting.applyOk"] : t["lighting.applyNeedGui"]) : t["lighting.noEffects"];
-    if (n) pushHostNow();
+    if (!n) return;
+    await bumpPaint();
+    try {
+      if (classify(mode) === "cycle_all") {
+        setHostCycle(true, invoke, isTauri);
+        return;
+      }
+      setHostCycle(false, invoke, isTauri);
+      const t0 = performance.now();
+      const hex = sharedHex(devices, lastMode, lastColor, t0);
+      if (isTauri() && uniformMode(devices, lastMode) && hex) {
+        preview = stampHostFrames(
+          preview,
+          devices.map((d) => ({ name: d.name, colors: [hex] })),
+        );
+        invoke("lighting_broadcast", { color: hex, mode }).catch(() => {});
+      } else {
+        pushHostNow(t0);
+        if (isTauri()) {
+          pushFusionNow(devices, lastMode, lastColor, invoke);
+          pushHidNow(devices, lastMode, lastColor, invoke, t0);
+        }
+      }
+    } finally {
+      ui.pausePoll = false;
+    }
   }
 
   async function applyGaugeMode(mode) {
     const name = String(mode || "");
-    if (name === "Hardware gauges" || name === "RAM" || name === "Disk") {
+    if (name === "Hardware gauges" || name === "RAM" || name === "Disk" || name === "Combined") {
       return applyModeAll(name);
     }
     const want = name === "GPU" ? "gpu" : name === "CPU" ? "cpu" : name === "Combined" ? "combined" : "";
@@ -213,9 +262,7 @@
     const next = { ...lastMode };
     let n = 0;
     for (const d of devices) {
-      if (d.backend !== "openrgb" && d.backend !== "arena" && d.backend !== "prime" && d.backend !== "liquidctl") {
-        continue;
-      }
+      if (!hostOk(d)) continue;
       if (gaugeLane(d) !== want) continue;
       next[deviceKey(d)] = name;
       n += 1;
@@ -224,7 +271,11 @@
     ui.lastMode = next;
     remember();
     applyMsg = n ? (isTauri() ? t["lighting.applyOk"] : t["lighting.applyNeedGui"]) : t["lighting.noEffects"];
-    if (n) pushHostNow();
+    if (n) {
+      const t0 = performance.now();
+      pushHostNow(t0);
+      if (isTauri()) pushHidNow(devices, lastMode, lastColor, invoke, t0);
+    }
   }
 
   async function installEngine() {
@@ -272,10 +323,8 @@
       on:gauge={(ev) => applyGaugeMode(ev.detail.mode)}
       on:led={(ev) => applyLed(ev.detail.backend, ev.detail.device, ev.detail.led, ev.detail.color)}
     />
-  {:else if orgb.status !== "reachable"}
-    <p>{t["lighting.none"]}</p>
   {:else}
-    <p>{t["lighting.empty"]}</p>
+    <p>{t["lighting.none"]}</p>
   {/if}
 </div>
 

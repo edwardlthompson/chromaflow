@@ -1,6 +1,11 @@
 //! Fan daemons that fight PWM. Live units only — leftover unit files do not count.
 
 use std::process::Command;
+use std::sync::Mutex;
+use std::time::{Duration, Instant};
+
+const CACHE: Duration = Duration::from_secs(8);
+static LAST: Mutex<Option<(Instant, Vec<String>)>> = Mutex::new(None);
 
 const NAMES: [&str; 7] = [
     "fancontrol",
@@ -23,11 +28,22 @@ pub fn detect() -> Vec<String> {
             .filter(|s| !s.is_empty())
             .collect();
     }
+    let now = Instant::now();
+    if let Ok(g) = LAST.lock() {
+        if let Some((at, rows)) = g.as_ref() {
+            if now.saturating_duration_since(*at) < CACHE {
+                return rows.clone();
+            }
+        }
+    }
     let mut found = Vec::new();
     for name in NAMES {
         if live(name) {
             found.push(name.to_string());
         }
+    }
+    if let Ok(mut g) = LAST.lock() {
+        *g = Some((now, found.clone()));
     }
     found
 }

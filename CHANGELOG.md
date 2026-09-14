@@ -9,6 +9,45 @@ Bootstrapped from [agent-project-bootstrap](https://github.com/edwardlthompson/a
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-14
+
+### Changed
+
+- Desktop Vite `8.2.2` → `8.3.0` (patch/minor `/update-deps`; CodeQL stays `@v4`)
+
+### Fixed
+
+- Lighting usage sliders share Cooling’s 400 ms `hardware_gauges` tick, including while Cycle All is on
+- Cycle All GPU double-buffers RGB1, then re-enters static and save, so the last color holds until the flip; the first snap still arms with the full idle Apply sequence
+- Cycle All and Breathing host-tick every lamp; Fusion HID commands time out in 400 ms so a stuck header cannot freeze the GUI, gauges, or the next hue
+- Apply All SOLID retries until VIA reports effect 1 so the keyboard does not stay white
+- Cooling temp graphs map 25–90 °C so a GPU in the high 20s is not flattened to the floor
+- Quiet/Balanced/Performance/100% curves start at 25 °C so the graph and interp cover GPU idle
+- All Devices only lists fills every lamp can run (Solid, Breathing, Cycle All, Combined); per-device menus group Solid, Rainbow, Rain and splash, and Hardware
+- Apply to all keeps going when one lamp fails (GPU I2C), so motherboard and CPU AIO still get the color
+- Combined on All devices paints every lamp; Cycle All is one host hue on Keychron, Arena, Prime, Fusion, and the GPU, started together so they stay in sync
+- Apply to all paints Fusion once and the other lamps in parallel so devices are not left waiting on each other
+- CPU AIO apply uses header analog (`led2`/`led5`/`led6`/`led7`/`led8`) plus a D_LED HID fill, and no longer overwrites motherboard analog
+- GPU shroud apply writes ITE static RGB on NVIDIA I2C `0x68` when the adapter enumerates it
+- Keychron host rainbow/spatial effects paint 9 VIA LEDs per report on the Q6 layout and keep Direct without re-entering firmware `0x17` every frame; Arena host effects drive all 4 HID zones
+- Keychron Combined/usage fills use rgb_matrix SOLID (effect 1) after VIA GET showed custom `0x17` breathing on this Q6 HE; firmware speed is 0
+- Motherboard CPU/usage applies immediately over liquidctl `sync` (host ticks no longer wait on eight serial CLI calls, and a failed apply is retried)
+- Lighting SDK waits for the graphical session and `DISPLAY` so OpenRGB can see the GPU and Keychron after reboot (ADR-0019)
+- OpenRGB sibling is reaped and respawned instead of left as a zombie; `nvidia-settings` is not called when GPU fan percent is unchanged
+- Applying a solid Lighting color stops host gauge/usage effects on that device so they cannot overwrite the picker
+- Keychron solid color now uses VIA rgb_matrix solid so the keys light, not only the GET_COLOR store
+- Keychron Lighting apply paints over hidraw Direct (custom + per-key Solid + SET 0x0A) without OpenRGB
+- Blank Lighting/Cooling window: WebKit custom protocol never ran ES modules, so the UI stayed `#121418`; production JS is now a classic IIFE, and WebKit also disables compositing (not only DMA-BUF) on this NVIDIA host
+- 100% identify curve is held: the watchdog skips 5% step/hysteresis, and this session’s `chromaflowd` runs the tree binary so packaged Quiet cannot wind 100% back down
+- Cooling fan cards refresh about 400 ms; a focused curve dropdown no longer pauses RPM; NVIDIA RPM is stale-while-revalidate
+- Keychron Apply paints all 108 keys (per-key VIA type, one LED per SET) and shows the Q6 layout without OpenRGB; Fusion Apply sets analog led1–led8
+
+### Added
+
+- MSI RTX 4090 GPU RGB is listed from PCI; color apply writes I2C `0x68` when the ITE is present (OpenRGB SMBus was EIO)
+- Lighting lists CPU AIO as its own Fusion row, separate from Motherboard Fusion analog onboard zones
+- OpenRGB 1.0 detector identity catalog (`data/openrgb-device-index.csv`) as the G-LED-NATIVE backlog, with native Keychron VIA Direct writes and OpenRGB still the oracle/fallback (ADR-0020)
+
 ## [0.1.0] - 2026-09-13
 
 ### Added

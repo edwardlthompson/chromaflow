@@ -66,7 +66,11 @@ pub fn start_user_unit() {
             .status();
     };
     quiet(&["--user", "daemon-reload"]);
-    quiet(&["--user", "enable", "--now", "chromaflow-sdk.service"]);
+    if crate::openrgb_spawn::sdk_opt_in() {
+        quiet(&["--user", "enable", "--now", "chromaflow-sdk.service"]);
+    } else {
+        quiet(&["--user", "disable", "--now", "chromaflow-sdk.service"]);
+    }
 }
 
 pub fn file_sha256(path: &Path) -> Result<String, String> {

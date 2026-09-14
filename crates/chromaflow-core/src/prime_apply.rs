@@ -1,24 +1,63 @@
-//! SteelSeries Prime Neo wheel LED. HID output 0x62 + save 0x59. No PWM.
+//! SteelSeries Prime Neo wheel LED. Live 0x62; save 0x59 on apply. No PWM.
 
-use std::fs::{self, OpenOptions};
+use std::fs::{self, File, OpenOptions};
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 use std::thread;
 use std::time::Duration;
 
 const VID: &str = "1038";
 const PID: &str = "1856";
 
-pub fn set_color(rgb: [u8; 3]) -> Result<String, String> {
+struct Live {
+    file: File,
+    last: Option<[u8; 3]>,
+}
+
+static LIVE: Mutex<Option<Live>> = Mutex::new(None);
+
+pub fn set_live(rgb: [u8; 3]) -> Result<String, String> {
+    let mut slot = LIVE.lock().unwrap_or_else(|p| p.into_inner());
+    if let Some(live) = slot.as_mut() {
+        if live.last == Some(rgb) {
+            return Ok("Prime live unchanged".into());
+        }
+        if live.file.write_all(&color_report(rgb)).is_ok() {
+            live.last = Some(rgb);
+            return Ok("set Prime Neo live".into());
+        }
+        *slot = None;
+    }
     let path = vendor_hidraw().ok_or_else(|| "Prime Neo vendor hidraw not found".to_string())?;
-    let mut f = OpenOptions::new()
+    let mut file = OpenOptions::new()
         .write(true)
         .open(&path)
         .map_err(|e| e.to_string())?;
-    f.write_all(&color_report(rgb)).map_err(|e| e.to_string())?;
+    file.write_all(&color_report(rgb)).map_err(|e| e.to_string())?;
+    *slot = Some(Live {
+        file,
+        last: Some(rgb),
+    });
+    Ok(format!("set Prime Neo live via {}", path.display()))
+}
+
+pub fn save() -> Result<String, String> {
+    let mut slot = LIVE.lock().unwrap_or_else(|p| p.into_inner());
+    let live = slot
+        .as_mut()
+        .ok_or_else(|| "Prime Neo vendor hidraw not found".to_string())?;
     thread::sleep(Duration::from_millis(50));
-    f.write_all(&save_report()).map_err(|e| e.to_string())?;
-    Ok(format!("set Prime Neo wheel via {}", path.display()))
+    live.file
+        .write_all(&save_report())
+        .map_err(|e| e.to_string())?;
+    Ok("saved Prime Neo wheel".into())
+}
+
+pub fn set_color(rgb: [u8; 3]) -> Result<String, String> {
+    let note = set_live(rgb)?;
+    save()?;
+    Ok(note)
 }
 
 /// Report ID 0 + command 0x62 0x01 + RGB + documented suffix ending 0xFF.
@@ -76,5 +115,6 @@ mod tests {
         assert_eq!(r[21], 0xff);
         assert!(r[6..21].iter().all(|b| *b == 0));
         assert_eq!(super::save_report(), [0x00, 0x59]);
+        assert_ne!(&r[..2], &super::save_report());
     }
 }

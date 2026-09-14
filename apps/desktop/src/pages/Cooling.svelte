@@ -17,6 +17,8 @@
 
   export let inventory;
   export let live = false;
+  export let gauges = {};
+  export let hist = [];
   let names = {};
   let taken = {};
   let kinds = {};
@@ -303,7 +305,7 @@
   </div>
   <FansList cards={fans} {names} {taken} {kinds} {curveId} {tempId} {sources} {curves} {conflicts} {busy} {units} on:take={onTake} on:change={onChange} />
   <PumpsList cards={pumps} {names} {taken} {kinds} {curveId} {tempId} {sources} {curves} {conflicts} {busy} {units} liquidctl={inventory.liquidctl} on:take={onTake} on:change={onChange} />
-  <TempsList {chips} {mixes} on:mix={onMix} />
+  <TempsList {chips} {mixes} {gauges} {hist} on:mix={onMix} />
   <CurvesList bind:custom on:persist={persist} on:applyAll={onApplyAll} />
   {#if tucked.length}
     <p class="path">

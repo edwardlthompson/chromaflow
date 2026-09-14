@@ -6,6 +6,8 @@ use tauri::{Manager, PhysicalSize, Size, WindowEvent};
 
 const MIN_W: u32 = 720;
 const MIN_H: u32 = 520;
+const MAX_W: u32 = 1920;
+const MAX_H: u32 = 1080;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Geom {
@@ -30,8 +32,8 @@ fn path() -> std::path::PathBuf {
 }
 
 pub fn clamp(mut g: Geom) -> Geom {
-    g.width = g.width.max(MIN_W);
-    g.height = g.height.max(MIN_H);
+    g.width = g.width.max(MIN_W).min(MAX_W);
+    g.height = g.height.max(MIN_H).min(MAX_H);
     g
 }
 
@@ -51,7 +53,12 @@ pub fn restore(app: &tauri::App) {
     let Some(g) = load() else {
         return;
     };
-    let g = clamp(g);
+    let mut g = clamp(g);
+    // GTK WebKit: maximize at startup leaves a 1×1 webview child (blank surface).
+    #[cfg(target_os = "linux")]
+    {
+        g.maximized = false;
+    }
     let Some(win) = app.get_webview_window("main") else {
         return;
     };
@@ -91,5 +98,12 @@ mod tests {
         });
         assert!(g.width >= 720);
         assert!(g.height >= 520);
+        let big = super::clamp(super::Geom {
+            width: 8000,
+            height: 4000,
+            maximized: true,
+        });
+        assert!(big.width <= 1920);
+        assert!(big.height <= 1080);
     }
 }

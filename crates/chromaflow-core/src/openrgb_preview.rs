@@ -53,9 +53,30 @@ pub fn snapshot() -> Vec<ColorFrame> {
 
 pub fn sync(frames: Vec<LedFrame>) -> Vec<ColorFrame> {
     let pushing = !frames.is_empty();
-    if !pushing {
+    if pushing {
+        let _paint = crate::lighting_broadcast::lock();
+        let mut rest = Vec::new();
+        for frame in &frames {
+            if crate::lighting_port::skip_sdk(&frame.name) {
+                let _ = crate::keychron_apply::set_hex_colors(&frame.colors);
+            } else if crate::lighting_port::arenaish(&frame.name) {
+                let _ = crate::arena_apply::set_zones(&frame.colors);
+            } else {
+                rest.push(frame.clone());
+            }
+        }
+        if rest.is_empty() {
+            return written_rows(&frames);
+        }
+        return sync_sdk(rest, true, frames);
+    }
+    if !pushing && !crate::lighting_cycle::running() {
         crate::keychron_preview::kick();
     }
+    sync_sdk(frames, false, Vec::new())
+}
+
+fn sync_sdk(frames: Vec<LedFrame>, pushing: bool, original: Vec<LedFrame>) -> Vec<ColorFrame> {
     let _sdk = crate::openrgb_proto::lock_sdk();
     let mut guard = SESSION.lock().unwrap_or_else(|p| p.into_inner());
     if guard.is_none() {
@@ -70,29 +91,29 @@ pub fn sync(frames: Vec<LedFrame>) -> Vec<ColorFrame> {
                     painted: Vec::new(),
                 });
             }
-            Err(_) => return overlay(Vec::new(), false),
+            Err(_) => return overlay(Vec::new(), true),
         }
     }
     if pushing {
         let pushed = {
             let Some(ses) = guard.as_mut() else {
-                return overlay(Vec::new(), false);
+                return overlay(Vec::new(), true);
             };
             push(ses, &frames)
         };
         return match pushed {
-            Ok(()) => written_rows(&frames),
+            Ok(()) => written_rows(if original.is_empty() { &frames } else { &original }),
             Err(_) => {
                 if let Some(mut ses) = guard.take() {
                     close(&mut ses.stream);
                 }
-                overlay(Vec::new(), false)
+                overlay(Vec::new(), true)
             }
         };
     }
     let pulled = {
         let Some(ses) = guard.as_mut() else {
-            return overlay(Vec::new(), false);
+            return overlay(Vec::new(), true);
         };
         pull(ses)
     };
@@ -102,7 +123,7 @@ pub fn sync(frames: Vec<LedFrame>) -> Vec<ColorFrame> {
             if let Some(mut ses) = guard.take() {
                 close(&mut ses.stream);
             }
-            overlay(Vec::new(), false)
+            overlay(Vec::new(), true)
         }
     }
 }
@@ -129,11 +150,22 @@ fn overlay(mut rows: Vec<ColorFrame>, use_hid: bool) -> Vec<ColorFrame> {
     if hid.len() < 4 {
         return rows;
     }
+    let mut found = false;
     for row in &mut rows {
         if row.name.to_ascii_lowercase().contains("keychron") {
             row.led_colors = hid.clone();
             row.color = hid.first().cloned().unwrap_or_default();
+            found = true;
         }
+    }
+    if !found {
+        rows.push(ColorFrame {
+            name: "Keychron Q6 HE".into(),
+            color: hid.first().cloned().unwrap_or_default(),
+            led_colors: hid,
+            mode: "Direct".into(),
+            active_mode: 0,
+        });
     }
     rows
 }
@@ -148,6 +180,9 @@ fn mode_name(dev: &RgbDevice) -> String {
 fn push(ses: &mut Session, frames: &[LedFrame]) -> Result<(), String> {
     fill_names(ses)?;
     for frame in frames {
+        if crate::lighting_port::skip_sdk(&frame.name) {
+            continue;
+        }
         let want = frame.name.trim().to_ascii_lowercase();
         let Some(idx) = ses
             .names
