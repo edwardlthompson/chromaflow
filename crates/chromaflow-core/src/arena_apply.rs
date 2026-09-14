@@ -16,9 +16,9 @@ pub fn set_zones(hexes: &[String]) -> Result<String, String> {
         return Err("color must be RRGGBB".into());
     }
     let mut cols = [[0u8; 3]; 4];
-    for i in 0..4 {
+    for (i, slot) in cols.iter_mut().enumerate() {
         let raw = hexes.get(i).unwrap_or(&hexes[0]);
-        cols[i] = crate::lighting_apply::parse_rrggbb(raw)?;
+        *slot = crate::lighting_apply::parse_rrggbb(raw)?;
     }
     write_report(&zones_report(&cols))?;
     Ok("set Arena 7 4 zones".into())
@@ -43,8 +43,7 @@ pub fn zones_report(cols: &[[u8; 3]; 4]) -> [u8; 64] {
     let mut r = [0u8; 64];
     r[0] = 0x06;
     r[1] = 0xa1;
-    for z in 0..4 {
-        let rgb = cols[z];
+    for (z, rgb) in cols.iter().enumerate() {
         let o = 2 + z * 6;
         r[o] = rgb[0];
         r[o + 1] = rgb[1];

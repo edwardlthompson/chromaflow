@@ -26,7 +26,7 @@ pub struct Gauges {
 pub fn snapshot(hwmon: &[HwmonChip]) -> Gauges {
     let cpu_c = max_group_c(hwmon, "cpu");
     let gpu = crate::nvidia_smi::cached_gpu();
-    let gpu_c = max_group_c(hwmon, "gpu").or_else(|| gpu.temp_c);
+    let gpu_c = max_group_c(hwmon, "gpu").or(gpu.temp_c);
     let ram = fs::read_to_string("/proc/meminfo")
         .ok()
         .as_deref()

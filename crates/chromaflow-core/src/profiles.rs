@@ -60,9 +60,7 @@ pub fn save(dir: &Path, file: &ProfilesFile) -> Result<(), String> {
 }
 
 fn valid_token(s: &str) -> bool {
-    let n = s.len();
-    n >= 1
-        && n <= 40
+    (1..=40).contains(&s.len())
         && s.chars()
             .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-')
 }
