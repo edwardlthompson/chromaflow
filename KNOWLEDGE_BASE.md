@@ -203,3 +203,11 @@
 | **Cause** | Ephemeral runner FS + commit-msg / UTF-8 / clone path length on Windows |
 | **Fix** | Quarantine: re-run the failing job once via `gh run rerun <id> --failed`. If it fails twice, treat as real — capture `simulate-template-upgrade` log and open a BUILD_PLAN row. Do not remove the check from `required-checks.json`. |
 | **Prevention** | Keep upgrade-sim sacred files UTF-8; avoid writing under locked paths; see `docs/CI_REQUIRED_CHECKS.md` |
+### KB-025 — Product `/ship` must not merge template Release Please 1.5.0
+
+| Field | Detail |
+|-------|--------|
+| **Symptom** | After `git push origin main`, `merge-release-please-pr` finds `chore(main): release 1.5.0` and waits to `--admin` merge it |
+| **Cause** | `.release-please-manifest.json` still pins bootstrap template `1.4.0`; Release Please looks for tag `v1.4.0` and opens a template minor. Product tags are CHANGELOG `v0.2.x` |
+| **Fix** | Kill the merge waiter; leave PR #5 open (or close [HUMAN]). Tag `v0.2.x` from CHANGELOG and `gh release create`. Do not bump `.template-version` |
+| **Prevention** | On ChromaFlow, skip `merge-release-please-pr` unless the PR title is the product version. See `docs/features/product-release-sbom.md` | |
