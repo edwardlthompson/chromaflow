@@ -9,11 +9,17 @@
   import { ui, pwmOn } from "./lib/ui.js";
   import { applySession, loadLocal, loadSession, persistSession } from "./lib/session.js";
   import { researchDevices } from "./lib/research.js";
-  import { setHostCycle, wantsCycle } from "./lib/lightingTick.js";
   import { startGaugeTick } from "./lib/gaugesTick.js";
   import RailNav from "./lib/RailNav.svelte";
+  import ConfirmDialog from "./lib/ConfirmDialog.svelte";
   import t from "./locales/en.json";
 
+  const titles = {
+    Cooling: t["cooling.title"],
+    Lighting: t["lighting.title"],
+    Profiles: t["profiles.title"],
+    Support: t["support.title"],
+  };
   const boot = applySession(loadLocal());
   let tab = boot.tab;
   let inventory = fixture;
@@ -21,19 +27,24 @@
   let source = "sample";
   let loadError = "";
   let forceLoad = false;
+  let lightReady = false;
   let runLoad = async () => {};
   let gauges = ui.gauges;
   let hist = ui.gaugeHist || [];
 
-  $: conflicts = (inventory && inventory.conflicts) || [];
   $: ui.page = tab;
 
   function setTab(name) {
+    if (name === tab) return;
     tab = name;
     persistSession(name);
     if (name !== "Cooling") ui.scrolling = false;
-    forceLoad = true;
-    runLoad();
+    if (name === "Lighting" && !lightReady) {
+      forceLoad = true;
+      runLoad();
+    } else if (name === "Cooling") {
+      runLoad();
+    }
   }
 
   function skipPoll() {
@@ -42,7 +53,7 @@
     if (tab === "Lighting") {
       const n = (((lightInv && lightInv.openrgb) || {}).controllers || []).length;
       if (n > 0 && researchDevices(lightInv).length === 0) return true;
-    } else if (tab === "Profiles" && source === "this machine") return true;
+    } else if ((tab === "Profiles" || tab === "Support") && source === "this machine") return true;
     if (tab === "Cooling") return ui.scrolling;
     const ae = typeof document !== "undefined" ? document.activeElement : null;
     const tag = ae && ae.tagName;
@@ -55,11 +66,14 @@
     const load = async () => {
       if (skipPoll() && source === "this machine") return;
       forceLoad = false;
-      const light = tab === "Lighting" || tab === "Support";
+      const light = tab === "Lighting";
       try {
         if (isTauri()) {
           inventory = await invoke("inventory", { light });
-          if (light) lightInv = inventory;
+          if (light) {
+            lightInv = inventory;
+            lightReady = true;
+          }
           source = "this machine";
           loadError = "";
           return;
@@ -69,7 +83,10 @@
         const data = await res.json();
         if (data && Array.isArray(data.hwmon)) {
           inventory = data;
-          if (light) lightInv = data;
+          if (light) {
+            lightInv = data;
+            lightReady = true;
+          }
           source = "this machine";
         }
       } catch (err) {
@@ -79,7 +96,6 @@
     runLoad = load;
     loadSession().then((s) => {
       tab = s.tab;
-      if (wantsCycle(s.lastMode)) setHostCycle(true, invoke, isTauri);
       forceLoad = true;
       runLoad();
     });
@@ -90,8 +106,7 @@
       if (stop) return;
       await load();
       if (stop) return;
-      const wait =
-        tab === "Cooling" ? 400 : tab === "Lighting" ? (ui.cycleOn ? 15000 : 4000) : ui.pollMs || 4000;
+      const wait = tab === "Cooling" ? 400 : tab === "Lighting" ? 15000 : ui.pollMs || 4000;
       timer = window.setTimeout(tick, wait);
     };
     tick();
@@ -115,11 +130,16 @@
 
 <div class="app-shell">
   <header class="fc-top">
-    <span class="brand">ChromaFlow</span>
-    <p class="status" role="status">
-      Showing {source}. {$pwmOn ? t["app.pwmOn"] : t["app.pwmOff"]} Conflicts: {conflicts.length ? conflicts.join(", ") : "none"}.
-      {#if loadError} {loadError}{/if}
-    </p>
+    <span class="fc-crumb">{titles[tab] || tab}</span>
+    <div class="fc-pills">
+      <span class="fc-pill">{source === "this machine" ? t["app.sourceLive"] : t["app.sourceSample"]}</span>
+      <span class="fc-pill" class:on={$pwmOn} title={$pwmOn ? t["app.pwmOn"] : t["app.pwmOff"]}>
+        {$pwmOn ? t["app.watchdog"] : t["app.firmware"]}
+      </span>
+      {#if loadError}
+        <span class="fc-pill" role="alert" title={loadError}>{t["app.error"]}</span>
+      {/if}
+    </div>
   </header>
   <div class="fc-body">
     <RailNav {tab} {setTab} />
@@ -133,15 +153,19 @@
         }, 450);
       }}
     >
-      {#if tab === "Cooling"}
+      <div class:tab-hidden={tab !== "Cooling"} aria-hidden={tab !== "Cooling"} inert={tab !== "Cooling"}>
         <Cooling {inventory} live={source === "this machine"} {gauges} {hist} />
-      {:else if tab === "Lighting"}
+      </div>
+      <div class:tab-hidden={tab !== "Lighting"} aria-hidden={tab !== "Lighting"} inert={tab !== "Lighting"}>
         <Lighting inventory={lightInv} {gauges} />
-      {:else if tab === "Profiles"}
-        <Profiles />
-      {:else}
-        <Support {inventory} />
-      {/if}
+      </div>
+      <div class:tab-hidden={tab !== "Profiles"} aria-hidden={tab !== "Profiles"} inert={tab !== "Profiles"}>
+        <Profiles {inventory} />
+      </div>
+      <div class:tab-hidden={tab !== "Support"} aria-hidden={tab !== "Support"} inert={tab !== "Support"}>
+        <Support {inventory} active={tab === "Support"} />
+      </div>
     </main>
   </div>
 </div>
+<ConfirmDialog />

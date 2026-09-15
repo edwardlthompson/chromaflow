@@ -49,9 +49,9 @@
           <h3>{t[`cooling.${preset.id}`]}</h3>
           <div class="fc-curve-actions">
           {#if preset.id !== "full"}
-            <button type="button" class="fc-clone" on:click={() => dispatch("applyAll", { id: preset.id })}>{t["cooling.applyAll"]}</button>
+            <button type="button" class="fc-clone" aria-label={t["cooling.applyAllAria"]} on:click={() => dispatch("applyAll", { id: preset.id })}>{t["cooling.applyAll"]}</button>
           {/if}
-            <button type="button" class="fc-clone" on:click={() => clone(preset)}>{t["cooling.clone"]}</button>
+            <button type="button" class="fc-clone btn-secondary" on:click={() => clone(preset)}>{t["cooling.clone"]}</button>
           </div>
         </header>
         <p class="path">{t[`cooling.${preset.id}Help`]}</p>

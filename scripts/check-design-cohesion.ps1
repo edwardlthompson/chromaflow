@@ -105,6 +105,11 @@ if (Test-Path "examples/web") {
         "examples/web/public/logo.svg"
     )
 }
+if (Test-Path "apps/desktop/src") {
+    $required += @(
+        "apps/desktop/src/fc-tokens.css"
+    )
+}
 if (Test-Path "examples/android") {
     $required += @(
         "examples/android/app/src/main/java/dev/foss/goldenpath/ui/theme/Color.kt",

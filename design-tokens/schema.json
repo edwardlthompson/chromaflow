@@ -28,6 +28,15 @@
     "typography": { "type": "object" },
     "spacing": { "type": "object", "additionalProperties": { "type": "number" } },
     "radius": { "type": "object", "additionalProperties": { "type": "number" } },
-    "elevation": { "type": "object", "additionalProperties": { "type": "number" } }
+    "elevation": { "type": "object", "additionalProperties": { "type": "number" } },
+    "fanControl": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "properties": {
+        "top": { "type": "string" },
+        "card": { "type": "string" },
+        "yellow": { "type": "string" }
+      }
+    }
   }
 }

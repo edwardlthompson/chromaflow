@@ -1,4 +1,5 @@
 <script>
+  import { createEventDispatcher } from "svelte";
   import {
     SUGGESTED_HEX,
     hexToHsv,
@@ -9,12 +10,15 @@
     loadRecent,
     pushRecent,
   } from "./color.js";
-  import { KELVIN_MAX, KELVIN_MIN, kelvinToRgb, rgbToKelvin } from "./kelvin.js";
+  import { KELVIN_MAX, KELVIN_MIN, KELVIN_PRESETS, kelvinToHex, kelvinToRgb, rgbToKelvin } from "./kelvin.js";
   import ChannelRow from "./ChannelRow.svelte";
   import t from "../locales/en.json";
 
   export let hex = "#0052ff";
   export let wheelLabel = "Color";
+  export let busy = false;
+
+  const dispatch = createEventDispatcher();
 
   let hue = 221;
   let sat = 1;
@@ -61,11 +65,18 @@
     recent = pushRecent(hex);
   }
 
+  function commit() {
+    const use = normalizeHex(hex);
+    if (!use) return;
+    dispatch("commit", { hex: use });
+  }
+
   function pickHex(next) {
     const hsv = hexToHsv(next);
     if (!hsv) return;
     emit(hsv.h, hsv.s, hsv.v);
     remember();
+    commit();
   }
 
   function onRing(event) {
@@ -109,7 +120,10 @@
   }
 
   function up() {
-    if (drag) remember();
+    if (drag) {
+      remember();
+      commit();
+    }
     drag = "";
   }
 
@@ -157,12 +171,12 @@
     </div>
   </div>
   <div class="picker-card picker-square picker-sliders">
-    <ChannelRow label={t["lighting.r"]} tip={t["lighting.tip.r"]} value={Math.round(rgb.r)} chanClass="chan-r" on:input={(e) => setRgb("r", e.detail)} on:commit={remember} />
-    <ChannelRow label={t["lighting.g"]} tip={t["lighting.tip.g"]} value={Math.round(rgb.g)} chanClass="chan-g" on:input={(e) => setRgb("g", e.detail)} on:commit={remember} />
-    <ChannelRow label={t["lighting.b"]} tip={t["lighting.tip.b"]} value={Math.round(rgb.b)} chanClass="chan-b" on:input={(e) => setRgb("b", e.detail)} on:commit={remember} />
-    <ChannelRow label={t["lighting.h"]} tip={t["lighting.tip.h"]} value={Math.round(hue)} max={360} chanClass="chan-h" on:input={(e) => setHsv("h", e.detail)} on:commit={remember} />
-    <ChannelRow label={t["lighting.s"]} tip={t["lighting.tip.s"]} value={Math.round(sat * 255)} chanClass="chan-s" on:input={(e) => setHsv("s", e.detail)} on:commit={remember} />
-    <ChannelRow label={t["lighting.v"]} tip={t["lighting.tip.v"]} value={Math.round(val * 255)} chanClass="chan-v" on:input={(e) => setHsv("v", e.detail)} on:commit={remember} />
+    <ChannelRow label={t["lighting.r"]} tip={t["lighting.tip.r"]} value={Math.round(rgb.r)} chanClass="chan-r" on:input={(e) => setRgb("r", e.detail)} on:commit={() => { remember(); commit(); }} />
+    <ChannelRow label={t["lighting.g"]} tip={t["lighting.tip.g"]} value={Math.round(rgb.g)} chanClass="chan-g" on:input={(e) => setRgb("g", e.detail)} on:commit={() => { remember(); commit(); }} />
+    <ChannelRow label={t["lighting.b"]} tip={t["lighting.tip.b"]} value={Math.round(rgb.b)} chanClass="chan-b" on:input={(e) => setRgb("b", e.detail)} on:commit={() => { remember(); commit(); }} />
+    <ChannelRow label={t["lighting.h"]} tip={t["lighting.tip.h"]} value={Math.round(hue)} max={360} chanClass="chan-h" on:input={(e) => setHsv("h", e.detail)} on:commit={() => { remember(); commit(); }} />
+    <ChannelRow label={t["lighting.s"]} tip={t["lighting.tip.s"]} value={Math.round(sat * 255)} chanClass="chan-s" on:input={(e) => setHsv("s", e.detail)} on:commit={() => { remember(); commit(); }} />
+    <ChannelRow label={t["lighting.v"]} tip={t["lighting.tip.v"]} value={Math.round(val * 255)} chanClass="chan-v" on:input={(e) => setHsv("v", e.detail)} on:commit={() => { remember(); commit(); }} />
     <ChannelRow
       label={t["lighting.k"]}
       tip={t["lighting.tip.k"]}
@@ -172,20 +186,32 @@
       maxlength={4}
       chanClass="chan-k"
       on:input={(e) => setKelvin(e.detail)}
-      on:commit={remember}
+      on:commit={() => { remember(); commit(); }}
     />
   </div>
-  <div class="picker-card picker-square picker-tools">
+  <div class="picker-card picker-square picker-tools" aria-busy={busy}>
     <p class="hex-row" title={t["lighting.tip.hex"]}>
-      <label>{t["lighting.hex"]} <input type="text" bind:value={hex} maxlength="7" spellcheck="false" aria-description={t["lighting.tip.hex"]} on:change={() => { kelvinHeld = null; remember(); }} /></label>
+      <label>{t["lighting.hex"]} <input type="text" bind:value={hex} maxlength="7" spellcheck="false" title={t["lighting.tip.hex"]} on:change={() => { kelvinHeld = null; remember(); commit(); }} /></label>
       <span class="tools-preview" style="background:{hex}" aria-hidden="true"></span>
     </p>
     <div class="swatch-row" role="group" aria-label={t["lighting.suggested"]}>
       {#each chips as c}
         <button type="button" class="chip" style="background:{c}" aria-label={c} on:click={() => pickHex(c)}></button>
       {/each}
+    </div>
+    <div class="swatch-row swatch-more" role="group" aria-label={t["lighting.moreSwatches"]}>
+      {#each KELVIN_PRESETS as k}
+        <button
+          type="button"
+          class="chip"
+          style="background:{kelvinToHex(k)}"
+          aria-label="{k} K"
+          title="{k} K"
+          on:click={() => pickHex(kelvinToHex(k))}
+        ></button>
+      {/each}
       <span class="swatch-gap" aria-hidden="true"></span>
-      {#each [0, 1] as i}
+      {#each [0, 1, 2, 3] as i}
         <button
           type="button"
           class="chip recent"

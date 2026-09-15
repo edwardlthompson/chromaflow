@@ -39,6 +39,8 @@
   let persistTimer = 0;
   let toastTimer = 0;
   let toastMsg = "";
+  let calN = 0;
+  let calMax = 0;
 
   $: chips = inventory.hwmon || [];
   $: conflicts = (inventory && inventory.conflicts) || [];
@@ -50,6 +52,8 @@
   $: pumps = allCards.filter((c) => (kinds[c.id] || defaultKind(c)) === "pump" && onBoard(c, hidden, shown));
   $: tucked = allCards.filter((c) => inHiddenRow(c, hidden, shown));
   $: anyTaken = Object.values(taken).some(Boolean);
+  $: writable = allCards.filter((c) => onBoard(c, hidden, shown) && canControl(c, conflicts));
+  $: showFirstRun = live && hydrated && !conflicts.length && !anyTaken && writable.length > 0;
   $: pwmOn.set(anyTaken);
   $: if (!unitSeeded && allCards.length) {
     units = Object.fromEntries(aioMemberIds(allCards).map((id) => [id, true]));
@@ -138,8 +142,8 @@
     const checked = ev.detail.checked;
     if (checked) {
       if (!peers.some((c) => canControl(c, conflicts))) return;
-      if (!Object.values(taken).some(Boolean) && !confirmTakeover(t["cooling.takeoverAsk"])) return;
-      if (peers.some((c) => Number((params[c.id] || defaultParams()).min_pct) === 0) && !confirmTakeover(t["cooling.zeroAsk"])) return;
+      if (!Object.values(taken).some(Boolean) && !(await confirmTakeover(t["cooling.takeoverAsk"]))) return;
+      if (peers.some((c) => Number((params[c.id] || defaultParams()).min_pct) === 0) && !(await confirmTakeover(t["cooling.zeroAsk"]))) return;
     }
     let next = { ...taken };
     for (const card of peers) {
@@ -163,6 +167,10 @@
     }
   }
 
+  async function onFirstRun() {
+    await onApplyAll({ detail: { id: "quiet" } });
+  }
+
   async function onApplyAll(ev) {
     const id = ev.detail && ev.detail.id;
     if (!id || !live || !hydrated) return;
@@ -171,7 +179,7 @@
       applyMsg = t["cooling.calibrateNone"];
       return;
     }
-    if (!anyTaken && !confirmTakeover(t["cooling.takeoverAsk"])) return;
+    if (!anyTaken && !(await confirmTakeover(t["cooling.takeoverAsk"]))) return;
     const next = applyPreset(queue, curveId, taken, tempId, defaultTempId(sources), id);
     curveId = next.curveId;
     taken = next.taken;
@@ -191,8 +199,8 @@
       return;
     }
     const fresh = queue.filter((c) => !taken[c.id]);
-    if (fresh.length && !Object.values(taken).some(Boolean) && !confirmTakeover(t["cooling.takeoverAsk"])) return;
-    if (queue.some((c) => Number((params[c.id] || defaultParams()).min_pct) === 0) && !confirmTakeover(t["cooling.zeroAsk"])) return;
+    if (fresh.length && !Object.values(taken).some(Boolean) && !(await confirmTakeover(t["cooling.takeoverAsk"]))) return;
+    if (queue.some((c) => Number((params[c.id] || defaultParams()).min_pct) === 0) && !(await confirmTakeover(t["cooling.zeroAsk"]))) return;
     const claimed = claimQueue(queue, taken, tempId, curveId, defaultTempId, sources);
     taken = claimed.taken;
     tempId = claimed.tempId;
@@ -201,8 +209,10 @@
     ui.pausePoll = true;
     try {
       if (!(await pushCurves(true))) return;
-      const { nextCal, silent } = await sweepEach(queue, invoke, channelOf, sourceFor, extras, names, defaultName, t, (m) => {
+      const { nextCal, silent } = await sweepEach(queue, invoke, channelOf, sourceFor, extras, names, defaultName, t, (m, n, total) => {
         applyMsg = m;
+        calN = n;
+        calMax = total;
       });
       calibration = { ...calibration, ...nextCal };
       persist();
@@ -214,6 +224,8 @@
     } finally {
       ui.pausePoll = false;
       busy = false;
+      calN = 0;
+      calMax = 0;
     }
   }
 
@@ -286,17 +298,33 @@
   {/if}
   <div class="fc-toolbar">
     <div class="fc-toolbar-copy">
-      <p class="fc-note">{t["cooling.readOnly"]}</p>
       {#if conflicts.length}
         <p class="fc-note">{t["cooling.noTakeover"]}</p>
+      {:else if showFirstRun}
+        <p>{t["cooling.firstRun"]}</p>
       {:else}
         <p>{anyTaken ? t["cooling.applied"] : t["cooling.notApplied"]}</p>
       {/if}
       {#if applyMsg}
         <p class="status" role="status">{applyMsg}</p>
       {/if}
+      {#if calMax}
+        <div
+          class="fc-progress"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuenow={calN}
+          aria-valuemax={calMax}
+          aria-label={applyMsg}
+        >
+          <span class="fc-progress-bar" style="width: {(calN / calMax) * 100}%"></span>
+        </div>
+      {/if}
     </div>
     <div class="fc-toolbar-actions">
+      {#if showFirstRun}
+        <button type="button" disabled={busy} on:click={onFirstRun}>{t["cooling.firstRunApply"]}</button>
+      {/if}
       <button type="button" class="fc-cal-all" disabled={busy || conflicts.length} on:click={onCalibrateAll}>
         {t["cooling.calibrate"]}
       </button>
@@ -311,7 +339,7 @@
     <p class="path">
       {t["cooling.hidden"]}
       {#each tucked as card}
-        <button type="button" class="fc-hide" on:click={() => reveal(card.id)}>
+        <button type="button" class="fc-hide btn-secondary" on:click={() => reveal(card.id)}>
           {names[card.id] || defaultName(card)}
         </button>
       {/each}

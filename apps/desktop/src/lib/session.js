@@ -83,15 +83,18 @@ export function saveLocal(s) {
 
 let timer = 0;
 
-export function persistSession(tab) {
+export function persistSession(tab, immediate) {
   const name = tab && typeof tab === "object" && !Array.isArray(tab) ? tab.tab : tab;
   const s = snapshot(name);
   saveLocal(s);
-  if (typeof window !== "undefined") window.clearTimeout(timer);
+  if (typeof window === "undefined") return;
+  window.clearTimeout(timer);
   if (!isTauri()) return;
-  timer = window.setTimeout(() => {
+  const save = () => {
     invoke("session_save", { session: s }).catch(() => {});
-  }, 200);
+  };
+  if (immediate) save();
+  else timer = window.setTimeout(save, 200);
 }
 
 export async function loadSession() {

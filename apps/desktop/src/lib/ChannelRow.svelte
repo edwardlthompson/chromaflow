@@ -62,7 +62,6 @@
     {max}
     {value}
     aria-label={label}
-    aria-description={tip}
     class={chanClass}
     on:input={(e) => send(e.target.value, false)}
     on:change={() => dispatch("commit")}

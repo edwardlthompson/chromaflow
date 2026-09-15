@@ -78,7 +78,7 @@ flowchart TD
 
 ## Install
 
-Primary test target is Linux Mint 21/22 (Cinnamon). We do not ship kernel modules. Inventory (`chromaflow sensors|devices|rescan`) works offline as an unprivileged user. Install the app with `bash scripts/build-chromaflow-deb.sh` then `sudo dpkg -i target/deb/chromaflow_0.1.0_amd64.deb` (see `packaging/README.md`). The package ships the color app icon (hicolor PNG + SVG). `apps/desktop/src-tauri/icons/icon.ico` is the Windows taskbar/Start icon for a future NSIS/MSI build — PWM on Windows is not in this release. After udev or group changes (i2c, plugdev), log out. OpenRGB is a hidden sibling engine, not a second Start-menu app.
+Primary test target is Linux Mint 21/22 (Cinnamon). We do not ship kernel modules. Inventory (`chromaflow sensors|devices|rescan`) works offline as an unprivileged user. Install the app with `bash scripts/build-chromaflow-deb.sh` then `sudo dpkg -i target/deb/chromaflow_0.2.1_amd64.deb` (see `packaging/README.md`). The package ships the color app icon (hicolor PNG + SVG). `apps/desktop/src-tauri/icons/icon.ico` is the Windows taskbar/Start icon for a future NSIS/MSI build — PWM on Windows is not in this release. After udev or group changes (i2c, plugdev), log out. OpenRGB is a hidden sibling engine, not a second Start-menu app.
 
 ## Usage
 

@@ -7,7 +7,7 @@ on:
 
 permissions:
   contents: write
-  pull-requests: read
+  pull-requests: write
 
 concurrency:
   group: sync-open-prs-build-plan
@@ -51,9 +51,6 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add BUILD_PLAN.md
           git commit -m "chore(build-plan): sync open Dependabot and release PRs"
-          if git push origin "HEAD:$DEFAULT_BRANCH"; then
-            exit 0
-          fi
-          echo "Push rejected; retry once after pull --rebase"
-          git pull --rebase origin "$DEFAULT_BRANCH"
-          git push origin "HEAD:$DEFAULT_BRANCH"
+          bash scripts/ci-push-or-pr.sh \
+            "chore(build-plan): sync open Dependabot and release PRs" \
+            "Open-PR BUILD_PLAN sync could not push to the protected default branch."

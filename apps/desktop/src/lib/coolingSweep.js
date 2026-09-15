@@ -40,7 +40,7 @@ export async function sweepEach(queue, invoke, channelOf, sourceFor, extras, nam
   for (const card of queue || []) {
     n += 1;
     const label = names[card.id] || defaultName(card);
-    onProgress(progressMsg(t, label, n, queue.length));
+    onProgress(progressMsg(t, label, n, queue.length), n, queue.length);
     const ch = channelOf(card, sourceFor(card), extras(card));
     const out = await invoke("pwm_calibrate", { dir: ch.dir, pwm: ch.pwm });
     const rows = (out && out.rows) || [];

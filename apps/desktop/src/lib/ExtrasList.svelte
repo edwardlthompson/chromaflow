@@ -1,6 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import { extraFailNote } from "./lighting.js";
+  import { failLines } from "./failLines.js";
   import t from "../locales/en.json";
 
   export let extras = [];
@@ -8,26 +9,34 @@
   export let busy = false;
 
   const dispatch = createEventDispatcher();
+
+  function note(item) {
+    return failLines(extraFailNote(extraResults, item.id, item.present));
+  }
 </script>
 
-<p>
-  <button type="button" on:click={() => dispatch("all")} disabled={busy}>{t["support.installAll"]}</button>
-</p>
 <ul class="extras">
   {#each extras as item}
+    {@const fail = note(item)}
     <li data-present={item.present ? "true" : "false"}>
       <span class="extras-row">
-        <span class="mark" aria-hidden="true">{item.present ? "●" : "○"}</span>
+        <span class="mark">{item.present ? t["support.ready"] : t["support.needed"]}</span>
         {t[`lighting.extras.${item.id}`] || item.label || item.id}
         {#if item.label && item.id === "linux-modules-extra"}
           <span class="path">{item.label}</span>
         {/if}
-        <button type="button" on:click={() => dispatch("item", item.id)} disabled={busy}>
+        <button type="button" class="btn-secondary" on:click={() => dispatch("item", item.id)} disabled={busy}>
           {t["support.installItem"]}
         </button>
       </span>
-      {#if extraFailNote(extraResults, item.id, item.present)}
-        <p class="fail" role="alert">{extraFailNote(extraResults, item.id, item.present)}</p>
+      {#if fail.first}
+        <p class="fail" role="alert">{fail.first}</p>
+        {#if fail.rest}
+          <details>
+            <summary>{t["lighting.rowDetails"]}</summary>
+            <p class="fail">{fail.rest}</p>
+          </details>
+        {/if}
       {/if}
     </li>
   {/each}

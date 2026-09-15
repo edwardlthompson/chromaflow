@@ -264,8 +264,7 @@ export function mergePreview(devices, preview) {
 export function extraFailNote(results, id, present) {
   if (present) return "";
   const row = (results || []).find((r) => r.id === id);
-  const msg = row && row.ok === false ? String(row.error || "install failed") : "";
-  return msg.length > 180 ? `${msg.slice(0, 180)}…` : msg;
+  return row && row.ok === false ? String(row.error || "install failed") : "";
 }
 
 export function mergeExtraResults(prev, next) {

@@ -38,6 +38,7 @@
             <path d="M14.2 6.4a3.4 3.4 0 0 0-4.8 4.8L5 15.6l3.4 3.4 4.4-4.4a3.4 3.4 0 0 0 4.8-4.8l-2.4 2.4-1.6-1.6z" />
           {/if}
         </svg>
+        <span class="rail-label">{item.label}</span>
       </button>
     </div>
   {/each}

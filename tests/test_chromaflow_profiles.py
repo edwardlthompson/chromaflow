@@ -42,7 +42,30 @@ class ProfileAndSelectTests(unittest.TestCase):
             "/etc/modules-load.d/chromaflow.conf",
         )
 
-    def test_profiles_rs_has_no_pwm(self) -> None:
+    def test_profiles_apply_maps_looks_without_pwm_write(self) -> None:
+        import subprocess
+
+        out = subprocess.check_output(
+            [
+                "node",
+                "--input-type=module",
+                "-e",
+                "import { rgbLook, withCurveSet, needsZeroAsk, canApplyNames, takeoverFile } from './apps/desktop/src/lib/profilesApply.js';"
+                "if (rgbLook('off').color !== '#000000') throw new Error('off');"
+                "if (rgbLook('solid').mode !== 'Solid Color') throw new Error('solid');"
+                "if (canApplyNames('quiet', 'nope') || !canApplyNames('quiet', 'solid')) throw new Error('names');"
+                "const f = withCurveSet({ channels: [{ enabled: false, curve_id: 'x', min_pct: 20 }] }, 'quiet');"
+                "if (!f.channels[0].enabled || f.channels[0].curve_id !== 'quiet') throw new Error('curve');"
+                "if (!needsZeroAsk({ channels: [{ enabled: true, min_pct: 0 }] })) throw new Error('zero');"
+                "const built = takeoverFile({ channels: [] }, { hwmon: [], gpu_fans: [] }, 'balanced');"
+                "if (!Array.isArray(built.channels)) throw new Error('file');",
+            ],
+            cwd=ROOT,
+            text=True,
+        )
+        self.assertEqual(out.strip(), "")
+        src = (ROOT / "apps/desktop/src/lib/profilesApply.js").read_text(encoding="utf-8")
+        self.assertNotIn("set_pwm", src)
         text = (ROOT / "crates/chromaflow-core/src/profiles.rs").read_text(encoding="utf-8")
         self.assertIn("schema: u32", text)
         self.assertIn("curve_set", text)

@@ -2,6 +2,38 @@
 
 > Archive of finished BUILD_PLAN items.
 
+## Sprint 39 — UX audit leftovers (2026-09-14)
+
+- ✅ [AGENT] Cut or wire unused Lighting JSON (`docs/features/desktop-unused-copy.md`)
+- ✅ [AGENT] Type 14/16/12, spacing 4/8/12/16, chip/swatch 44px, `.btn-secondary` (`docs/features/desktop-scale.md`)
+- ✅ [AGENT] Support first screen is Install all; errors first line + details (`docs/features/support-toolbox.md`)
+- ✅ [AGENT] One verb Apply on Lighting and Cooling primary actions (`docs/features/desktop-apply-verb.md`)
+- ✅ [AGENT] Lighting Apply toast, optimistic swatch, per-row busy (`docs/features/lighting-apply-feedback.md`)
+- ✅ [AGENT] Reduced-motion chrome motions (rail, pill, toast, gauges) (`docs/features/desktop-motion.md`)
+- ✅ [AGENT] First-run Cooling take-over prompt (`docs/features/cooling-first-run.md`)
+- ✅ [AGENT] In-app `alertdialog` for PWM and Support confirms (`docs/features/desktop-alertdialog.md`)
+- ✅ [AGENT] In-app About/version (`docs/features/desktop-about.md`)
+- ✅ [AGENT] Calibrate progress bar (`docs/features/cooling-calibrate-progress.md`)
+
+## Sprint 38 — Later UX pass (2026-09-14)
+
+- ✅ [AGENT] Copy and a11y: quieter first-run, Advanced off (`docs/features/desktop-copy-a11y.md`)
+- ✅ [AGENT] Fill unused All devices picker width on Lighting (`docs/features/lighting-picker-layout.md`)
+- ✅ [AGENT] Lighting rows names-first; protocol/hex behind details (`docs/features/lighting-row-details.md`)
+- ✅ [AGENT] Profiles apply named curve set + RGB to hardware (G-PROF, `docs/features/profiles-apply.md`)
+- ✅ [AGENT] Product UI uses design tokens, not raw hex in `app.css` (G-I18N, `docs/features/desktop-tokens.md`)
+
+## Sprint 37 — Desktop chrome polish (2026-09-14)
+
+- ✅ [AGENT] Quiet Fan Control-style chrome: labeled rail, status pills, Profiles form (`docs/features/desktop-chrome.md`)
+
+## Sprint 36 — Audit findings (2026-09-14)
+
+- ✅ [AGENT] Allowlist privacy sanitizer oracle in `.gitleaks.toml` (`docs/features/gitleaks-sanitize-oracle.md`)
+- ✅ [AGENT] Align `Cargo.toml` / Tauri / deb versions with CHANGELOG 0.2.0 (`docs/features/product-version-align.md`)
+- ✅ [AGENT] Health-check template-gap BUILD_PLAN sync opens a PR when main is protected (`docs/features/ci-push-or-pr.md`)
+- ✅ [AGENT] Enable GitHub Pages workflow source so the demo URL is not 404 (`docs/features/github-pages-enable.md`)
+
 ## Sprint 35 — Leftovers after Fusion list restore (2026-09-14)
 
 - ✅ [AGENT] Fusion Apply when USB `048d:5702` has no hidraw and `liquidctl list` is empty (`docs/features/fusion-usb-apply.md`)

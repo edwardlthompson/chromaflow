@@ -17,11 +17,11 @@ Catalog for Sprint 2+. Live board: [`BUILD_PLAN.md`](../BUILD_PLAN.md). Feature 
 | G-LED-NATIVE | Independent MIT ports for every OpenRGB-supported device | Identity catalog `data/openrgb-device-index.csv`; Keychron/Arena/Prime/Fusion native; GPU I2C map unverified on this 4090 | 33 |
 | G-DET | Detect hidraw/i2c/module/Windows-only gaps; Install + Rescan | `gaps[]` exists; Support dry-run selects YAML ∩ lspci/DMI/loaded/`i2c-dev` (not the full dump) | 5 |
 | G-SUP | Polkit script: apt, udev, groups, allowlist `modprobe`, JSON, logout/reboot | One-click pkexec `--apply` via pinned helper; optional `--advanced` I2C | 5 |
-| G-PROF | Profiles bind a fan-curve set + an RGB profile in `~/.config/chromaflow/` | Schema v1 JSON round-trip; names only; nothing applied to PWM | 5 |
+| G-PROF | Profiles bind a fan-curve set + an RGB profile in `~/.config/chromaflow/` | Schema v1 JSON; Apply runs `pwm_takeover` + `lighting_broadcast` with Cooling confirms | 38 |
 | G-PACK | `.deb` + Start menu; OpenRGB engine file in the same package | `scripts/build-chromaflow-deb.sh` stages `chromaflow_*.deb` plus `/usr/libexec/chromaflow/OpenRGB.AppImage`; `chromaflow daemon --sdk` (ADR-0013) | 5 |
 | G-SAFE | Never silent 0% PWM; watchdog + `ExecStopPost` failsafe | `chromaflow daemon --watchdog` + unit `ExecStopPost`; firmware enable (2); 0% needs confirm | 15 |
 | G-BOOT | Optional `/etc/modules-load.d/chromaflow.conf` via polkit | Dry-run plan only (`apply: false`) | 5 |
-| G-I18N | English UI, design tokens, Settings/About | Product UI hardcodes English + raw hex; Golden Path tokens live in `examples/web` | 3 |
+| G-I18N | English UI, design tokens, Settings/About | Product desktop uses `--fc-*` from `design-tokens.json`; Settings/About still missing | 38 |
 This machine’s live `rescan` (Gigabyte X570S AORUS MASTER + RTX 4090 hybrid):
 
 | Control | Probe | Notes |

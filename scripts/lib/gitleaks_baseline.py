@@ -7,6 +7,7 @@ CONFIG = Path(".gitleaks.toml")
 REQUIRED = (
     "useDefault",
     "sanitize-fixtures",
+    "test_sanitize",
     "[allowlist]",
     "android-local-properties-sdk-dir",
     "sdk\\.dir",

@@ -4,7 +4,11 @@ import { classify, effectFrame, hostOpenRgbFrames, stampHostFrames, isHostEffect
 import { deviceKey } from "./lighting.js";
 import { ui } from "./ui.js";
 
-export function wantsCycle(lastMode) {
+export function wantsCycle(lastMode, devices) {
+  if (Array.isArray(devices)) {
+    if (!devices.length) return false;
+    return devices.some((d) => classify((lastMode || {})[deviceKey(d)]) === "cycle_all");
+  }
   return Object.values(lastMode || {}).some((m) => classify(m) === "cycle_all");
 }
 
@@ -33,11 +37,14 @@ export function isGaugeKind(kind) {
   return String(kind || "").startsWith("gauge");
 }
 
-export function hostCadence(lastMode) {
+export function hostCadence(lastMode, devices) {
   if (ui.cycleOn) return PREVIEW_MS;
   let motion = false;
   let slow = false;
-  for (const m of Object.values(lastMode || {})) {
+  const modes = Array.isArray(devices)
+    ? devices.map((d) => (lastMode || {})[deviceKey(d)])
+    : Object.values(lastMode || {});
+  for (const m of modes) {
     const k = classify(m);
     if (isGaugeKind(k) || k === "solid") slow = true;
     else if (k !== "direct" && k !== "off") motion = true;
@@ -140,7 +147,7 @@ export function startLightingTick({ getDevices, getPreview, setPreview, invoke, 
     const now = performance.now();
     const onLight = lightActive();
     const devices = onLight ? getDevices() || [] : [];
-    const cadence = onLight ? hostCadence(ui.lastMode) : 0;
+    const cadence = onLight ? hostCadence(ui.lastMode, devices) : 0;
     const live = onLight && Boolean(ui.liveBoard);
     const mode = uniformMode(devices, ui.lastMode);
     const hex = mode ? sharedHex(devices, ui.lastMode, ui.lastColor, now) : "";

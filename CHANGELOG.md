@@ -9,12 +9,39 @@ Bootstrapped from [agent-project-bootstrap](https://github.com/edwardlthompson/a
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-09-14
+
 ### Changed
 
+- Rail tabs keep all four pages mounted (`.tab-hidden`); OpenRGB inventory is not re-scanned on every click
+- Color chips, wheel, sliders, and the effect menu apply on pick; Lighting has no Apply button
+- Lighting whites and recents sit under the suggested chips; effect and speed sit under those
+- Suggested chips match the hex preview square; channel +/- glyphs are centered
+- Host Cycle All is not started from leftover session keys on Cooling; Solid Color stays put across tabs
+- Support About includes Donate via Venmo
+- All devices Hardware gauges card stays square; suggested color chips are squares
+- Auto-calibrate shows a determinate progress bar per header
+- Support About details shows the bundled product version and MIT license pointer
+- PWM, Support uninstall, and device-report confirms use an in-app alertdialog; Cancel still does nothing
+- First Cooling visit with writable PWM offers Quiet take-over before the board is a wall of checkboxes
+- Rail, swatch, toast, picker, pill, extras, and gauge marker ease in 120–180ms unless reduced motion is on
+- Lighting Apply paints the swatch immediately and toasts success; only that row’s Apply is busy
+- Lighting and Cooling primary actions share the verb Apply, with distinct aria-labels
+- Support first screen is two sentences plus Install all; extras and long errors sit in Details
+- Type, space, and 44px hit tokens (`--fc-text-*` / `--fc-space-*` / `--fc-hit`); Hide and Clone use `.btn-secondary`
+- Unused Lighting essays (`localhost`, Fusion/module prompts) are deleted; research help sits in closed Details
 - Left rail uses large icons instead of tab names; the four buttons split the vertical space evenly and scale with window height
 - Lighting lists Motherboard Fusion and CPU AIO when USB `048d:5702` is present, even if `liquidctl list` and hidraw are empty
 - Fusion Apply paints analog + AIO over the HID serve when hidraw and `liquidctl list` are empty; CPU usage on those rows is not overwritten by Cycle All
 - GitHub Release SBOM/tag gate matches CHANGELOG product version, not `.template-version`
+- Cargo workspace, Tauri, desktop package, and `.deb` names follow CHANGELOG `0.2.0`
+- Weekly health and open-PR BUILD_PLAN sync open a PR when they cannot push to protected `main`
+- Header uses This machine / Watchdog pills instead of a status sentence; rail icons have labels; Lighting Apply no longer shows `broadcast FFFFFF`; Profiles is a form, not JSON
+- Cooling and Support first-run copy is short; experimental GPU I2C is off until Advanced is checked; competing-controller uninstall sits in a closed details block
+- All devices color picker grows sliders and gauges across the unused Lighting card width
+- Lighting rows lead with the lamp name; protocol and hex stay behind Details
+- Profiles Apply takes over fans with the named curve and paints lamps; Save still only writes `~/.config/chromaflow/`
+- Desktop chrome uses `--fc-*` navy/yellow tokens; Golden Path teal is not imported into the product GUI
 
 ## [0.2.0] - 2026-09-14
 

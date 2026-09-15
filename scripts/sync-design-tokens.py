@@ -433,6 +433,16 @@ def distribute_android_branding(android_root: Path, assets: Path) -> None:
     )
 
 
+def generate_fc_css(tokens: dict, digest: str) -> str:
+    fc = tokens["fanControl"]
+    lines = [f"/* {HEADER} */", f"/* source-hash: {digest} */", "", ":root {"]
+    for key, value in fc.items():
+        lines.append(f"  --fc-{key}: {value};")
+    lines.append("}")
+    lines.append("")
+    return "\n".join(lines)
+
+
 def write_outputs(root: Path) -> None:
     tokens = load_tokens(root)
     digest = token_hash(tokens)
@@ -475,6 +485,14 @@ def write_outputs(root: Path) -> None:
         (android_theme / "Dimens.kt").write_text(generate_dimens_kt(tokens, digest), encoding="utf-8")
         distribute_android_branding(android_root, assets)
         synced.append("android")
+
+    desktop_src = root / "apps" / "desktop" / "src"
+    if desktop_src.is_dir():
+        fc = tokens.get("fanControl")
+        if not isinstance(fc, dict) or "yellow" not in fc or "card" not in fc:
+            raise FileNotFoundError("design-tokens.json missing fanControl navy/yellow aliases")
+        (desktop_src / "fc-tokens.css").write_text(generate_fc_css(tokens, digest), encoding="utf-8", newline="\n")
+        synced.append("desktop")
 
     print(f"Synced design tokens for {', '.join(synced)} (hash {digest})")
 

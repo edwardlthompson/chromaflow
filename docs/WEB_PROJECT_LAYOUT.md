@@ -45,7 +45,7 @@ Security headers: Vite `preview` sets CSP, Referrer-Policy, and Permissions-Poli
 |---------|----------------|
 | **Pages source** | **GitHub Actions** (not "Deploy from `/docs` branch folder") |
 | **Analytics** | None in template workflow (FOSS, no tracking scripts) |
-`[HUMAN]` enables Pages under **Settings → Pages** and selects **GitHub Actions** as the source. If "Deploy from `/docs`" is enabled instead, agent documentation may be exposed as a public site and the PWA deploy will conflict.
+`python3 scripts/agent-run.py enable-github-pages` POSTs `build_type=workflow` when the Pages API is 404, then dispatches `pages.yml`. `[HUMAN]` is only needed on 403 (missing `pages` scope) or a required `github-pages` environment wait. Do not use "Deploy from `/docs`" — agent documentation may be exposed as a public site and the PWA deploy will conflict.
 
 ## Localization vs styles (web)
 

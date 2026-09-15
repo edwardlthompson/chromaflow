@@ -121,7 +121,7 @@ export function loadRecent() {
   if (!s) return [];
   try {
     const raw = JSON.parse(s.getItem(RECENT_KEY) || "[]");
-    return (Array.isArray(raw) ? raw : []).map(normalizeHex).filter(Boolean).slice(0, 2);
+    return (Array.isArray(raw) ? raw : []).map(normalizeHex).filter(Boolean).slice(0, 4);
   } catch {
     return [];
   }
@@ -130,7 +130,7 @@ export function loadRecent() {
 export function pushRecent(raw) {
   const hex = normalizeHex(raw);
   const prev = loadRecent().filter((c) => c !== hex);
-  const next = hex ? [hex, ...prev].slice(0, 2) : prev;
+  const next = hex ? [hex, ...prev].slice(0, 4) : prev;
   const s = memory();
   if (s) s.setItem(RECENT_KEY, JSON.stringify(next));
   return next;

@@ -2,7 +2,7 @@
 # Build chromaflow_*.deb: GUI, CLI, Cinnamon menu, helper. No OpenRGB .desktop.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-VER="0.1.0"
+VER="$(bash "$ROOT/scripts/product-release-version.sh")"
 OUT="$ROOT/target/deb"
 STAGE="$OUT/chromaflow"
 PROFILE="${CHROMAFLOW_DEB_PROFILE:-release}"

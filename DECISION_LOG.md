@@ -15,6 +15,48 @@
 
 ```
 
+### 2026-09-14 — Ship 0.2.1 without merging template 1.5.0
+- **Status:** Accepted
+- **Context:** `/ship` dry-run Release Please wanted `chore(main): release 1.5.0` from `.template-version` 1.4.0. Product GitHub Release is CHANGELOG `0.2.1`. Local `upd audit --check` is still red on Medium `glib` 0.18.5 (gtk-rs 0.20) and unmaintained unic crates; no High/Critical.
+- **Decision:** Fold Unreleased into `[0.2.1]`. Do not merge a template 1.5.0 RP. Do not bump gtk-rs. Tag/Release `v0.2.1` after CI green.
+- **Alternatives considered:** Apply bogus `codeql-action@vcodeql-bundle-v2.27.0` from upd (rejected: CodeQL stays `@v4`). Prefetch OpenRGB on Cooling (rejected earlier).
+- **Consequences:** `.template-version` stays 1.4.0. PWM unchanged.
+
+### 2026-09-14 — Tab switch keep-alive (no OpenRGB on click)
+- **Status:** Accepted
+- **Context:** `{#if tab}` destroyed each page on the rail. Every click set `forceLoad` and `collect_inventory()` (OpenRGB) for Lighting and Support, plus two immediate `session_save` IPCs. CSS already had `.tab-hidden`.
+- **Decision:** Keep all four pages mounted; hide with `.tab-hidden` + `inert`. Cache `lightInv`. Support and Profiles skip inventory polls. Support dry-run waits for first visit. Lighting OpenRGB poll is 15 s. Debounce `session_save`. `hostCadence` only looks at current devices.
+- **Alternatives considered:** Prefetch OpenRGB on Cooling (rejected: same-process hitch). Keep remounting and only debounce save (rejected: ColorWheel/Cooling hydrate would still rebuild).
+- **Consequences:** First Lighting visit still waits on OpenRGB. Cycle All in Rust can continue while another tab is shown. PWM unchanged.
+
+### 2026-09-14 — UX audit leftovers: sequential chrome, keep PWM confirms
+- **Status:** Accepted
+- **Context:** Sprint 38 shipped copy/tokens; leftover audit items still used GTK `window.confirm`, mixed Apply verbs, global Lighting busy, unused locale essays, and a Support extras dump on first paint.
+- **Decision:** Sequential Sprint 39 on overlapping `app.css`/`en.json`: delete dead Lighting keys, tokenize 14/16/12 + 44px hits, Support = two sentences + Install all, one Apply verb, per-row Lighting toast, reduced-motion chrome, first-run Quiet prompt, in-app alertdialog, Support About footer, calibrate progress bar.
+- **Alternatives considered:** Parallel AGENT rows (rejected: shared CSS/i18n). Light theme / command palette (still out of scope).
+- **Consequences:** Cancel still does not write PWM or apt. Advanced GPU I2C stays off. 22rem cooling tiles and yellow selection stay.
+
+### 2026-09-14 — UX audit: copy first, then Apply, then tokens
+- **Status:** Accepted
+- **Context:** Live Lighting after Sprint 37 still showed protocol soup, empty picker navy, Support Advanced on, and Profiles Save that did not move fans.
+- **Decision:** Ship quieter English + a11y, All devices picker fill, names-first rows, Profiles Apply through `pwm_takeover`/`lighting_broadcast`, then `--fc-*` aliases of the existing navy/yellow. Do not restyle to Golden Path teal.
+- **Alternatives considered:** In-app alertdialog this week (deferred: next quarter). Light theme / command palette (rejected). Mapping `--gp-primary` into `app.css` (rejected: would restyle the product).
+- **Consequences:** Collapsed Lighting rows have no `0x`. Support Advanced defaults off. Profiles Apply is a real look. PWM confirms and failsafe unchanged.
+
+### 2026-09-14 — Desktop chrome vs Fan Control / CoolerControl
+- **Status:** Accepted
+- **Context:** Live Lighting chrome dumped “Showing this machine. Fan duty is not written. Conflicts: none.” plus `broadcast FFFFFF`, a duplicate Lighting h1, icon-only rail, Segoe UI on Mint, and Profiles as JSON.
+- **Decision:** CoolerControl-style status pills and labeled activity-bar rail; hide protocol apply detail; omit empty Uncontrolled card; Profiles as a settings form. Font stack is Ubuntu/Noto/Cantarell. Keyboard `:focus-visible` yellow rings.
+- **Alternatives considered:** Full design-token rewrite of `app.css` (rejected: file already large; chrome-only pass). Hide protocol on every device row (rejected: Support still needs VID/backend on the selected lamp).
+- **Consequences:** Header matches the selected page. PWM take-over copy stays in the Firmware/Watchdog tooltip. PWM unchanged.
+
+### 2026-09-14 — Sprint 36 audit findings
+- **Status:** Accepted
+- **Context:** `/audit` found a scheduled Gitleaks fail on the privacy sanitizer oracle, crate/Tauri/deb still at 0.1.0 while CHANGELOG/Release are 0.2.0, weekly health `GH006` on protected `main`, and a 404 Golden Path Pages URL.
+- **Decision:** Allowlist `tests/privacy_report/test_sanitize.py`. Deb scripts read `product-release-version.sh`; workspace versions match CHANGELOG. `ci-push-or-pr.sh` opens a PR when push is rejected. Enable Pages with `build_type=workflow` and dispatch `pages.yml`.
+- **Alternatives considered:** Bump gtk-rs 0.20 for the glib GHSA (rejected: existing decision). Push `e03b3da` from `/audit` (rejected: needs `/push`). Grant health-check a ruleset bypass (rejected: PR instead).
+- **Consequences:** Demo URL returns HTTP 200. Packaging names `chromaflow_0.2.0_amd64.deb`. PWM unchanged.
+
 ### 2026-09-14 — Product Release SBOM tag is CHANGELOG version
 - **Status:** Accepted
 - **Context:** Template `release.yml` required GitHub tags to equal `.template-version` (1.4.0), so product `v0.2.0` could not attach SBOM via the workflow.

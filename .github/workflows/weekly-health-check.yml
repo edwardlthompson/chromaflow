@@ -37,6 +37,7 @@ jobs:
     needs: detect-stacks
     permissions:
       contents: write
+      pull-requests: write
       actions: write
       security-events: read
     steps:
@@ -93,6 +94,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_TOKEN: ${{ github.token }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           bash scripts/sync-open-prs-build-plan.sh --apply
           if git diff --quiet -- BUILD_PLAN.md; then
@@ -103,18 +105,16 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add BUILD_PLAN.md
           git commit -m "chore(build-plan): sync open Dependabot and release PRs"
-          if git push; then
-            exit 0
-          fi
-          echo "Push rejected; retry once after pull --rebase"
-          git pull --rebase
-          git push
+          bash scripts/ci-push-or-pr.sh \
+            "chore(build-plan): sync open Dependabot and release PRs" \
+            "Weekly health could not push BUILD_PLAN open-PR sync to the protected default branch."
 
       - name: Sync template gaps into BUILD_PLAN (child)
         if: needs.detect-stacks.outputs.repo_mode == 'child'
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_TOKEN: ${{ github.token }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           bash scripts/sync-template-gaps-build-plan.sh --apply
           if git diff --quiet -- BUILD_PLAN.md; then
@@ -125,12 +125,9 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add BUILD_PLAN.md
           git commit -m "chore(build-plan): sync template gaps from parent"
-          if git push; then
-            exit 0
-          fi
-          echo "Push rejected; retry once after pull --rebase"
-          git pull --rebase
-          git push
+          bash scripts/ci-push-or-pr.sh \
+            "chore(build-plan): sync template gaps from parent" \
+            "Weekly health could not push BUILD_PLAN template-gap sync to the protected default branch."
 
       - name: Latest release SBOM
         env:

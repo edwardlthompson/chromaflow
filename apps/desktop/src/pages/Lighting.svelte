@@ -13,8 +13,9 @@
   import DeviceList from "../lib/DeviceList.svelte";
   import ResearchList from "../lib/ResearchList.svelte";
   import { isTauri, invoke } from "../lib/tauri.js";
-  import { loadSession, persistSession } from "../lib/session.js";
+  import { persistSession } from "../lib/session.js";
   import { ui } from "../lib/ui.js";
+  import { applyStatus } from "../lib/applyStatus.js";
   import t from "../locales/en.json";
 
   export let inventory;
@@ -22,7 +23,10 @@
 
   let error = "";
   let busy = false;
+  let busyKey = "";
   let applyMsg = "";
+  let toastMsg = "";
+  let toastTimer = 0;
   let lastColor = { ...ui.lastColor };
   let lastMode = { ...ui.lastMode };
   let preview = [];
@@ -40,18 +44,18 @@
   }));
   $: research = researchDevices(inventory);
   $: viewGauges = mergeGauges(gauges, inventory && inventory.hwmon);
+  $: cycleWant = wantsCycle(lastMode, devices);
+  $: if (ui.page === "Lighting" && cycleWant !== ui.cycleOn) setHostCycle(cycleWant, invoke, isTauri);
 
   function remember() {
     persistSession(ui.page);
   }
 
   onMount(() => {
-    loadSession().then((s) => {
-      lastMode = { ...s.lastMode };
-      lastColor = { ...s.lastColor };
-      if (wantsCycle(lastMode)) setHostCycle(true, invoke, isTauri);
-    });
-    return startLightingTick({
+    lastMode = { ...ui.lastMode };
+    lastColor = { ...ui.lastColor };
+    if (ui.page === "Lighting") setHostCycle(wantsCycle(lastMode, devices), invoke, isTauri);
+    const stopTick = startLightingTick({
       getDevices: () => devices,
       getPreview: () => preview,
       setPreview: (rows) => {
@@ -60,7 +64,19 @@
       invoke,
       isTauri,
     });
+    return () => {
+      stopTick();
+    };
   });
+
+  function showToast(msg) {
+    toastMsg = msg;
+    if (typeof window === "undefined") return;
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => {
+      toastMsg = "";
+    }, 2200);
+  }
 
   async function applyOne(backend, device, nextHex, mode, led) {
     const use = normalizeHex(nextHex);
@@ -79,7 +95,7 @@
       mode: mode || null,
       led: led == null ? null : led,
     });
-    applyMsg = (res && res.detail) || t["lighting.applyOk"];
+    applyMsg = applyStatus(res && res.detail, t["lighting.applyOk"]);
     const key = `${backend}:${device}`;
     lastColor = { ...lastColor, [key]: use };
     lastMode = { ...lastMode, [key]: mode || "Direct" };
@@ -100,19 +116,39 @@
     invoke("lighting_sync", { frames }).catch(() => {});
   }
 
-  async function applyColor(backend, device, nextHex) {
-    busy = true;
+  async function applyColor(backend, device, nextHex, mode) {
+    const key = `${backend}:${device}`;
+    const use = normalizeHex(nextHex);
+    const prev = lastColor[key] || "";
+    const prevMode = lastMode[key] || "";
+    const nextMode = mode || "Solid Color";
     error = "";
     applyMsg = t["lighting.applying"];
+    if (use) {
+      lastColor = { ...lastColor, [key]: use };
+      ui.lastColor = lastColor;
+    }
+    lastMode = { ...lastMode, [key]: nextMode };
+    ui.lastMode = lastMode;
+    busyKey = key;
     try {
       await bumpPaint();
       setHostCycle(false, invoke, isTauri);
-      await applyOne(backend, device, nextHex);
+      await applyOne(backend, device, nextHex, nextMode);
+      showToast(applyMsg);
     } catch (err) {
+      if (prev) {
+        lastColor = { ...lastColor, [key]: prev };
+        ui.lastColor = lastColor;
+      }
+      if (prevMode) {
+        lastMode = { ...lastMode, [key]: prevMode };
+        ui.lastMode = lastMode;
+      }
       error = String(err);
       applyMsg = "";
     } finally {
-      busy = false;
+      busyKey = "";
       ui.pausePoll = false;
     }
   }
@@ -132,9 +168,10 @@
       if (classify(mode) === "cycle_all") {
         setHostCycle(true, invoke, isTauri);
         applyMsg = isTauri() ? t["lighting.applyOk"] : t["lighting.applyNeedGui"];
+        showToast(applyMsg);
         return;
       }
-      if (!wantsCycle(lastMode)) setHostCycle(false, invoke, isTauri);
+      if (!wantsCycle(lastMode, devices)) setHostCycle(false, invoke, isTauri);
       applyMsg = isTauri() ? t["lighting.applyOk"] : t["lighting.applyNeedGui"];
       const t0 = performance.now();
       pushHostNow(t0);
@@ -142,30 +179,45 @@
         pushFusionNow(devices, lastMode, lastColor, invoke);
         pushHidNow(devices, lastMode, lastColor, invoke, t0);
       }
+      showToast(applyMsg);
     } finally {
       ui.pausePoll = false;
     }
   }
 
   async function applyLed(backend, device, led, nextHex) {
-    busy = true;
+    const key = `${backend}:${device}`;
+    const use = normalizeHex(nextHex);
+    const prev = lastColor[key] || "";
     error = "";
     applyMsg = t["lighting.applying"];
+    if (use) {
+      lastColor = { ...lastColor, [key]: use };
+      ui.lastColor = lastColor;
+    }
+    busyKey = key;
     try {
       await bumpPaint();
       setHostCycle(false, invoke, isTauri);
       await applyOne(backend, device, nextHex, null, led);
+      showToast(applyMsg);
     } catch (err) {
+      if (prev) {
+        lastColor = { ...lastColor, [key]: prev };
+        ui.lastColor = lastColor;
+      }
       error = String(err);
       applyMsg = "";
     } finally {
-      busy = false;
+      busyKey = "";
       ui.pausePoll = false;
     }
   }
 
   async function applyAll(nextHex) {
-    busy = true;
+    const use = normalizeHex(nextHex);
+    const prev = { ...lastColor };
+    busyKey = "all";
     error = "";
     applyMsg = t["lighting.applying"];
     try {
@@ -173,7 +225,6 @@
         applyMsg = t["lighting.empty"];
         return;
       }
-      const use = normalizeHex(nextHex);
       if (!use) {
         applyMsg = t["lighting.applyNeedColor"];
         return;
@@ -184,7 +235,7 @@
       for (const d of devices) {
         const key = `${d.backend}:${d.name}`;
         colors[key] = use;
-        modes[key] = "Direct";
+        modes[key] = "Solid Color";
       }
       lastColor = colors;
       lastMode = modes;
@@ -194,21 +245,25 @@
       setHostCycle(false, invoke, isTauri);
       if (!isTauri()) {
         applyMsg = t["lighting.applyNeedGui"];
+        showToast(applyMsg);
         return;
       }
       const res = await invoke("lighting_broadcast", { color: use, mode: "Solid Color" });
-      applyMsg = (res && res.detail) || t["lighting.applyOk"];
+      applyMsg = applyStatus(res && res.detail, t["lighting.applyOk"]);
+      showToast(applyMsg);
     } catch (err) {
+      lastColor = prev;
+      ui.lastColor = prev;
       error = String(err);
     } finally {
-      busy = false;
+      busyKey = "";
       ui.pausePoll = false;
     }
   }
 
   async function applyModeAll(mode, nextHex) {
     const use = normalizeHex(nextHex);
-    const next = { ...lastMode };
+    const next = {};
     const colors = { ...lastColor };
     let n = 0;
     for (const d of devices) {
@@ -229,6 +284,7 @@
     try {
       if (classify(mode) === "cycle_all") {
         setHostCycle(true, invoke, isTauri);
+        showToast(applyMsg);
         return;
       }
       setHostCycle(false, invoke, isTauri);
@@ -247,6 +303,7 @@
           pushHidNow(devices, lastMode, lastColor, invoke, t0);
         }
       }
+      showToast(applyMsg);
     } finally {
       ui.pausePoll = false;
     }
@@ -272,7 +329,7 @@
     remember();
     applyMsg = n ? (isTauri() ? t["lighting.applyOk"] : t["lighting.applyNeedGui"]) : t["lighting.noEffects"];
     if (n) {
-      if (!wantsCycle(lastMode)) setHostCycle(false, invoke, isTauri);
+      if (!wantsCycle(lastMode, devices)) setHostCycle(false, invoke, isTauri);
       const t0 = performance.now();
       pushHostNow(t0);
       if (isTauri()) pushHidNow(devices, lastMode, lastColor, invoke, t0);
@@ -299,7 +356,7 @@
   }
 </script>
 
-<h1>{t["lighting.title"]}</h1>
+<h1 class="visually-hidden">{t["lighting.title"]}</h1>
 <div class="card">
   <h2>{t["lighting.devices"]}</h2>
   {#if orgb.sandboxed}
@@ -311,13 +368,16 @@
       <button type="button" on:click={installEngine} disabled={busy}>{t["lighting.installEngine"]}</button>
     </p>
   {/if}
-  <p class="status" role="status">{applyMsg}{error ? ` ${error}` : ""}</p>
+  {#if applyMsg || error}
+    <p class="status" role={error ? "alert" : "status"}>{applyMsg}{error ? ` ${error}` : ""}</p>
+  {/if}
   {#if devices.length}
     <DeviceList
       {devices}
       {busy}
+      busyKey={busyKey}
       gauges={viewGauges}
-      on:apply={(ev) => applyColor(ev.detail.backend, ev.detail.device, ev.detail.color)}
+      on:apply={(ev) => applyColor(ev.detail.backend, ev.detail.device, ev.detail.color, ev.detail.mode)}
       on:applyAll={(ev) => applyAll(ev.detail.color)}
       on:mode={(ev) => applyMode(ev.detail.backend, ev.detail.device, ev.detail.mode, ev.detail.color)}
       on:modeAll={(ev) => applyModeAll(ev.detail.mode, ev.detail.color)}
@@ -329,7 +389,13 @@
   {/if}
 </div>
 
+{#if toastMsg}
+  <p class="fc-toast" role="status">{toastMsg}</p>
+{/if}
+
+{#if research.length}
 <div class="card">
   <h2>{t["lighting.research"]}</h2>
   <ResearchList devices={research} kernel={(inventory && inventory.kernel_release) || ""} {busy} />
 </div>
+{/if}

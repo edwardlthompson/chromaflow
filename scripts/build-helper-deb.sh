@@ -3,7 +3,7 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 STAGE="$ROOT/target/deb/chromaflow-helper"
-VER="0.1.0"
+VER="$(bash "$ROOT/scripts/product-release-version.sh")"
 rm -rf "$STAGE"
 install -d "$STAGE/DEBIAN"
 install -d "$STAGE/usr/libexec/chromaflow"

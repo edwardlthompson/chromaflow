@@ -1,4 +1,5 @@
 <script>
+  import { confirmTakeover } from "./pwm.js";
   import { isTauri, invoke } from "./tauri.js";
   import { DEVICE_ISSUES, submitDeviceReport, reportId, wasReported, markReported } from "./deviceReport.js";
   import t from "../locales/en.json";
@@ -29,7 +30,7 @@
   async function report(row) {
     const id = reportId(row);
     if (!id || dimmed(row) || sending) return;
-    if (typeof window !== "undefined" && window.confirm && !window.confirm(t["lighting.reportConfirm"])) {
+    if (!(await confirmTakeover(t["lighting.reportConfirm"]))) {
       return;
     }
     msg = "";
@@ -47,6 +48,10 @@
 </script>
 
 {#if devices.length}
+  <details>
+    <summary>{t["lighting.rowDetails"]}</summary>
+    <p class="fc-note">{t["lighting.researchHelp"]}</p>
+  </details>
   <ul class="extras">
     {#each devices as row}
       <li>

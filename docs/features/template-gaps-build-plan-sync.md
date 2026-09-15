@@ -9,7 +9,7 @@
 - ✅ Empty / up-to-date / template-maintainer state has no `🔲` rows
 - ✅ Canon/Mixed → `[AGENT]`; Sacred → `[HUMAN]` (never blind-overwrite); features listed when missing
 - ✅ File rows capped at 40 with a “N more” pointer to `check-template-gaps`
-- ✅ Weekly health: child applies + commits gap sync; template keeps upgrade-sim
+- ✅ Weekly health: child applies + commits gap sync, then `ci-push-or-pr` (PR when `main` is protected); template keeps upgrade-sim
 
 ## Smoke scenario
 
@@ -25,7 +25,6 @@
 | View | `BUILD_PLAN.md` / `BUILD_PLAN_TEMPLATE.md` Template gaps (synced) |
 | Tests | `tests/test_sync_template_gaps_build_plan.py` |
 | Wiring | `scripts/sync-template-gaps-build-plan.sh`, `weekly-health-check.yml` |
-
 ## Tests
 
 - Automated: yes — empty, behind, cap, Sacred HUMAN, idempotent apply, stale `--check`

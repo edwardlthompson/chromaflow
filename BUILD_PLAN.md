@@ -26,6 +26,10 @@ python3 scripts/agent-run.py smoke-sprint --require
 
 ## Product
 
+> **Sprint 39** archived in COMPLETED_TASKS.md @ `e03b3da`.
+> **Sprint 38** archived in COMPLETED_TASKS.md.
+> **Sprint 37** archived in COMPLETED_TASKS.md.
+> **Sprint 36** archived in COMPLETED_TASKS.md.
 > **Sprint 30–35** archived in COMPLETED_TASKS.md.
 
 ### Open PRs (synced)
@@ -64,3 +68,7 @@ Finished sprints 0–29: [`COMPLETED_TASKS.md`](COMPLETED_TASKS.md).
 | 30–33 | 2026-09-14 | `COMPLETED_TASKS.md` |
 | 34 | 2026-09-14 | `COMPLETED_TASKS.md` |
 | 35 | 2026-09-14 | `COMPLETED_TASKS.md` |
+| 36 | 2026-09-14 | `COMPLETED_TASKS.md` |
+| 37 | 2026-09-14 | `COMPLETED_TASKS.md` |
+| 38 | 2026-09-14 | `COMPLETED_TASKS.md` |
+| 39 | 2026-09-14 | `COMPLETED_TASKS.md` |

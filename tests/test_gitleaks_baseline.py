@@ -25,6 +25,7 @@ class GitleaksBaselineTests(unittest.TestCase):
     def test_allowlist_excludes_sdk_paths(self) -> None:
         text = (ROOT / ".gitleaks.toml").read_text(encoding="utf-8")
         block = text.split("[allowlist]", 1)[1].split("\n[", 1)[0]
+        self.assertIn("tests/privacy_report/test_sanitize", block)
         for banned in ("Android/Sdk", "micromamba", ".local/android", "keystore"):
             self.assertNotIn(banned, block)
 

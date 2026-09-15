@@ -1,5 +1,7 @@
 /** PWM take-over helpers. Confirm before the watchdog writes. */
 
+import { confirmAsk } from "./confirmDialog.js";
+
 export function canControl(card, conflicts) {
   const pwmOk = Boolean(card && card.pwm && card.pwm.writable && card.pwm.enable_exists);
   if (card && card.backend === "nvidia") return pwmOk;
@@ -42,7 +44,7 @@ export function channelOf(card, src, extras) {
 }
 
 export function confirmTakeover(ask) {
-  return typeof window !== "undefined" && typeof window.confirm === "function" && window.confirm(ask);
+  return confirmAsk(ask);
 }
 
 export function cardForChannel(cards, ch) {

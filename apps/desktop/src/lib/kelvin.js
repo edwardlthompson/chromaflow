@@ -4,6 +4,7 @@ import { rgbToHex } from "./color.js";
 
 export const KELVIN_MIN = 2000;
 export const KELVIN_MAX = 6500;
+export const KELVIN_PRESETS = [2700, 4000, 6500];
 
 function clampByte(n) {
   return Math.max(0, Math.min(255, Math.round(n)));

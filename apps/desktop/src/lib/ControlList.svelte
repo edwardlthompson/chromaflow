@@ -38,12 +38,13 @@
             on:change={(e) => set(card.id, "name", e.currentTarget.value)}
           />
         </label>
-        <button type="button" class="fc-hide" on:click={() => set(card.id, "hidden", true)}>{t["cooling.hide"]}</button>
+        <button type="button" class="fc-hide btn-secondary" on:click={() => set(card.id, "hidden", true)}>{t["cooling.hide"]}</button>
       </header>
       <label class="fc-switch">
         <input
           type="checkbox"
           autocomplete="off"
+          aria-label={t["cooling.takeover"]}
           disabled={!canControl(card, conflicts) || busy}
           checked={!!taken[card.id]}
           on:change={(e) => dispatch("take", { card, checked: e.currentTarget.checked })}

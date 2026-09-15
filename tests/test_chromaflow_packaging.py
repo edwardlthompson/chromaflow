@@ -4,9 +4,16 @@ from __future__ import annotations
 import os
 import stat
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+LIB = Path(__file__).resolve().parent.parent / "scripts" / "lib"
+if str(LIB) not in sys.path:
+    sys.path.insert(0, str(LIB))
+
+from product_version_align import check_repo  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "scripts" / "build-chromaflow-deb.sh"
@@ -66,7 +73,14 @@ class DebPackagingTests(unittest.TestCase):
                 cwd=str(ROOT),
             )
             self.assertEqual(proc.returncode, 0, proc.stderr)
-            deb = ROOT / "target" / "deb" / "chromaflow_0.1.0_amd64.deb"
+            ver = subprocess.run(
+                ["bash", str(ROOT / "scripts" / "product-release-version.sh")],
+                check=True,
+                capture_output=True,
+                text=True,
+                cwd=str(ROOT),
+            ).stdout.strip()
+            deb = ROOT / "target" / "deb" / f"chromaflow_{ver}_amd64.deb"
             self.assertTrue(deb.is_file(), proc.stdout)
             info = subprocess.run(
                 ["dpkg-deb", "-I", str(deb)],
@@ -122,8 +136,19 @@ class ProductReleaseSbomTests(unittest.TestCase):
             text=True,
             cwd=str(ROOT),
         )
-        self.assertEqual(proc.stdout.strip(), "0.2.0")
+        self.assertEqual(proc.stdout.strip(), "0.2.1")
         spec = (ROOT / "docs/features/product-release-sbom.md").read_text(encoding="utf-8")
+        self.assertIn("product-release-version.sh", spec)
+
+
+class ProductVersionAlignTests(unittest.TestCase):
+    def test_workspace_matches_changelog(self) -> None:
+        self.assertEqual(check_repo(ROOT), [])
+        self.assertIn(
+            "product-release-version.sh",
+            (ROOT / "scripts/build-chromaflow-deb.sh").read_text(encoding="utf-8"),
+        )
+        spec = (ROOT / "docs/features/product-version-align.md").read_text(encoding="utf-8")
         self.assertIn("product-release-version.sh", spec)
 
 

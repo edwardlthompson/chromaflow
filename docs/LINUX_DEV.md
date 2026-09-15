@@ -173,7 +173,7 @@ Product smoke is the **installed** `chromaflow-gui` from `chromaflow_*.deb` (Cin
 
 ```bash
 bash scripts/build-chromaflow-deb.sh
-sudo dpkg -i target/deb/chromaflow_0.1.0_amd64.deb
+sudo dpkg -i target/deb/chromaflow_0.2.1_amd64.deb
 chromaflow-gui
 
 ```

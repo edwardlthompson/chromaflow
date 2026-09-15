@@ -46,7 +46,7 @@
 
 {#if modes.length}
   <div class="effect-row">
-    <select bind:value={mode} data-applied={selected} disabled={busy} title={t["lighting.effectHint"]} aria-label={t["lighting.effect"]} on:change={() => { if (mode && mode !== selected) dispatch("mode", { mode, color: hex, speed }); }}>
+    <select bind:value={mode} data-applied={selected} disabled={busy} title={t["lighting.effectHint"]} aria-label={t["lighting.effect"]} aria-busy={busy} on:change={() => { if (mode) dispatch("mode", { mode, color: hex, speed }); }}>
       {#each groups as group}
         <optgroup label={t[`lighting.group.${group.id}`]}>
           {#each group.modes as name}
@@ -64,8 +64,5 @@
       chanClass="chan-speed"
       on:input={(e) => setSpeed(e.detail)}
     />
-    <button type="button" disabled={busy || !mode} on:click={() => dispatch("mode", { mode, color: hex, speed })}>
-      {t["lighting.applyEffect"]}
-    </button>
   </div>
 {/if}

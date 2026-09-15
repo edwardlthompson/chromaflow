@@ -122,6 +122,11 @@ if [ -d examples/web ]; then
     examples/web/public/logo.svg
   )
 fi
+if [ -d apps/desktop/src ]; then
+  REQUIRED_OUTPUTS+=(
+    apps/desktop/src/fc-tokens.css
+  )
+fi
 if [ -d examples/android ]; then
   REQUIRED_OUTPUTS+=(
     examples/android/app/src/main/java/dev/foss/goldenpath/ui/theme/Color.kt

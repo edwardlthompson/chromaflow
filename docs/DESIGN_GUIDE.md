@@ -26,6 +26,7 @@ Generated outputs (do not hand-edit):
 | `examples/android/.../ui/theme/Color.kt` | Android |
 | `examples/android/.../ui/theme/Type.kt` | Android |
 | `examples/android/.../ui/theme/Dimens.kt` | Android |
+| `apps/desktop/src/fc-tokens.css` | Product desktop (`--fc-*` navy/yellow; not Golden Path teal) |
 ## Theme modes (system / light / dark)
 
 Both UI stacks support three modes. Default is **system** (follow OS preference).

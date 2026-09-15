@@ -1,0 +1,43 @@
+/* GENERATED — do not edit; run scripts/sync-design-tokens.py */
+/* source-hash: 3aac3602de85 */
+
+:root {
+  --fc-top: #12315a;
+  --fc-card: #16325c;
+  --fc-yellow: #f5c518;
+  --fc-rail: #1a1d22;
+  --fc-ink: #e8eef8;
+  --fc-canvas: #121418;
+  --fc-crumb: #d7e4f6;
+  --fc-deep: #0f274c;
+  --fc-meta: #c5d4ea;
+  --fc-note: #9eb0c9;
+  --fc-fill: #1e4a86;
+  --fc-line: #2a4a7a;
+  --fc-swatch: #8aa4c8;
+  --fc-white: #ffffff;
+  --fc-black: #000000;
+  --fc-rail-ink: #c5c9d1;
+  --fc-rail-hover: #242830;
+  --fc-rail-current: #2a2f38;
+  --fc-danger-bg: #3f1d1d;
+  --fc-danger: #ffd7d0;
+  --fc-invalid: #fca5a5;
+  --fc-toast: #14325a;
+  --fc-toast-line: #4d7ab8;
+  --fc-toast-ink: #e8f0fa;
+  --fc-ready: #b8f5c8;
+  --fc-ready-bg: #163a28;
+  --fc-chevron: #dbe7f8;
+  --fc-gauge-edge: #0b1d38;
+  --fc-shadow: #00000088;
+  --fc-tile-h: 22rem;
+  --fc-text-body: 1rem;
+  --fc-text-ui: 0.875rem;
+  --fc-text-meta: 0.75rem;
+  --fc-space-1: 4px;
+  --fc-space-2: 8px;
+  --fc-space-3: 12px;
+  --fc-space-4: 16px;
+  --fc-hit: 2.75rem;
+}
