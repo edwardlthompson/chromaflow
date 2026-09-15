@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Bootstrapped from [agent-project-bootstrap](https://github.com/edwardlthompson/agent-project-bootstrap) 1.4.0.
 
+## [1.5.0](https://github.com/edwardlthompson/chromaflow/compare/v1.4.0...v1.5.0) (2026-09-15)
+
+
+### Added
+
+* land Unreleased rail icons, Fusion HID apply, and product SBOM tags ([e03b3da](https://github.com/edwardlthompson/chromaflow/commit/e03b3daddb4c3275ad704cf13d66c223d1614054))
+* prepare v0.1.0 native Mint cooling and lighting GUI ([aeec6d6](https://github.com/edwardlthompson/chromaflow/commit/aeec6d67f625caffb04a57d3ef8d27ccab4e304a))
+* scaffold ChromaFlow sprint 0-1 inventory and support ([2289a9e](https://github.com/edwardlthompson/chromaflow/commit/2289a9ec9c0f03af6dc7d98b9b22c848a8ff79d8))
+
+
+### Fixed
+
+* do not use hashFiles in job-level CI ifs ([537878d](https://github.com/edwardlthompson/chromaflow/commit/537878dcb72f792df7ea3e9f12c561469ef4de47))
+* load lighting helpers in CI without svelte/store ([c32765c](https://github.com/edwardlthompson/chromaflow/commit/c32765c9d351b25f66cf1cf385dbad2d340de479))
+* satisfy clippy -D warnings in chromaflow-core ([a050412](https://github.com/edwardlthompson/chromaflow/commit/a05041215f5ede27ea2b10bc0c1cd3c2cd590efe))
+* skip About-lego strip on pruned CLI stacks ([2a6b118](https://github.com/edwardlthompson/chromaflow/commit/2a6b1186b74c15f9b9695357d1c3bb3f54f0b40f))
+* skip CodeQL Android analysis after examples/android prune ([fa60380](https://github.com/edwardlthompson/chromaflow/commit/fa60380de7e421854d04753ba33dd01184e3f266))
+* skip pruned-stack CI jobs on the product repo ([5fca2f7](https://github.com/edwardlthompson/chromaflow/commit/5fca2f78999c382b864fa9818f098aef8bdba227))
+
 ## [Unreleased]
 
 ## [0.2.1] - 2026-09-14

@@ -1,5 +1,5 @@
 {
-  "template_version": "1.4.0",
+  "template_version": "1.5.0",
   "project": {
     "name": "ChromaFlow",
     "purpose": "Linux Mint app for fan/pump curves and RGB/LED control: hwmon + OpenRGB SDK, polkit install-support, no bundled kernel modules",
@@ -1237,7 +1237,7 @@
     },
     {
       "path": ".github/workflows/dependency-review.yml",
-      "purpose": "PR dependency review \u2014 fail on new High/Critical vulnerabilities",
+      "purpose": "PR dependency review — fail on new High/Critical vulnerabilities",
       "read_when": "contributing",
       "update_when": "milestone_boundary",
       "owner": "maintainer"
@@ -2021,7 +2021,7 @@
     },
     {
       "path": "scripts/run-codex-review.sh",
-      "purpose": "Local Codex CLI review \u2192 CODE_REVIEW.md",
+      "purpose": "Local Codex CLI review → CODE_REVIEW.md",
       "read_when": "audit",
       "update_when": "milestone_boundary",
       "owner": "maintainer"
