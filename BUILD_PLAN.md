@@ -1,7 +1,7 @@
 # Build Plan
 
 <!-- remaining-tally -->
-**Remaining:** AGENT 0 · AUTO 0 · HUMAN 0 · ADB 0 · **0 open**
+**Remaining:** AGENT 0 · AUTO 1 · HUMAN 0 · ADB 0 · **1 open**
 <!-- /remaining-tally -->
 
 Live board for ChromaFlow. Finished work: [`COMPLETED_TASKS.md`](COMPLETED_TASKS.md). Catalog vs original brief: [`docs/PRODUCT_GAPS.md`](docs/PRODUCT_GAPS.md).
@@ -37,7 +37,7 @@ python3 scripts/agent-run.py smoke-sprint --require
 > Auto-managed. Do not hand-edit rows inside the markers.
 
 <!-- open-prs-sync:begin -->
-_No open Dependabot or Release Please PRs._
+- 🔲 [AUTO] Merge Dependabot [#6](https://github.com/edwardlthompson/chromaflow/pull/6) (chore(deps-dev): bump the web-dependencies group in /examples/web with 2 updates)
 <!-- open-prs-sync:end -->
 
 ### Template gaps (synced)
