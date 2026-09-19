@@ -150,7 +150,7 @@ Golden Path Settings/About/Feedback are a route stack, not three booleans. Web H
 ## Template Provenance
 
 - **Source template:** `edwardlthompson/agent-project-bootstrap` (self-maintained)
-- **Template version:** `1.5.0` (see `.template-version`)
+- **Template version:** `1.9.0` (see `.template-version`)
 - **Last update check:** See `.template-update.json`
 
 ### Retrospective — 2026-09-14 (Sprint 39)
