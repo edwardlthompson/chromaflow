@@ -145,6 +145,7 @@ class ProductReleaseSbomTests(unittest.TestCase):
         self.assertIn("github.event_name == 'release'", job)
         self.assertNotIn("workflow_dispatch", job)
         self.assertNotIn("CHROMAFLOW_DEB_SKIP_ENGINE", job)
+        self.assertIn("npm ci", job)
         self.assertIn("chromaflow_${VERSION}_amd64.deb", job)
         self.assertIn("exit 1", job)
         self.assertIn("gh release upload", job)

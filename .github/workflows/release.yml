@@ -77,6 +77,10 @@ jobs:
             patchelf \
             libssl-dev
 
+      - name: Frontend deps
+        working-directory: apps/desktop
+        run: npm ci
+
       - name: Build and upload amd64 deb
         env:
           GH_TOKEN: ${{ github.token }}
