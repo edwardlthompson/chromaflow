@@ -61,6 +61,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: "22"
+          package-manager-cache: false
 
       - name: WebKit/GTK (Tauri 2)
         run: |
