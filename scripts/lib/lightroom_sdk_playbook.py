@@ -10,7 +10,7 @@ HEADINGS = (
     "## Current versions",
     "## When to bump",
     "## Steps",
-    "## HUMAN load test",
+    "## Optional host smoke (Adobe app)",
     "## Do not",
 )
 INFO_VER = re.compile(r"LrSdkVersion\s*=\s*([0-9.]+)")

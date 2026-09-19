@@ -95,6 +95,15 @@
       "detect": {
         "lightroom": ["examples/lightroom/Info.lua", "examples/lightroom"]
       }
+    },
+    {
+      "id": "icon-factory",
+      "title": "Photoreal icon factory",
+      "spec": "docs/features/icon-factory.md",
+      "stacks": ["blender"],
+      "detect": {
+        "blender": ["examples/blender/blender.toml", "examples/blender"]
+      }
     }
   ]
 }

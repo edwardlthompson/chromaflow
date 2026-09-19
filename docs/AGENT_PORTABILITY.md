@@ -16,7 +16,7 @@ One project law: **[`AGENTS.md`](../AGENTS.md)**. Every supported tool either re
 | Continue | `AGENTS.md` + `.continue/rules/agents.md` | Same tour prompt |
 | Codex | `AGENTS.md` | Advanced/optional, not first-time. |
 | Other AGENTS.md readers | `AGENTS.md` | Same tour prompt |
-Slash commands under `.cursor/commands/` are Cursor-native. Portable twins (same recipe, any IDE): [`docs/help/TOUR.md`](help/TOUR.md), [`COACH.md`](help/COACH.md), [`IDEAS.md`](help/IDEAS.md), [`ALLIDEAS.md`](help/ALLIDEAS.md), [`DEBUG.md`](help/DEBUG.md), [`ADR.md`](help/ADR.md). Ranked backlog: [`docs/help/IDEAS.md`](help/IDEAS.md). Complete dump: [`docs/help/ALLIDEAS.md`](help/ALLIDEAS.md). `scripts/check-batch-commands.sh` fails if a portable command is missing its twin.
+Slash commands under `.cursor/commands/` are Cursor-native. Portable twins (same recipe, any IDE): [`docs/help/TOUR.md`](help/TOUR.md), [`COACH.md`](help/COACH.md), [`IDEAS.md`](help/IDEAS.md), [`ALLIDEAS.md`](help/ALLIDEAS.md), [`DEBUG.md`](help/DEBUG.md), [`ADR.md`](help/ADR.md), [`UX-REVIEW.md`](help/UX-REVIEW.md), [`UX-APPLY.md`](help/UX-APPLY.md). Ranked backlog: [`docs/help/IDEAS.md`](help/IDEAS.md). Complete dump: [`docs/help/ALLIDEAS.md`](help/ALLIDEAS.md). `scripts/check-batch-commands.sh` fails if a portable command is missing its twin.
 
 ## Edit once, re-sync
 

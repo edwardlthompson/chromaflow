@@ -23,7 +23,6 @@
 | View | N/A |
 | Tests | `tests/test_lightroom_lua_lint.py` |
 | Wiring | `scripts/check-lightroom-lua.sh` in feature-gate + CI |
-
 ## Tests
 
 - Automated: yes — Python lint + fixture that rejects `require()`
@@ -36,4 +35,4 @@
 
 ## Definition of Done
 
-See `docs/FEATURE_MODULES.md`. Loading the plugin in Lightroom Classic stays `[HUMAN]`.
+See `docs/FEATURE_MODULES.md`. Golden Path load smoke is `feature-gate --stack lightroom` (no Adobe app).

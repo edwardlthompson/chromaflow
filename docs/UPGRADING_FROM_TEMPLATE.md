@@ -26,6 +26,7 @@ Read the upstream release notes at `github.com/edwardlthompson/agent-project-boo
 | `.cursor/commands/` | Copy all slash command files | AGENT | Canon |
 | `.cursor/rules/batch-commands.mdc` | Copy with other rules | AGENT | Canon |
 | `docs/help/BATCH_COMMANDS.md` | Copy human cheat sheet | AGENT | Canon |
+| `docs/ux-ui-guidelines.md` | Copy UX/UI construction law | AGENT | Canon |
 | `docs/BATCH_COMMANDS.md` | Copy agent registry | AGENT | Canon |
 | `CODE_REVIEW.md.example` | Copy audit template | AGENT | Canon |
 | `RELEASE_NOTES.md.example` | Copy release draft template | AGENT | Canon |
@@ -34,6 +35,7 @@ Read the upstream release notes at `github.com/edwardlthompson/agent-project-boo
 | `scripts/check-batch-commands.sh` | Copy with validate-bootstrap | AGENT | Canon |
 | `docs/INITIALIZATION_PROMPT.md` | Manual review; do not blind overwrite | HUMAN | Sacred |
 | Child `AGENTS.md` (after init) | Never blind-overwrite | HUMAN | Sacred |
+| Child `AGENT.md` (original brief) | Never blind-overwrite | HUMAN | Sacred |
 | `docs/spec.md`, `docs/plan.md` | Merge product text; keep section headings | HUMAN | Sacred |
 | `CLAUDE.md`, `GEMINI.md`, `CONVENTIONS.md`, `.clinerules`, `.github/copilot-instructions.md`, `.cursor/rules/main.mdc`, `.windsurf/rules/`, `.continue/rules/` | Re-run `bootstrap-lifecycle.sh --sync-adapters` after AGENTS.md merge | AGENT | Canon |
 | `bootstrap.config.json` | Merge keys; keep child values | AGENT | Mixed |

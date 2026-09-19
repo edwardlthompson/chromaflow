@@ -1,5 +1,5 @@
 {
-  "template_version": "1.5.0",
+  "template_version": "1.8.0",
   "project": {
     "name": "ChromaFlow",
     "purpose": "Linux Mint app for fan/pump curves and RGB/LED control: hwmon + OpenRGB SDK, polkit install-support, no bundled kernel modules",
@@ -3036,6 +3036,13 @@
       "owner": "maintainer"
     },
     {
+      "path": "scripts/install-update.sh",
+      "purpose": "Pinned polkit helper that installs one GitHub chromaflow deb",
+      "read_when": "feature_work",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
       "path": "scripts/manage-competitors.sh",
       "purpose": "Polkit helper to stop and purge competing fan/RGB daemons (not OpenRGB)",
       "read_when": "feature_work",
@@ -3083,6 +3090,167 @@
       "read_when": "ci",
       "update_when": "milestone_boundary",
       "owner": "maintainer"
+    },
+    {
+      "path": ".cursor/commands/ux-review.md",
+      "purpose": "Slash command: score shipped UI against construction law",
+      "read_when": "prompt_needed",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": "docs/help/UX-REVIEW.md",
+      "purpose": "Tool-agnostic /ux-review recipe for other IDEs",
+      "read_when": "prompt_needed",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": ".cursor/commands/ux-apply.md",
+      "purpose": "Slash command: implement one UX-NNN inventory item",
+      "read_when": "prompt_needed",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": "docs/help/UX-APPLY.md",
+      "purpose": "Tool-agnostic /ux-apply recipe for other IDEs",
+      "read_when": "prompt_needed",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": ".cursor/skills/ux-review/SKILL.md",
+      "purpose": "Companion skill for /ux-review and /ux-apply",
+      "read_when": "prompt_needed",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": "scripts/check-ux-inventory.sh",
+      "purpose": "Validate BUILD_PLAN UX inventory markers, ids, and statuses",
+      "read_when": "milestone_boundary",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": "scripts/check-agent-venue.sh",
+      "purpose": "Validate BUILD_PLAN LOCAL/CLOUD venue tags, scopes, and overlap",
+      "read_when": "milestone_boundary",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": "scripts/lib/ux_inventory.py",
+      "purpose": "Parse UX-NNN inventory blocks; reject forbidden Status words",
+      "read_when": "reference",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": "scripts/lib/agent_venue.py",
+      "purpose": "Parse LOCAL/CLOUD agent venues; scope exclusivity for Cloud vs Local",
+      "read_when": "reference",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": "docs/ux-ui-guidelines.md",
+      "purpose": "UX/UI construction law for any view, copy, nav, or form",
+      "read_when": "ui_work",
+      "update_when": "design_change",
+      "owner": "agent+human"
+    },
+    {
+      "path": "scripts/check-agent-brief.sh",
+      "purpose": "Anti-amnesia: AGENT.md one-liner and keywords must stay on BUILD_PLAN",
+      "read_when": "session_start",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": "scripts/blender-icons.sh",
+      "purpose": "Render icon-factory jobs via Blender runtime or stub QA",
+      "read_when": "reference",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": "AGENT.md.example",
+      "purpose": "Sacred product brief template copied to AGENT.md before init",
+      "read_when": "session_start",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": "docs/features/product-brief-anti-amnesia.md",
+      "purpose": "Feature slice: AGENT.md + Product do-not-drift stamp",
+      "read_when": "reference",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": "docs/features/icon-factory.md",
+      "purpose": "Feature slice: Cycles/OptiX icon factory",
+      "read_when": "reference",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": "docs/adr/0006-blender-runtime.md",
+      "purpose": "ADR: Blender GPL runtime and optional OptiX",
+      "read_when": "reference",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": "docs/adr/0007-ux-inventory.md",
+      "purpose": "ADR: construction law vs /ux-review vs UX inventory vs sprint rows",
+      "read_when": "reference",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": "docs/adr/0008-agent-venue.md",
+      "purpose": "ADR: LOCAL vs CLOUD BUILD_PLAN venues and isolation",
+      "read_when": "reference",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": "docs/adr/0009-cost-diet-brevity.md",
+      "purpose": "ADR: alwaysApply diet, --agent validate, ADHD short replies",
+      "read_when": "reference",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": "schemas/golden-path/icon-manifest.schema.json",
+      "purpose": "JSON Schema for icon-factory jobs (id, seed, camera, lighting)",
+      "read_when": "reference",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": ".cursor/rules/product-brief.mdc",
+      "purpose": "Always-on rule: read AGENT.md before Golden Path About/donate",
+      "read_when": "session_start",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": ".cursor/rules/brief-replies.mdc",
+      "purpose": "Always-on ADHD short-reply law (1\u20133 sentences)",
+      "read_when": "session_start",
+      "update_when": "milestone_boundary",
+      "owner": "maintainer"
+    },
+    {
+      "path": ".cursor/rules/ux-ui.mdc",
+      "purpose": "UX/UI construction checklist (globs on UI paths)",
+      "read_when": "ui_work",
+      "update_when": "design_change",
+      "owner": "maintainer"
     }
   ],
   "modules": {
@@ -3095,6 +3263,26 @@
       "guide": "modules/rust/MODULE.md",
       "example": "examples/rust",
       "activate_when": "optional stack; see docs/OPTIONAL_STACKS.md"
+    },
+    "android": {
+      "activate_when": "stack includes Android or F-Droid"
+    },
+    "python": {
+      "activate_when": "stack includes Python application"
+    },
+    "lightroom": {
+      "guide": "modules/lightroom/MODULE.md",
+      "activate_when": "stack includes Adobe Lightroom Classic plugin"
+    },
+    "go": {
+      "activate_when": "optional stack; see docs/OPTIONAL_STACKS.md"
+    },
+    "blender": {
+      "guide": "modules/blender/MODULE.md",
+      "activate_when": "optional Cycles/OptiX icon factory; see docs/OPTIONAL_STACKS.md"
+    },
+    "node": {
+      "activate_when": "stack includes Node.js HTTP API"
     }
   },
   "roadmap": {

@@ -37,7 +37,7 @@ function Write-Utf8NoBom {
 
 function Remove-OptionalStacks {
     if ($KeepOptional) { return }
-    @("examples/rust", "examples/go", "examples/lightroom", "modules/rust", "modules/go", "modules/lightroom") | ForEach-Object {
+    @("examples/rust", "examples/go", "examples/lightroom", "examples/blender", "modules/rust", "modules/go", "modules/lightroom", "modules/blender") | ForEach-Object {
         $target = Join-Path $Root $_
         if (Test-Path $target) { Remove-Item -Recurse -Force $target }
     }

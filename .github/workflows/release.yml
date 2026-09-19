@@ -45,6 +45,57 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: bash scripts/check-github-ci.sh HEAD --wait 300
 
+  linux-deb:
+    name: Linux deb
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+
+      - name: WebKit/GTK (Tauri 2)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            pkg-config \
+            libdbus-1-dev \
+            libwebkit2gtk-4.1-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libssl-dev
+
+      - name: Build and upload amd64 deb
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          VERSION="$(bash scripts/product-release-version.sh)"
+          if [ "$TAG" != "v$VERSION" ]; then
+            echo "Tag $TAG does not match CHANGELOG product version ($VERSION)"
+            exit 1
+          fi
+          bash scripts/build-chromaflow-deb.sh
+          DEB="target/deb/chromaflow_${VERSION}_amd64.deb"
+          if [ ! -f "$DEB" ]; then
+            echo "FAIL: $DEB missing"
+            exit 1
+          fi
+          gh release upload "$TAG" "$DEB" --clobber
+
   sbom-assets:
     if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     name: SBOM and release assets

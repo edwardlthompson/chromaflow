@@ -44,9 +44,9 @@ repos:
         entry: bash scripts/check-repo-hygiene.sh
         language: system
         pass_filenames: false
-      - id: validate-bootstrap-quick
-        name: Quick bootstrap validation
-        entry: bash scripts/validate-bootstrap.sh --quick
+      - id: validate-bootstrap-agent
+        name: Agent-fast bootstrap validation
+        entry: bash scripts/validate-bootstrap.sh --agent
         language: system
         pass_filenames: false
       - id: conventional-commit
@@ -67,7 +67,7 @@ repos:
       - id: gitleaks
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.7
+    rev: v0.16.8
     hooks:
       - id: ruff
         files: ^examples/python/

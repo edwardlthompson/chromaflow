@@ -8,15 +8,20 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-STACKS = ("android", "go", "lightroom", "node", "python", "rust", "web")
+STACKS = ("android", "blender", "go", "lightroom", "node", "python", "rust", "web")
 HINTS = tuple((f"examples/{s}/", (s,)) for s in STACKS) + (
     ("design-tokens/", ("web", "android")),
     ("branding/", ("web", "android")),
 )
+# Cross-stack blast radius only — not every scripts/ edit.
 WIDE_PREFIX = (
-    "scripts/", "tests/", "schemas/", "modules/", ".github/",
-    ".cursor/hooks", ".cursor/rules", ".cursor/agents",
+    "modules/", ".github/",
+    ".cursor/hooks", ".cursor/agents",
     ".cursor-plugin/", ".cursor/plugin",
+)
+# Agent/docs tooling — hygiene/docs gate, not full 8-stack.
+LIGHT_PREFIX = (
+    "scripts/", "tests/", "schemas/", ".cursor/rules/",
 )
 WIDE_NAMES = frozenset(
     "AGENTS.md CLAUDE.md GEMINI.md CONVENTIONS.md .clinerules "
@@ -29,7 +34,7 @@ DOCS_NAMES = frozenset(
     "BUILD_PLAN.md CHANGELOG.md AGENT_MEMORY.md DECISION_LOG.md "
     "COMPLETED_TASKS.md HUMAN_BACKLOG.md README.md SUPPORT.md CITATION.cff "
     "PROMPT_LIBRARY.md KNOWLEDGE_BASE.md LICENSE CODE_OF_CONDUCT.md "
-    "SECURITY.md CODEOWNERS".split()
+    "SECURITY.md CODEOWNERS AGENT.md AGENT.md.example".split()
 )
 EPHEMERAL = (
     "/.gradle/", "/node_modules/", "/__pycache__/", "/.pytest_cache/",
@@ -84,6 +89,8 @@ def classify(paths: list[str] | tuple[str, ...]) -> dict[str, object]:
             p.endswith(".md") and "/" not in p
         ):
             continue
+        if any(p.startswith(d) for d in LIGHT_PREFIX):
+            continue
         wide = True
     if not any_path:
         return {"mode": "docs", "stacks": [], "reason": "no-git-changes"}
@@ -120,7 +127,8 @@ def main(argv: list[str] | None = None) -> int:
             paths = [p for p in args[i + 1].split(",") if p]
             i += 1
         elif a.startswith("--paths="):
-            paths = [p for p in a.split("=", 1)[1].split(",") if p]
+            paths = [p for p in a.split("=", 1)[1].split(",")]
+            paths = [p for p in paths if p]
         i += 1
     result = classify(paths) if paths is not None else classify_repo()
     if fmt == "shell":

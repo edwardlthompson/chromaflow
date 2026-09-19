@@ -13,6 +13,7 @@ build/
 htmlcov/
 coverage/
 examples/web/dist/
+examples/blender/out/
 examples/android/.gradle/
 examples/android/build/
 examples/android/local.properties

@@ -2,7 +2,7 @@
 
 > Slow lego assembly: one feature container at a time, smoke-tested before the next. Read when implementing BUILD_PLAN Sprint 2+.
 
-**Cursor modes:** Plan new features (BUILD_PLAN row + resolved `### Critique` Issue→Resolution); Agent Mode for approved scaffold/tests/wire steps; Debug Mode when gates fail after autofix. See [`docs/CURSOR_MODES.md`](CURSOR_MODES.md).
+**Cursor modes:** Plan new features (BUILD_PLAN row + resolved `### Critique` Issue→Resolution); Agent Mode for approved scaffold/tests/wire steps; Debug Mode when gates fail after autofix. See [`docs/CURSOR_MODES.md`](CURSOR_MODES.md). UI slices obey [`ux-ui-guidelines.md`](ux-ui-guidelines.md) plus [`DESIGN_GUIDE.md`](DESIGN_GUIDE.md). Definition of Done is not “it renders.”
 
 ## Industry alignment
 
@@ -51,7 +51,7 @@ Status markers: 🔲 open · ✅ done · ❌ blocked (see `BUILD_PLAN.md` legend
 - 🔲 `[HUMAN]` Acceptance criteria + one smoke scenario documented
 - 🔲 `[AGENT]` Feature container scaffolded (no unrelated edits)
 - 🔲 `[AGENT]` Unit tests for pure logic (or written fallback command in the feature spec)
-- 🔲 `[AGENT]` View wired; composition root (`appBootstrap.ts` / `GoldenPathApp.kt`) diff ≤10 lines
+- 🔲 `[AGENT]` View wired to [`ux-ui-guidelines.md`](ux-ui-guidelines.md) (empty/error/loading, one primary CTA, i18n, a11y); composition root (`appBootstrap.ts` / `GoldenPathApp.kt`) diff ≤10 lines
 - 🔲 `[AUTO]` `bash scripts/watch-agent-gates.sh --once --autofix --scope auto`
 - 🔲 `[AUTO]` After the last row is ✅: `python3 scripts/agent-run.py smoke-sprint --require` (every ✅ item; startup + load order; no crashes)
 - 🔲 `[HUMAN]` Optional product smoke; agents do not wait on this to start the next feature if sprint smoke passed

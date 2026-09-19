@@ -105,6 +105,8 @@ class DebPackagingTests(unittest.TestCase):
             self.assertIn("./usr/share/icons/hicolor/16x16/apps/chromaflow.png", names)
             self.assertIn("./usr/share/icons/hicolor/48x48/apps/chromaflow.png", names)
             self.assertIn("./usr/libexec/chromaflow/install-support.sh", names)
+            self.assertIn("./usr/libexec/chromaflow/install-update.sh", names)
+            self.assertIn("./usr/share/polkit-1/actions/org.chromaflow.install-update.policy", names)
             self.assertIn("./usr/libexec/chromaflow/manage-competitors.sh", names)
             self.assertIn("./usr/libexec/chromaflow/pwm-failsafe.sh", names)
             self.assertIn("./usr/libexec/chromaflow/pwm-acl.sh", names)
@@ -136,9 +138,16 @@ class ProductReleaseSbomTests(unittest.TestCase):
             text=True,
             cwd=str(ROOT),
         )
-        self.assertEqual(proc.stdout.strip(), "0.2.1")
+        self.assertEqual(proc.stdout.strip(), "0.2.2")
         spec = (ROOT / "docs/features/product-release-sbom.md").read_text(encoding="utf-8")
         self.assertIn("product-release-version.sh", spec)
+        job = release.split("linux-deb:", 1)[1].split("sbom-assets:", 1)[0]
+        self.assertIn("github.event_name == 'release'", job)
+        self.assertNotIn("workflow_dispatch", job)
+        self.assertNotIn("CHROMAFLOW_DEB_SKIP_ENGINE", job)
+        self.assertIn("chromaflow_${VERSION}_amd64.deb", job)
+        self.assertIn("exit 1", job)
+        self.assertIn("gh release upload", job)
 
 
 class ProductVersionAlignTests(unittest.TestCase):

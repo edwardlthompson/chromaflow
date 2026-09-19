@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Lint + smoke gate for active stack after feature work.
-# Usage: scripts/feature-gate.sh [--json] [--stack web|python|android|node|rust|go|lightroom|docs|multi] [--step LABEL]
+# Usage: scripts/feature-gate.sh [--json] [--stack web|python|android|node|rust|go|lightroom|blender|docs|multi] [--step LABEL]
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -78,9 +78,9 @@ def skip_entry(msg: str) -> dict:
     if "rust" in low or "cargo" in low:
         module = "modules/rust/MODULE.md"
         reason = "optional rust stack inactive or cargo missing — see MODULE.md Activation Checklist"
-    elif "go " in low or "go)" in low or low.startswith("skipping go"):
-        module = "modules/go/MODULE.md"
-        reason = "optional go stack inactive or go missing — see MODULE.md Activation Checklist"
+    elif "blender" in low or "cycles" in low:
+        module = "modules/blender/MODULE.md"
+        reason = "optional blender stack inactive or blender missing — see MODULE.md Activation Checklist"
     return {"message": msg, "reason": reason, "module_md": module}
 
 print(json.dumps({
@@ -450,6 +450,16 @@ if should_run lightroom && [ -f examples/lightroom/Info.lua ]; then
   run_cmd lightroom-lua-lint bash scripts/check-lightroom-lua.sh
   run_cmd lightroom-sdk-playbook bash scripts/check-lightroom-sdk-playbook.sh
   run_cmd lightroom-tagset-fuzz bash scripts/check-lightroom-tagset-fuzz.sh
+fi
+
+if should_run blender && [ -f examples/blender/blender.toml ]; then
+  run_cmd blender-stub "$PY" examples/blender/cli.py --stub --limit 1
+  run_cmd blender-qa "$PY" -m unittest tests.test_blender_icon_factory
+  if command -v blender >/dev/null 2>&1; then
+    run_cmd blender-cpu blender --background --python examples/blender/cli.py -- --limit 1
+  else
+    skip_or_block "Skipping blender Cycles (blender not found)"
+  fi
 fi
 fi
 

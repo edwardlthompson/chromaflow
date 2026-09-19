@@ -56,6 +56,9 @@ footer { font-size: 0.9rem; margin-top: 1.5rem; }
 <tr><td><code>/fix</code></td><td>Repair failing checks after a build, in the feature you just touched.</td></tr>
 <tr><td><code>/cleanup</code></td><td>Archive finished task-board rows so the list stays short.</td></tr>
 <tr><td><code>/scope</code></td><td>Split work so more than one agent can help without colliding.</td></tr>
+<tr><td><code>/ux-apply</code></td><td>Implement one UX inventory item, then re-check that screen.</td></tr>
+<tr><td><code>/redesign</code></td><td>Review one flow against the construction guidelines; apply only the ids you name.</td></tr>
+<tr><td><code>/update-guidelines</code></td><td>Patch the UX/UI construction guidelines (how we build screens), not a review-only file.</td></tr>
 </table>
 <h2>Docs and checks</h2>
 <table>
@@ -64,6 +67,12 @@ footer { font-size: 0.9rem; margin-top: 1.5rem; }
 <tr><td><code>/docs</code></td><td>Check README health, tables, and file encoding.</td></tr>
 <tr><td><code>/ci</code></td><td>Wait for GitHub Actions after a push (checks only, no new commit).</td></tr>
 <tr><td><code>/debug</code></td><td>Investigate a bug with logs and evidence (not a full-repo audit).</td></tr>
+<tr><td><code>/ux-review</code></td><td>Score real screens against the construction guidelines and write every change to the task-board UX inventory.</td></tr>
+<tr><td><code>/ui-review</code></td><td>Same as /ux-review.</td></tr>
+<tr><td><code>/ux-audit</code></td><td>Same as /ux-review (not a full-repo audit).</td></tr>
+<tr><td><code>/ui-audit</code></td><td>Same as /ux-review (not a full-repo audit).</td></tr>
+<tr><td><code>/a11y-check</code></td><td>Accessibility-first /ux-review. Writes every WCAG gap to the UX inventory.</td></tr>
+<tr><td><code>/compare-ui</code></td><td>Compare this app to a few named products, then write every change to the UX inventory.</td></tr>
 </table>
 <h2>Publishing</h2>
 <table>

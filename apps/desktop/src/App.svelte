@@ -12,6 +12,7 @@
   import { startGaugeTick } from "./lib/gaugesTick.js";
   import RailNav from "./lib/RailNav.svelte";
   import ConfirmDialog from "./lib/ConfirmDialog.svelte";
+  import { launchUpdateCheck } from "./lib/updates.js";
   import t from "./locales/en.json";
 
   const titles = {
@@ -99,6 +100,7 @@
       forceLoad = true;
       runLoad();
     });
+    launchUpdateCheck({ confirm: t["support.updateConfirm"] });
     const onLeave = () => persistSession(tab);
     window.addEventListener("pagehide", onLeave);
     window.addEventListener("beforeunload", onLeave);

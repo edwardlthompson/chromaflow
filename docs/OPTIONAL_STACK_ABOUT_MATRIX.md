@@ -10,6 +10,5 @@ Quick index for MODULE.md owners. Each optional stack should expose a minimal Ab
 | python | `hello.about` module | `uv run pytest` |
 | go | HTTP About endpoint | `go test` |
 | rust | CLI `--version` + crash stub | `cargo test` |
-| lightroom | Plug-in About via SDK | MODULE checklist / human load |
-
+| blender | Manifest `--stub` QA; Cycles when Blender installed | `feature-gate --stack blender` |
 Missing rows stay 🔲 in the stack `MODULE.md` until the Golden Path example lands.

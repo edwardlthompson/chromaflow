@@ -147,6 +147,7 @@ If `adb` still needs `sudo chmod` on `/dev/bus/usb/...`, the rule did not match 
 
 - Ollama / LM Studio on `127.0.0.1` only — [`LOCAL_MODELS.md`](LOCAL_MODELS.md)
 - Template gates do not require CUDA; `/emulator` may use `-gpu host` when KVM is available (`kvm=yes` from `check-local-compute`)
+- Optional Blender icon factory: Cycles CPU in CI; `BLENDER_CYCLES_DEVICE=OPTIX` only on This Computer (`modules/blender/MODULE.md`)
 
 ## Quick checklist
 
@@ -173,7 +174,7 @@ Product smoke is the **installed** `chromaflow-gui` from `chromaflow_*.deb` (Cin
 
 ```bash
 bash scripts/build-chromaflow-deb.sh
-sudo dpkg -i target/deb/chromaflow_0.2.1_amd64.deb
+sudo dpkg -i target/deb/chromaflow_0.2.2_amd64.deb
 chromaflow-gui
 
 ```

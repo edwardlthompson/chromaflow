@@ -19,6 +19,7 @@ grep 'license' Cargo.toml crates/*/Cargo.toml
 
 # Optional Golden Path rust stub
 grep 'license' examples/rust/Cargo.toml
+
 ```
 
 `[AUTO]` CI runs `scripts/check-license-compliance.sh` on each push.
@@ -35,3 +36,7 @@ or optional separate programs — they are not linked into ChromaFlow.
 
 `[HUMAN]` must approve any dependency with copyleft licenses (GPL, AGPL) that
 may affect distribution. Document exceptions in `DECISION_LOG.md`.
+
+**Blender (optional stack):** GPL **runtime** only. The template does not vendor
+Blender or link `libblender`. See `docs/adr/0006-blender-runtime.md`. NVIDIA OptiX
+is a local optional backend, not a CI or FOSS production-path dependency.

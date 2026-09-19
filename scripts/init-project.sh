@@ -31,8 +31,8 @@ Usage: scripts/init-project.sh [options]
   --prune                Prune unused examples/modules without prompting
   --no-prune             Never prune (overrides --prune)
   --non-interactive      Skip prompts (requires --stack, --project-name, --purpose)
-  --keep-optional        When pruning, keep rust/go/lightroom examples and modules (default)
-  --prune-optional       When pruning, also remove optional stacks (rust/go/lightroom)
+  --keep-optional        When pruning, keep rust/go/lightroom/blender examples and modules (default)
+  --prune-optional       When pruning, also remove optional stacks (rust/go/lightroom/blender)
   --distribution-tier T  foss|commercial (default foss)
   --license SPDX         MIT|Apache-2.0 (default MIT)
   --skip-preflight       Skip git/Python/tool checks
@@ -101,7 +101,7 @@ prune_optional_stacks() {
   if [ "$KEEP_OPTIONAL" = true ]; then
     return 0
   fi
-  rm -rf examples/rust examples/go examples/lightroom modules/rust modules/go modules/lightroom 2>/dev/null || true
+  rm -rf examples/rust examples/go examples/lightroom examples/blender modules/rust modules/go modules/lightroom modules/blender 2>/dev/null || true
 }
 
 prune_primary_stack() {

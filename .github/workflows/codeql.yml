@@ -32,6 +32,20 @@ jobs:
           - language: python
     steps:
       - uses: actions/checkout@v7
+      - name: Setup Java (Android)
+        if: matrix.language == 'java-kotlin'
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Setup Android SDK
+        if: matrix.language == 'java-kotlin'
+        uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools
+      - name: Accept Android SDK licenses
+        if: matrix.language == 'java-kotlin'
+        run: yes | sdkmanager --licenses
       - name: Initialize CodeQL (repo-wide)
         uses: github/codeql-action/init@v4
         with:

@@ -8,10 +8,10 @@ After `scripts/init-project.sh --distribution-tier foss`:
 
 | Layer | Artifact | Status |
 |-------|----------|--------|
-| Rules | `.cursor/rules/*.mdc` | Shipped (16). `alwaysApply: true` is allowlisted in `scripts/lib/cursor_rule_audit.py`; glob-scoped rules must set `alwaysApply: false`. |
-| Commands | `.cursor/commands/*.md` | Shipped (33) |
+| Rules | `.cursor/rules/*.mdc` | Shipped (20). Thin `alwaysApply` allowlist in `scripts/lib/cursor_rule_audit.py` (ADR-0009 cost diet); demoted rules use globs/description. |
+| Commands | `.cursor/commands/*.md` | Shipped (45) |
 | Hooks | `.cursor/hooks.json` + `.cursor/hooks/` | Shipped |
-| Skills | `.cursor/skills/` (13) | Shipped |
+| Skills | `.cursor/skills/` (16) | Shipped |
 | Subagents | `.cursor/agents/` (3) | Shipped |
 | Modes | `docs/CURSOR_MODES.md` | Shipped |
 | Worktrees | `.cursor/worktrees.json` + OS setup scripts | Shipped |
@@ -126,6 +126,8 @@ Commands remain canonical UX. Skills wrap high-churn flows:
 | `linux-dev` | `docs/LINUX_DEV.md` |
 | `emulator` | `/emulator` |
 | `adr` | `/adr` |
+| `ux-review` | `/ux-review`, `/ux-apply` |
+| `blender-icons` | `/feature` icon-factory / blender stack |
 ## Subagents
 
 | Agent | Role |

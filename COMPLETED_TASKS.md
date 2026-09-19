@@ -2,6 +2,176 @@
 
 > Archive of finished BUILD_PLAN items.
 
+## Sprint 40 — GitHub updates (2026-09-18)
+
+- ✅ [AGENT][LOCAL] Lock `docs/features/desktop-update.md` (launch check, Support button, pinned GitHub `.deb`, sha256, no daemon stop) — scope: docs/features/desktop-update.md
+- ✅ [AGENT][LOCAL] `update_check`: numeric semver, pinned asset URL, required `sha256` digest, typed statuses, Rust tests — scope: crates/chromaflow-core
+- ✅ [AGENT][LOCAL] Pinned `install-update.sh`, polkit action, `CHROMAFLOW_SKIP_SESSION` in the deb `postinst`, download to `/run/user` — scope: packaging/
+- ✅ [AGENT][LOCAL] Launch check plus Support **Check for updates** (secondary button, i18n, quiet on failure) — scope: apps/desktop
+- ✅ [AGENT][LOCAL] Tag-only `linux-deb` job uploads `chromaflow_<semver>_amd64.deb` and fails if the file is missing — scope: .github/workflows/release.yml
+
+## Template 1.8.0 catch-up (2026-09-18)
+
+- ✅ [AUTO] Merge Dependabot [#8](https://github.com/edwardlthompson/chromaflow/pull/8) (chore(deps): bump actions/setup-java from 5 to 6 in the github-actions group)
+- ✅ [AUTO] Merge Dependabot [#6](https://github.com/edwardlthompson/chromaflow/pull/6) (chore(deps-dev): bump the web-dependencies group in /examples/web with 2 updates)
+- ✅ [AGENT] Mixed: .cursor-plugin/plugin.json
+- ✅ [AGENT] Canon: .cursor/commands/a11y-check.md
+- ✅ [AGENT] Canon: .cursor/commands/build.md
+- ✅ [AGENT] Canon: .cursor/commands/coach.md
+- ✅ [AGENT] Canon: .cursor/commands/compare-ui.md
+- ✅ [AGENT] Canon: .cursor/commands/feature.md
+- ✅ [AGENT] Canon: .cursor/commands/gates.md
+- ✅ [AGENT] Canon: .cursor/commands/init.md
+- ✅ [AGENT] Canon: .cursor/commands/plan.md
+- ✅ [AGENT] Canon: .cursor/commands/redesign.md
+- ✅ [AGENT] Canon: .cursor/commands/resume.md
+- ✅ [AGENT] Canon: .cursor/commands/scope.md
+- ✅ [AGENT] Canon: .cursor/commands/ui-audit.md
+- ✅ [AGENT] Canon: .cursor/commands/ui-review.md
+- ✅ [AGENT] Canon: .cursor/commands/update-guidelines.md
+- ✅ [AGENT] Canon: .cursor/commands/ux-apply.md
+- ✅ [AGENT] Canon: .cursor/commands/ux-audit.md
+- ✅ [AGENT] Canon: .cursor/commands/ux-review.md
+- ✅ [AGENT] Mixed: .cursor/hooks/session_start_context.py
+- ✅ [AGENT] Canon: .cursor/rules/batch-commands.mdc
+- ✅ [AGENT] Canon: .cursor/rules/brief-replies.mdc
+- ✅ [AGENT] Canon: .cursor/rules/core-directives.mdc
+- ✅ [AGENT] Canon: .cursor/rules/design-system.mdc
+- ✅ [AGENT] Canon: .cursor/rules/feature-modules.mdc
+- ✅ [AGENT] Canon: .cursor/rules/foss-compliance.mdc
+- ✅ [AGENT] Canon: .cursor/rules/local-compute.mdc
+- ✅ [AGENT] Canon: .cursor/rules/local-deps.mdc
+- ✅ [AGENT] Canon: .cursor/rules/product-brief.mdc
+- ✅ [AGENT] Canon: .cursor/rules/read-before-write.mdc
+- ✅ [AGENT] Canon: .cursor/rules/ux-ui.mdc
+- ✅ [AGENT] Canon: .cursor/rules/windows-encoding.mdc
+- ✅ [AGENT] Mixed: .cursor/skills/blender-icons/SKILL.md
+- ✅ [AGENT] Mixed: .cursor/skills/feature-vertical-slice/SKILL.md
+- ✅ [AGENT] Mixed: .cursor/skills/ux-review/SKILL.md
+- ✅ [AGENT] Mixed: .cursor/skills/validate-bootstrap/SKILL.md
+- ✅ [AGENT] Mixed: .github/workflows/ci.yml
+- ✅ [AGENT] Mixed: .github/workflows/codeql.yml
+- ✅ [AGENT] Mixed: .github/workflows/weekly-health-check.yml
+- ✅ [AGENT] Mixed: .gitignore
+- ✅ [AGENT] Mixed: .pre-commit-config.yaml
+- ✅ [AGENT] Mixed: .release-please-manifest.json
+- ✅ [AGENT] Mixed: .template-version
+- ✅ [AGENT] Mixed: AGENT.md.example
+- ✅ [AGENT] Mixed: AGENT_MEMORY.md
+- ✅ [AGENT] Mixed: BUILD_PLAN.md
+- ✅ [AGENT] Canon: BUILD_PLAN_TEMPLATE.md
+- ✅ [AGENT] Mixed: CHANGELOG.md
+- ✅ [AGENT] Mixed: CITATION.cff
+- ✅ [AGENT] Mixed: COMPLETED_TASKS.md
+- ✅ [AGENT] Mixed: DECISION_LOG.md
+- ✅ [AGENT] Mixed: HUMAN_BACKLOG.md
+- ✅ [AGENT] Mixed: KNOWLEDGE_BASE.md
+- ✅ [AGENT] Mixed: PROJECT_CHECKLIST.md
+- ✅ [AGENT] Mixed: README.md
+- ✅ [AGENT] Mixed: TEMPLATE_INDEX.json
+- ✅ [AGENT] Mixed: THIRD_PARTY_LICENSES.md
+- ✅ [AGENT] Mixed: branding/BRANDING.md
+- ✅ [AGENT] Mixed: docs/AGENT_PORTABILITY.md
+- ✅ [AGENT] Canon: docs/BATCH_COMMANDS.md
+- ✅ [AGENT] Mixed: docs/CURSOR_FEATURE_REGISTRY.json
+- ✅ [AGENT] Mixed: docs/CURSOR_INTEGRATIONS.md
+- ✅ [AGENT] Canon: docs/CURSOR_MODES.md
+- ✅ [AGENT] Mixed: docs/DESIGN_GUIDE.md
+- ✅ [AGENT] Mixed: docs/FEATURE_MODULES.md
+- ✅ [AGENT] Mixed: docs/LIGHTROOM_SDK_BUMP.md
+- ✅ [AGENT] Mixed: docs/LINUX_DEV.md
+- ✅ [AGENT] Mixed: docs/OPTIONAL_STACKS.md
+- ✅ [AGENT] Mixed: docs/OPTIONAL_STACK_ABOUT_MATRIX.md
+- ✅ [AGENT] Mixed: docs/PARALLEL_AGENT_SCOPES.md
+- ✅ [AGENT] Mixed: docs/START_HERE.md
+- ✅ [AGENT] Mixed: docs/UPGRADING_FROM_TEMPLATE.md
+- ✅ [AGENT] Mixed: docs/adr/0006-blender-runtime.md
+- ✅ [AGENT] Mixed: docs/adr/0007-ux-inventory.md
+- ✅ [AGENT] Mixed: docs/adr/0008-agent-venue.md
+- ✅ [AGENT] Mixed: docs/adr/0009-cost-diet-brevity.md
+- ✅ [AGENT] Mixed: docs/features/_template.md
+- ✅ [AGENT] Mixed: docs/features/icon-factory.md
+- ✅ [AGENT] Mixed: docs/features/lightroom-lua-lint.md
+- ✅ [AGENT] Mixed: docs/features/lightroom-sdk-bump.md
+- ✅ [AGENT] Mixed: docs/features/product-brief-anti-amnesia.md
+- ✅ [AGENT] Canon: docs/help/BATCH_COMMANDS.md
+- ✅ [AGENT] Canon: docs/help/COACH.md
+- ✅ [AGENT] Canon: docs/help/CURSOR_FEATURES.md
+- ✅ [AGENT] Canon: docs/help/DONATIONS.md
+- ✅ [AGENT] Canon: docs/help/GLOSSARY.md
+- ✅ [AGENT] Canon: docs/help/TOUR.md
+- ✅ [AGENT] Canon: docs/help/UPGRADE.md
+- ✅ [AGENT] Canon: docs/help/UX-APPLY.md
+- ✅ [AGENT] Canon: docs/help/UX-REVIEW.md
+- ✅ [AGENT] Canon: docs/help/batch-commands-print.html
+- ✅ [AGENT] Mixed: docs/ux-ui-guidelines.md
+- ✅ [HUMAN] Sacred: examples/lightroom/README.md (never blind-overwrite)
+- ✅ [AGENT] Mixed: modules/blender/MODULE.md
+- ✅ [AGENT] Mixed: modules/lightroom/MODULE.md
+- ✅ [AGENT] Mixed: schemas/batch-commands-print.json
+- ✅ [AGENT] Mixed: schemas/golden-path/feature-catalog.json
+- ✅ [AGENT] Mixed: schemas/golden-path/icon-manifest.schema.json
+- ✅ [AGENT] Mixed: schemas/golden-path/upgrade-policy.json
+- ✅ [AGENT] Canon: scripts/blender-icons.sh
+- ✅ [AGENT] Canon: scripts/check-agent-brief.sh
+- ✅ [AGENT] Canon: scripts/check-agent-venue.sh
+- ✅ [AGENT] Canon: scripts/check-batch-commands.sh
+- ✅ [AGENT] Canon: scripts/check-ux-inventory.sh
+- ✅ [AGENT] Canon: scripts/feature-gate.sh
+- ✅ [AGENT] Canon: scripts/init-project.ps1
+- ✅ [AGENT] Canon: scripts/init-project.sh
+- ✅ [AGENT] Canon: scripts/init-stack-sync.py
+- ✅ [AGENT] Canon: scripts/lib/agent_brief.py
+- ✅ [AGENT] Canon: scripts/lib/agent_venue.py
+- ✅ [AGENT] Canon: scripts/lib/bootstrap_cli.py
+- ✅ [AGENT] Canon: scripts/lib/build_plan_tally.py
+- ✅ [AGENT] Canon: scripts/lib/build_sprint.py
+- ✅ [AGENT] Canon: scripts/lib/build_sprint_model.py
+- ✅ [AGENT] Canon: scripts/lib/build_sprint_parse.py
+- ✅ [AGENT] Canon: scripts/lib/build_sprint_resolve.py
+- ✅ [AGENT] Canon: scripts/lib/check_agent_brief.py
+- ✅ [AGENT] Canon: scripts/lib/check_cursor_integrations.py
+- ✅ [AGENT] Canon: scripts/lib/cursor_feature_radar_io.py
+- ✅ [AGENT] Canon: scripts/lib/cursor_rule_audit.py
+- ✅ [AGENT] Canon: scripts/lib/feature_gate_timeout.py
+- ✅ [AGENT] Canon: scripts/lib/gate_hints.json
+- ✅ [AGENT] Canon: scripts/lib/gate_scope.py
+- ✅ [AGENT] Canon: scripts/lib/gates_canvas.py
+- ✅ [AGENT] Canon: scripts/lib/human_task_waiting_docs.py
+- ✅ [AGENT] Canon: scripts/lib/lightroom_sdk_playbook.py
+- ✅ [AGENT] Canon: scripts/lib/local_resources.py
+- ✅ [AGENT] Canon: scripts/lib/parallel_scope_model.py
+- ✅ [AGENT] Canon: scripts/lib/project_checklist.py
+- ✅ [AGENT] Canon: scripts/lib/resume_digest.py
+- ✅ [AGENT] Canon: scripts/lib/resume_handoff.py
+- ✅ [AGENT] Canon: scripts/lib/sprint_smoke_map.py
+- ✅ [AGENT] Canon: scripts/lib/sprint_smoke_parse.py
+- ✅ [AGENT] Canon: scripts/lib/stamp_product_brief.py
+- ✅ [AGENT] Canon: scripts/lib/sync_open_prs_render.py
+- ✅ [AGENT] Canon: scripts/lib/sync_template_gaps_render.py
+- ✅ [AGENT] Canon: scripts/lib/template_gap.py
+- ✅ [AGENT] Canon: scripts/lib/ux_inventory.py
+- ✅ [AGENT] Canon: scripts/simulate-template-upgrade.sh
+- ✅ [AGENT] Canon: scripts/sync-cursor-features.py
+- ✅ [AGENT] Canon: scripts/validate-bootstrap.sh
+- ✅ [AGENT] Mixed: tests/test_agent_brief.py
+- ✅ [AGENT] Mixed: tests/test_agent_venue.py
+- ✅ [AGENT] Mixed: tests/test_blender_icon_factory.py
+- ✅ [AGENT] Mixed: tests/test_blender_module_checklist.py
+- ✅ [AGENT] Mixed: tests/test_build_plan_tally.py
+- ✅ [AGENT] Mixed: tests/test_feature_catalog_blender.py
+- ✅ [AGENT] Mixed: tests/test_feature_stacks.py
+- ✅ [AGENT] Mixed: tests/test_gate_scope.py
+- ✅ [AGENT] Mixed: tests/test_human_task_waiting.py
+- ✅ [AGENT] Mixed: tests/test_resume_handoff.py
+- ✅ [AGENT] Mixed: tests/test_sprint_smoke.py
+- ✅ [AGENT] Mixed: tests/test_sync_open_prs_build_plan.py
+- ✅ [AGENT] Mixed: tests/test_sync_template_gaps_build_plan.py
+- ✅ [AGENT] Mixed: tests/test_template_gap.py
+- ✅ [AGENT] Mixed: tests/test_upgrade_sim_sacred.py
+- ✅ [AGENT] Mixed: tests/test_ux_inventory.py
+- ✅ [AGENT] Mixed: tests/test_validate_bootstrap_agent.py
+
 ## Sprint 39 — UX audit leftovers (2026-09-14)
 
 - ✅ [AGENT] Cut or wire unused Lighting JSON (`docs/features/desktop-unused-copy.md`)

@@ -2,7 +2,7 @@
 
 > Technical catalog for agents and maintainers. **Humans:** start with [docs/help/BATCH_COMMANDS.md](help/BATCH_COMMANDS.md).
 
-36 slash commands: **31 atomic** workflows + **5 super** orchestrators. Bare-word triggers: `.cursor/rules/batch-commands.mdc`. Other IDEs: paste the matching file under `docs/help/` (start with `docs/help/TOUR.md`, `docs/help/IDEAS.md`, or `docs/help/ALLIDEAS.md`). Novice print sheet: [`docs/help/batch-commands-print.html`](help/batch-commands-print.html).
+45 slash commands: **40 atomic** workflows + **5 super** orchestrators. Bare-word triggers: `.cursor/rules/batch-commands.mdc`. Other IDEs: paste the matching file under `docs/help/` (start with `docs/help/TOUR.md`, `docs/help/IDEAS.md`, or `docs/help/ALLIDEAS.md`). Novice print sheet: [`docs/help/batch-commands-print.html`](help/batch-commands-print.html).
 
 ## Super commands
 
@@ -48,6 +48,15 @@
 | `/tour` | 10-minute first-run walk (START_HERE → why → Golden Path → Week 1) | bootstrap | — |
 | `/ideas` | Ranked in-scope backlog (do not implement; offer BUILD_PLAN rows) | — | — |
 | `/allideas` | Uncapped in-scope dump for BUILD_PLAN fill (do not implement until asked) | — | — |
+| `/ux-review` | Score shipped UI against construction law; write UX inventory | — | — |
+| `/ux-apply` | Implement one `UX-NNN` inventory item, then scoped review | — | — |
+| `/ui-review` | Alias of `/ux-review` | — | — |
+| `/ux-audit` | Alias of `/ux-review` (not `/audit`) | — | — |
+| `/ui-audit` | Alias of `/ux-review` (not `/audit`) | — | — |
+| `/a11y-check` | `/ux-review --a11y` | — | — |
+| `/compare-ui` | `/ux-review --compare` | — | — |
+| `/redesign` | Scoped review; apply only named ids | — | — |
+| `/update-guidelines` | Patch `docs/ux-ui-guidelines.md` (construction) | — | — |
 ## Decision tree
 
 ```
@@ -55,6 +64,7 @@ New repo?           → /bootstrap
 Changed code?       → /verify (or /docs if docs-only)
 What next (now)?    → /coach
 What could we add?  → /ideas (ranked 5–8) or /allideas (complete dump)
+Score shipped UI?    → /ux-review (then /ux-apply UX-NNN)
 New feature?        → /build  (or /fix if gates fail)
 Ready to publish?   → /ship   (or /prerelease then /push)
 Weekly maintenance? → /maintain (heavy) or /triage + /update-deps (light)
@@ -82,6 +92,8 @@ Back from Cloud?    → /resume (fetch + open PRs + next AGENT row)
 | `docs/help/BATCH_COMMANDS.md` | Human cheat sheet |
 | `docs/help/batch-commands-print.html` | Novice print sheet (browser Print) |
 | `docs/help/UPGRADE.md` | Child catch-up recipe (other IDEs) |
+| `docs/help/UX-REVIEW.md` | Score shipped UI (other IDEs) |
+| `docs/help/UX-APPLY.md` | Implement one UX-NNN (other IDEs) |
 | `CODE_REVIEW.md.example` | Audit output template |
 | `RELEASE_NOTES.md.example` | Release draft template |
 | `scratchpad.md.example` | Phase working memory (live `scratchpad.md` gitignored) |

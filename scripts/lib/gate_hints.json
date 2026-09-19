@@ -251,6 +251,32 @@
         "run go test in examples/go"
       ]
     },
+    "blender-stub": {
+      "means": "Icon factory stub QA or manifest validation failed.",
+      "run": "python3 examples/blender/cli.py --stub --limit 1",
+      "why": "Machine QA replaces human review of thousands of frames.",
+      "suggested": [
+        "fix examples/blender/fixtures/icon-manifest.sample.json",
+        "run python3 examples/blender/cli.py --stub --limit 1"
+      ]
+    },
+    "blender-qa": {
+      "means": "Icon factory unit tests failed (no Blender required).",
+      "run": "python3 -m unittest tests.test_blender_icon_factory",
+      "why": "Schema, stub PNG, and device env must pass without a GPU.",
+      "suggested": [
+        "run python3 -m unittest tests.test_blender_icon_factory"
+      ]
+    },
+    "blender-cpu": {
+      "means": "Cycles CPU smoke render failed.",
+      "run": "blender --background --python examples/blender/cli.py -- --limit 1",
+      "why": "CI never requires OptiX; CPU proves the bpy path.",
+      "suggested": [
+        "install Blender 4.x on PATH",
+        "run blender-icons --limit 1"
+      ]
+    },
     "lightroom-sdk-playbook": {
       "means": "Lightroom SDK playbook is missing or Info.lua versions drifted from the README table.",
       "run": "bash scripts/check-lightroom-sdk-playbook.sh",

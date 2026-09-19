@@ -50,6 +50,8 @@ pub mod pwm_scheme;
 pub mod scan;
 pub mod support;
 pub mod types;
+pub mod update_check;
+pub mod update_fetch;
 
 pub use privilege::refuse_if_root;
 pub use scan::{collect_cooling, collect_inventory};

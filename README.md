@@ -9,7 +9,7 @@
 <p align="center"><strong>Fans, pumps, and lighting in one Linux Mint app</strong></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/template-1.4.0-656d76?style=flat-square" alt="template-1.4.0" />
+  <img src="https://img.shields.io/badge/template-1.8.0-656d76?style=flat-square" alt="template-1.8.0" />
   <img src="https://img.shields.io/badge/license-MIT-2ea043?style=flat-square" alt="MIT" />
   <img src="https://img.shields.io/badge/FOSS-no_tracking-656d76?style=flat-square" alt="FOSS" />
   <img src="https://img.shields.io/badge/status-active-14B8A6?style=flat-square" alt="status" />
@@ -78,7 +78,7 @@ flowchart TD
 
 ## Install
 
-Primary test target is Linux Mint 21/22 (Cinnamon). We do not ship kernel modules. Inventory (`chromaflow sensors|devices|rescan`) works offline as an unprivileged user. Install the app with `bash scripts/build-chromaflow-deb.sh` then `sudo dpkg -i target/deb/chromaflow_0.2.1_amd64.deb` (see `packaging/README.md`). The package ships the color app icon (hicolor PNG + SVG). `apps/desktop/src-tauri/icons/icon.ico` is the Windows taskbar/Start icon for a future NSIS/MSI build — PWM on Windows is not in this release. After udev or group changes (i2c, plugdev), log out. OpenRGB is a hidden sibling engine, not a second Start-menu app.
+Primary test target is Linux Mint 21/22 (Cinnamon). We do not ship kernel modules. Inventory (`chromaflow sensors|devices|rescan`) works offline as an unprivileged user. Install the app with `bash scripts/build-chromaflow-deb.sh` then `sudo dpkg -i target/deb/chromaflow_0.2.2_amd64.deb` (see `packaging/README.md`). The package ships the color app icon (hicolor PNG + SVG). `apps/desktop/src-tauri/icons/icon.ico` is the Windows taskbar/Start icon for a future NSIS/MSI build — PWM on Windows is not in this release. After udev or group changes (i2c, plugdev), log out. OpenRGB is a hidden sibling engine, not a second Start-menu app.
 
 ## Usage
 

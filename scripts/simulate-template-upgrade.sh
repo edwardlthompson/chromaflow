@@ -54,6 +54,9 @@ child_quick
 bash scripts/validate-template-index.sh
 
 echo "==> Non-interactive init smoke (web stack, no prune)"
+cp -f AGENT.md.example AGENT.md
+SACRED_AGENT="upgrade-sim-sacred-agent-md"
+printf '\n<!-- %s -->\n' "$SACRED_AGENT" >> AGENT.md
 bash scripts/init-project.sh \
   --non-interactive \
   --stack web \
@@ -102,7 +105,7 @@ SACRED_MARK="upgrade-sim-sacred-agents-md"
 printf '\n<!-- %s -->\n' "$SACRED_MARK" >> AGENTS.md
 for path in "${AREAS[@]}"; do
   case "$path" in
-    AGENTS.md|docs/spec.md|docs/plan.md|docs/INITIALIZATION_PROMPT.md)
+    AGENTS.md|AGENT.md|docs/spec.md|docs/plan.md|docs/INITIALIZATION_PROMPT.md)
       echo "FAIL: Sacred path $path must not be in upgrade AREAS"
       exit 1
       ;;
@@ -116,6 +119,10 @@ if ! grep -q "$SACRED_MARK" AGENTS.md; then
   echo "FAIL: Sacred AGENTS.md was overwritten during upgrade cherry-pick"
   exit 1
 fi
+if ! grep -q "$SACRED_AGENT" AGENT.md; then
+  echo "FAIL: Sacred AGENT.md was overwritten during init or cherry-pick"
+  exit 1
+fi
 if ! grep -q 'Upgrade Sim' AGENTS.md; then
   echo "FAIL: stamped project name lost from AGENTS.md"
   exit 1
@@ -126,7 +133,7 @@ child_quick
 echo "==> Non-interactive init smoke with --prune --prune-optional"
 git clone --quiet "file://$ROOT" "$WORKDIR/child-prune"
 cd "$WORKDIR/child-prune"
-
+cp -f AGENT.md.example AGENT.md
 bash scripts/init-project.sh \
   --non-interactive \
   --stack web \
@@ -135,7 +142,7 @@ bash scripts/init-project.sh \
   --prune \
   --prune-optional
 
-for path in examples/rust examples/go examples/lightroom modules/rust modules/go modules/lightroom; do
+for path in examples/rust examples/go examples/lightroom examples/blender modules/rust modules/go modules/lightroom modules/blender; do
   if [ -e "$path" ]; then
     echo "FAIL: $path still present after --prune-optional"
     exit 1
@@ -161,6 +168,7 @@ if ! command -v pwsh >/dev/null 2>&1; then
 else
   git clone --quiet "file://$ROOT" "$WORKDIR/child-ps"
   cd "$WORKDIR/child-ps"
+  cp -f AGENT.md.example AGENT.md
 
   PYTHON_BASIC_REPL=1 PYTHONUNBUFFERED=1 PYTHONIOENCODING=utf-8 \
     pwsh -NoProfile -File scripts/init-project.ps1 \

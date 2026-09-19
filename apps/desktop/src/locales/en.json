@@ -229,5 +229,16 @@
   "support.competitorsConfirm": "Uninstall the listed fan and RGB controllers? This uses apt purge. OpenRGB and ChromaFlow stay installed.",
   "support.competitorsRemoved": "Competing controllers uninstalled. Re-scan inventory if the conflict banner is still visible.",
   "support.ready": "Ready",
-  "support.needed": "Needed"
+  "support.needed": "Needed",
+  "support.update": "Check for updates",
+  "support.updateChecking": "Checking for updates…",
+  "support.updateCurrent": "You are up to date.",
+  "support.updateAvailable": "Version {version} is available.",
+  "support.updateNone": "No Linux package is on this release.",
+  "support.updateOffline": "Could not reach GitHub.",
+  "support.updateRate": "GitHub rate limit. Try again later.",
+  "support.updateBad": "The release listing was not usable.",
+  "support.updateInstalled": "Installed. Close ChromaFlow and open it again.",
+  "support.updateHelper": "Open the package download, finish install, then reopen.",
+  "support.updateConfirm": "Install version {version}?"
 }

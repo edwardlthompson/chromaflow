@@ -12,6 +12,7 @@ if str(LIB) not in sys.path:
     sys.path.insert(0, str(LIB))
 
 from human_task_waiting_docs import (  # noqa: E402
+    automate_lightroom_smoke,
     automate_openssf_gap_list,
     automate_winget_checklist,
 )
@@ -96,6 +97,12 @@ class WaitingAutomationTests(unittest.TestCase):
     def test_winget_checklist_on_example(self) -> None:
         result = automate_winget_checklist(ROOT, {})
         self.assertEqual(result.exit_code, 0, result.reason)
+
+    def test_lightroom_smoke_without_adobe(self) -> None:
+        with mock.patch("human_task_waiting_docs.run_cmd", return_value=(0, "ok")):
+            result = automate_lightroom_smoke(ROOT, {})
+        self.assertEqual(result.exit_code, 0, result.reason)
+        self.assertFalse(result.backlog)
 
 
 if __name__ == "__main__":

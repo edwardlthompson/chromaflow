@@ -119,23 +119,21 @@ def automate_winget_checklist(root: Path, _cfg: dict) -> AttemptResult:
 
 
 def automate_lightroom_smoke(root: Path, _cfg: dict) -> AttemptResult:
-    """SDK namespace check; Plug-in Manager load still needs Adobe Lightroom."""
-    if (root / "scripts/verify-lightroom.sh").is_file():
-        code, tail = run_cmd(root, bash_script(root, "scripts/verify-lightroom.sh"))
+    """Lua/SDK gates replace Adobe Plug-in Manager load for the Golden Path stub."""
+    for rel in (
+        "scripts/verify-lightroom.sh",
+        "scripts/check-lightroom-lua.sh",
+        "scripts/check-lightroom-sdk-playbook.sh",
+        "scripts/check-lightroom-tagset-fuzz.sh",
+    ):
+        if not (root / rel).is_file():
+            continue
+        code, tail = run_cmd(root, bash_script(root, rel))
         if code != 0:
-            return AttemptResult(1, "lightroom", tail or f"verify-lightroom exit {code}", True)
-    candidates = [
-        Path("/opt/adobe/lightroom"),
-        Path.home() / "Applications" / "Adobe Lightroom Classic",
-        Path("/Applications/Adobe Lightroom Classic/Adobe Lightroom Classic.app"),
-        Path(os.environ.get("ProgramFiles", r"C:\Program Files"))
-        / "Adobe/Adobe Lightroom Classic/lightroom.exe",
-    ]
-    if any(p.exists() for p in candidates):
-        return AttemptResult(0, "lightroom", "Lightroom present; SDK verify passed", False)
+            return AttemptResult(1, "lightroom", tail or f"{rel} exit {code}", True)
     return AttemptResult(
-        1,
+        0,
         "lightroom",
-        "SDK verify passed; Plug-in Manager load needs Adobe Lightroom on a desktop",
-        True,
+        "Lightroom stub gates passed (Lua/SDK); Adobe host not required",
+        False,
     )

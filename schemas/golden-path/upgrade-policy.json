@@ -1,6 +1,7 @@
 {
   "rules": [
     {"glob": "AGENTS.md", "policy": "sacred", "owner": "HUMAN"},
+    {"glob": "AGENT.md", "policy": "sacred", "owner": "HUMAN"},
     {"glob": "docs/INITIALIZATION_PROMPT.md", "policy": "sacred", "owner": "HUMAN"},
     {"glob": "docs/spec.md", "policy": "sacred", "owner": "HUMAN"},
     {"glob": "docs/plan.md", "policy": "sacred", "owner": "HUMAN"},
@@ -19,6 +20,9 @@
     {"glob": ".cursor/commands/", "policy": "canon", "owner": "AGENT"},
     {"glob": "docs/CURSOR_MODES.md", "policy": "canon", "owner": "AGENT"},
     {"glob": "docs/help/", "policy": "canon", "owner": "AGENT"},
+    {"glob": "docs/ux-ui-guidelines.md", "policy": "canon", "owner": "AGENT"},
+    {"glob": "docs/adr/0007-ux-inventory.md", "policy": "canon", "owner": "AGENT"},
+    {"glob": "docs/adr/0008-agent-venue.md", "policy": "canon", "owner": "AGENT"},
     {"glob": "docs/BATCH_COMMANDS.md", "policy": "canon", "owner": "AGENT"},
     {"glob": "CODE_REVIEW.md.example", "policy": "canon", "owner": "AGENT"},
     {"glob": "RELEASE_NOTES.md.example", "policy": "canon", "owner": "AGENT"},

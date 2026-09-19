@@ -130,7 +130,7 @@ def report(root: Path, *, compare=None, latest_fn=None) -> dict:
             "required": stack == name,
             "docs": "docs/OPTIONAL_STACKS.md",
         }
-        for name in ("rust", "go", "lightroom")
+        for name in ("rust", "go", "lightroom", "blender")
     ]
     return {
         "ok": not skip, "current": version, "latest": latest, "stack": stack,

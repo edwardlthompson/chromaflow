@@ -395,6 +395,26 @@ console.log('ok');
         self.assertIn("_unit_live", py)
         self.assertIn("is-active", py)
 
+    def test_update_helper_refuses_bad_path(self) -> None:
+        helper = (ROOT / "scripts" / "install-update.sh").read_text(encoding="utf-8")
+        deb = (ROOT / "scripts" / "build-chromaflow-deb.sh").read_text(encoding="utf-8")
+        self.assertNotIn("systemctl stop", helper)
+        self.assertNotIn("set_pwm", helper)
+        self.assertNotIn("pkill", helper)
+        self.assertIn("CHROMAFLOW_SKIP_SESSION=1", helper)
+        self.assertIn('CHROMAFLOW_SKIP_SESSION:-}" != "1"', deb)
+        policy = (ROOT / "packaging/polkit/org.chromaflow.install-update.policy").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("/usr/libexec/chromaflow/install-update.sh", policy)
+        proc = subprocess.run(
+            ["sh", str(ROOT / "scripts" / "install-update.sh")],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(proc.returncode, 2)
+
     def _trap_dir(self) -> Path:
         trap = ROOT / "target" / "support-trap"
         trap.mkdir(parents=True, exist_ok=True)

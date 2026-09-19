@@ -15,6 +15,7 @@ use chromaflow_core::pwm_curves;
 use chromaflow_core::pwm_daemon;
 use chromaflow_core::refuse_if_root;
 use chromaflow_core::support;
+use chromaflow_core::update_fetch;
 use chromaflow_core::{collect_cooling, collect_inventory};
 use serde_json::Value;
 use std::path::PathBuf;
@@ -171,6 +172,18 @@ fn lighting_hid_serial(path: String) -> Result<Value, String> {
 }
 
 #[tauri::command]
+fn update_check() -> Result<Value, String> {
+    refuse_if_root()?;
+    Ok(update_fetch::check_now())
+}
+
+#[tauri::command]
+fn update_install() -> Result<Value, String> {
+    refuse_if_root()?;
+    update_fetch::install_now()
+}
+
+#[tauri::command]
 fn open_url(url: String) -> Result<Value, String> {
     refuse_if_root()?;
     if !url.starts_with("https://github.com/edwardlthompson/chromaflow/") {
@@ -263,6 +276,8 @@ fn main() {
             support_apply,
             competitors_plan,
             competitors_remove,
+            update_check,
+            update_install,
             inventory,
             hardware_gauges,
             lighting_preview,

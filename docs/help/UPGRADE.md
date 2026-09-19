@@ -22,6 +22,6 @@ Read docs/help/UPGRADE.md and report template gaps for this repo. Do not edit fi
 
 ## Sacred (never blind-overwrite)
 
-`AGENTS.md`, `docs/spec.md`, `docs/plan.md`, `docs/INITIALIZATION_PROMPT.md`, live `.env`, live `scratchpad.md`, `LICENSE`, product `examples/`.
+`AGENTS.md`, `AGENT.md`, `docs/spec.md`, `docs/plan.md`, `docs/INITIALIZATION_PROMPT.md`, live `.env`, live `scratchpad.md`, `LICENSE`, product `examples/`.
 
 See [`AGENT_PORTABILITY.md`](../AGENT_PORTABILITY.md) if your tool has no slash commands.

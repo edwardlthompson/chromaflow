@@ -66,6 +66,10 @@ class SprintSmokeTests(unittest.TestCase):
         self.assertEqual(backtick_paths("Skills for `/emulator` and `/adr`"), [])
         self.assertEqual(backtick_paths("`/tour` + COACH: Settings-only chrome"), [])
         self.assertEqual(backtick_paths("Land `docs/GROK_BOTS.md` on main"), ["docs/GROK_BOTS.md"])
+        self.assertEqual(
+            backtick_paths("markers `<!-- ux-inventory:begin/end -->` on `BUILD_PLAN.md`"),
+            ["BUILD_PLAN.md"],
+        )
 
     def test_docs_probe_resolves_catalog_basename(self) -> None:
         self.assertTrue(probe_docs(ROOT, ["feature-catalog.json"]).ok)

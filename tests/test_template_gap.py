@@ -29,6 +29,7 @@ class TemplateGapTests(unittest.TestCase):
     def test_sacred_never_in_apply(self) -> None:
         sacred = (
             "AGENTS.md",
+            "AGENT.md",
             "docs/spec.md",
             "docs/plan.md",
             "docs/INITIALIZATION_PROMPT.md",
@@ -141,7 +142,7 @@ class TemplateGapTests(unittest.TestCase):
             )
             data = report(root, compare=lambda *_a, **_k: ([], ""), latest_fn=lambda _u: ("0.26.0", ""))
             rows = data["optional_stacks"]
-            self.assertEqual({r["id"] for r in rows}, {"rust", "go", "lightroom"})
+            self.assertEqual({r["id"] for r in rows}, {"rust", "go", "lightroom", "blender"})
             self.assertTrue(all(r["required"] is False for r in rows))
             self.assertNotIn("lightroom-plugin", {g["id"] for g in data["features"]})
 

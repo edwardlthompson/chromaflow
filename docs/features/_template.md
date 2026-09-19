@@ -5,6 +5,9 @@
 ## Acceptance criteria
 
 - 🔲 User-visible behavior: _describe the happy path_
+- 🔲 Named primary CTA (one per view)
+- 🔲 Empty state (why empty + next action)
+- 🔲 Error / loading (and permission-denied if the slice can deny)
 - 🔲 Offline/error behavior: _describe degraded mode_
 - 🔲 Accessibility: _keyboard/screen reader expectations (web/Android)_
 - 🔲 i18n: keys added under `{feature}.*` (web `locales/`, Android `strings.xml`)

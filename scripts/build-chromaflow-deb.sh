@@ -53,6 +53,7 @@ install -m 0644 "$ROOT/apps/desktop/src-tauri/icons/48x48.png" "$STAGE/usr/share
 install -m 0644 "$ROOT/apps/desktop/src-tauri/icons/32x32.png" "$STAGE/usr/share/icons/hicolor/32x32/apps/chromaflow.png"
 install -m 0644 "$ROOT/apps/desktop/src-tauri/icons/16x16.png" "$STAGE/usr/share/icons/hicolor/16x16/apps/chromaflow.png"
 install -m 0755 "$ROOT/scripts/install-support.sh" "$STAGE/usr/libexec/chromaflow/install-support.sh"
+install -m 0755 "$ROOT/scripts/install-update.sh" "$STAGE/usr/libexec/chromaflow/install-update.sh"
 install -m 0755 "$ROOT/scripts/manage-competitors.sh" "$STAGE/usr/libexec/chromaflow/manage-competitors.sh"
 install -m 0755 "$ROOT/packaging/pwm-failsafe.sh" "$STAGE/usr/libexec/chromaflow/pwm-failsafe.sh"
 install -m 0755 "$ROOT/packaging/pwm-acl.sh" "$STAGE/usr/libexec/chromaflow/pwm-acl.sh"
@@ -75,6 +76,8 @@ install -m 0644 "$ROOT/packaging/polkit/org.chromaflow.install-support.policy" \
   "$STAGE/usr/share/polkit-1/actions/org.chromaflow.install-support.policy"
 install -m 0644 "$ROOT/packaging/polkit/org.chromaflow.competitors.policy" \
   "$STAGE/usr/share/polkit-1/actions/org.chromaflow.competitors.policy"
+install -m 0644 "$ROOT/packaging/polkit/org.chromaflow.install-update.policy" \
+  "$STAGE/usr/share/polkit-1/actions/org.chromaflow.install-update.policy"
 cat > "$STAGE/DEBIAN/control" <<EOF
 Package: chromaflow
 Version: $VER
@@ -99,7 +102,7 @@ fi
 if command -v gtk-update-icon-cache >/dev/null 2>&1; then
   gtk-update-icon-cache -q /usr/share/icons/hicolor || true
 fi
-if [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ]; then
+if [ "${CHROMAFLOW_SKIP_SESSION:-}" != "1" ] && [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ]; then
   uid=$(id -u "$SUDO_USER" 2>/dev/null) || uid=""
   if [ -n "$uid" ] && [ -x /usr/libexec/chromaflow/enable-session.sh ]; then
     sudo -u "$SUDO_USER" env \

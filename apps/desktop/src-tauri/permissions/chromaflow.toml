@@ -6,7 +6,7 @@ commands.allow = ["inventory", "hardware_gauges"]
 [[permission]]
 identifier = "allow-support-dry-run"
 description = "Support dry-run plan"
-commands.allow = ["support_dry_run"]
+commands.allow = ["support_dry_run", "update_check", "update_install"]
 
 [[permission]]
 identifier = "allow-support-apply"

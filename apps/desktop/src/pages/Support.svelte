@@ -6,6 +6,7 @@
   import { failLines } from "../lib/failLines.js";
   import ExtraList from "../lib/ExtrasList.svelte";
   import { confirmTakeover } from "../lib/pwm.js";
+  import { checkForUpdate, applyUpdate, statusText } from "../lib/updates.js";
   import { VERSION } from "../lib/version.js";
   import competitorFixture from "../fixtures/competitors.json";
 
@@ -23,6 +24,8 @@
   let competitorPlan = competitorFixture;
   let competitorMsg = "";
   let primed = false;
+  let updateMsg = "";
+  let updateBusy = false;
 
   $: extras = extraKernelItems(plan);
   $: fail = failLines(error);
@@ -154,6 +157,22 @@
     if (isTauri()) await invoke("open_url", { url: VENMO });
     else if (typeof window !== "undefined") window.open(VENMO, "_blank", "noopener");
   }
+
+  async function runUpdate() {
+    updateBusy = true;
+    updateMsg = t["support.updateChecking"];
+    try {
+      const report = await checkForUpdate();
+      const next = report && report.status === "available"
+        ? await applyUpdate(report, { confirm: t["support.updateConfirm"] }, true)
+        : report;
+      updateMsg = statusText(next, t);
+    } catch (err) {
+      updateMsg = String(err || t["support.updateOffline"]);
+    } finally {
+      updateBusy = false;
+    }
+  }
 </script>
 
 <h1 class="visually-hidden">{t["support.title"]}</h1>
@@ -206,6 +225,16 @@
       <p class="status" role="status">{competitorMsg}</p>
     {/if}
   </details>
+</div>
+<div class="card">
+  <p>
+    <button type="button" class="btn-secondary" on:click={runUpdate} disabled={updateBusy}>
+      {t["support.update"]}
+    </button>
+  </p>
+  {#if updateMsg}
+    <p class="status" role="status">{updateMsg}</p>
+  {/if}
 </div>
 <div class="card">
   <details>

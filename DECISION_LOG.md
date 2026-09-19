@@ -15,6 +15,29 @@
 
 ```
 
+### 2026-09-18 — Ship 0.2.2 without merging template Release Please
+
+- **Status:** Accepted
+- **Context:** `/ship` after the GitHub update checker and the 1.8.0 template pin. Release Please dry-run still sees template release `v1.5.0` and opened no product PR. `upd audit --check` remains exit 6 on Medium `glib` 0.18.5.
+- **Decision:** Tag `v0.2.2` from CHANGELOG. Do not merge a template Release Please PR. Do not bump gtk-rs. Do not apply the bogus CodeQL tag `vcodeql-bundle-v2.27.0`.
+- **Alternatives considered:** Merge Release Please (rejected: that publishes the template version, not ChromaFlow).
+- **Consequences:** GitHub Release `v0.2.2` should include the amd64 `.deb` from the `linux-deb` job. PWM path unchanged.
+
+### 2026-09-18 — In-app GitHub deb updates
+
+- **Status:** Accepted
+- **Context:** Support needs a check button, every launch should look for a newer release, and Linux installs must come from a `.deb` on the GitHub Release.
+- **Decision:** Compare `CARGO_PKG_VERSION` to `releases/latest`. Download only the pinned `chromaflow_X.Y.Z_amd64.deb` after its `sha256` digest matches. `pkexec` runs `/usr/libexec/chromaflow/install-update.sh`. `CHROMAFLOW_SKIP_SESSION=1` skips starting a second GUI. The release workflow uploads the deb when a release is published and refuses a tag that is not the CHANGELOG version.
+- **Alternatives considered:** Open the asset in the browser only (rejected: the user asked to update from the GitHub download). `dpkg` from the GUI (rejected: the GUI must not be root).
+- **Consequences:** v0.2.1 has no deb, so the first installable check is the next published release. PWM path unchanged.
+
+### 2026-09-18 — Catch up child template 1.4.0 → 1.8.0
+- **Status:** Accepted
+- **Context:** `/build` on 176 parent-template file gaps. Canon files and Mixed files that still matched v1.4.0 were copied from tag `v1.8.0`. Diverged product files were not replaced.
+- **Decision:** Bump `.template-version` and `.release-please-manifest.json` to `1.8.0`. Keep ChromaFlow `CHANGELOG.md`, `BUILD_PLAN.md`, `README.md`, `AGENT_MEMORY.md`, `DECISION_LOG.md`, `COMPLETED_TASKS.md`, `KNOWLEDGE_BASE.md`, `CITATION.cff` title/abstract, `branding/BRANDING.md` locked-PNG rows, and the pruned CodeQL matrix (no `java-kotlin` job). `ci.yml` takes `setup-java@v6` and keeps the Android `hashFiles` guard.
+- **Alternatives considered:** Byte-copy every Mixed file (rejected: wipes product history and the live board). Leave `.template-version` at 1.4.0 (rejected: gap compare would list already-copied files forever).
+- **Consequences:** Sacred `examples/` and `AGENTS.md` / `docs/spec.md` stay `[HUMAN]`. PWM path unchanged. Do not merge a template Release Please PR.
+
 ### 2026-09-14 — Ship 0.2.1 without merging template 1.5.0
 - **Status:** Accepted
 - **Context:** `/ship` dry-run Release Please wanted `chore(main): release 1.5.0` from `.template-version` 1.4.0. Product GitHub Release is CHANGELOG `0.2.1`. Local `upd audit --check` is still red on Medium `glib` 0.18.5 (gtk-rs 0.20) and unmaintained unic crates; no High/Critical.
