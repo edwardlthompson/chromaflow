@@ -61,8 +61,6 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: "22"
-          cache: npm
-          cache-dependency-path: apps/desktop/package-lock.json
 
       - name: WebKit/GTK (Tauri 2)
         run: |
@@ -81,8 +79,8 @@ jobs:
       - name: Build and upload amd64 deb
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
         run: |
-          TAG="${{ github.event.release.tag_name }}"
           VERSION="$(bash scripts/product-release-version.sh)"
           if [ "$TAG" != "v$VERSION" ]; then
             echo "Tag $TAG does not match CHANGELOG product version ($VERSION)"
