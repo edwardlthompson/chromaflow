@@ -1,7 +1,7 @@
 # Build Plan
 
 <!-- remaining-tally -->
-**Remaining:** AGENT 0 · LOCAL 0 · CLOUD 0 · AUTO 0 · HUMAN 19 · ADB 0 · **19 open**
+**Remaining:** AGENT 1 · LOCAL 1 · CLOUD 0 · AUTO 2 · HUMAN 19 · ADB 0 · **22 open**
 <!-- /remaining-tally -->
 
 Live board for ChromaFlow. Finished work: [`COMPLETED_TASKS.md`](COMPLETED_TASKS.md). Catalog vs original brief: [`docs/PRODUCT_GAPS.md`](docs/PRODUCT_GAPS.md).
@@ -53,7 +53,9 @@ python3 scripts/agent-run.py smoke-sprint --require
 > Auto-managed. Do not hand-edit rows inside the markers.
 
 <!-- open-prs-sync:begin -->
-_No open Dependabot or Release Please PRs._
+- 🔲 [AUTO] Merge Dependabot [#13](https://github.com/edwardlthompson/chromaflow/pull/13) (chore(deps-dev): bump the web-dependencies group in /examples/web with 2 updates)
+- 🔲 [AUTO] Merge Dependabot [#12](https://github.com/edwardlthompson/chromaflow/pull/12) (chore(deps-dev): bump @tauri-apps/cli from 2.11.4 to 2.11.5 in /apps/desktop in the chromaflow-desktop group)
+- 🔲 [AGENT][LOCAL] Merge release [#10](https://github.com/edwardlthompson/chromaflow/pull/10) (chore(main): release 1.9.0) — scope: .
 <!-- open-prs-sync:end -->
 
 ### Template gaps (synced)
