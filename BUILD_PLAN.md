@@ -1,7 +1,7 @@
 # Build Plan
 
 <!-- remaining-tally -->
-**Remaining:** AGENT 0 · LOCAL 0 · CLOUD 0 · AUTO 0 · HUMAN 19 · ADB 0 · **19 open**
+**Remaining:** AGENT 1 · LOCAL 1 · CLOUD 0 · AUTO 9 · HUMAN 19 · ADB 0 · **29 open**
 <!-- /remaining-tally -->
 
 Live board for ChromaFlow. Finished work: [`COMPLETED_TASKS.md`](COMPLETED_TASKS.md). Catalog vs original brief: [`docs/PRODUCT_GAPS.md`](docs/PRODUCT_GAPS.md).
@@ -53,7 +53,16 @@ python3 scripts/agent-run.py smoke-sprint --require
 > Auto-managed. Do not hand-edit rows inside the markers.
 
 <!-- open-prs-sync:begin -->
-_No open Dependabot or Release Please PRs._
+- 🔲 [AUTO] Merge Dependabot [#47](https://github.com/edwardlthompson/chromaflow/pull/47) (chore(deps-dev): bump proxy-addr from 2.0.7 to 2.0.8 in /examples/web)
+- 🔲 [AUTO] Merge Dependabot [#44](https://github.com/edwardlthompson/chromaflow/pull/44) (chore(deps): bump the github-actions group across 1 directory with 2 updates)
+- 🔲 [AUTO] Merge Dependabot [#41](https://github.com/edwardlthompson/chromaflow/pull/41) (chore(deps-dev): bump the web-dependencies group across 1 directory with 7 updates)
+- 🔲 [AUTO] Merge Dependabot [#40](https://github.com/edwardlthompson/chromaflow/pull/40) (chore(deps): bump the chromaflow-rust group across 1 directory with 3 updates)
+- 🔲 [AUTO] Merge Dependabot [#38](https://github.com/edwardlthompson/chromaflow/pull/38) (chore(deps): bump the chromaflow-desktop group across 1 directory with 5 updates)
+- 🔲 [AUTO] Merge Dependabot [#30](https://github.com/edwardlthompson/chromaflow/pull/30) (chore(deps): bump devalue from 5.9.2 to 5.9.4 in /apps/desktop)
+- 🔲 [AUTO] Merge Dependabot [#28](https://github.com/edwardlthompson/chromaflow/pull/28) (chore(deps-dev): bump undici from 7.29.0 to 7.30.0 in /examples/web)
+- 🔲 [AUTO] Merge Dependabot [#20](https://github.com/edwardlthompson/chromaflow/pull/20) (chore(deps-dev): bump js-yaml from 5.2.3 to 5.4.2 in /examples/web)
+- 🔲 [AUTO] Merge Dependabot [#18](https://github.com/edwardlthompson/chromaflow/pull/18) (chore(deps-dev): bump ip-address from 10.5.0 to 10.7.2 in /examples/web)
+- 🔲 [AGENT][LOCAL] Merge release [#10](https://github.com/edwardlthompson/chromaflow/pull/10) (chore(main): release 1.9.0) — scope: .
 <!-- open-prs-sync:end -->
 
 ### Template gaps (synced)
