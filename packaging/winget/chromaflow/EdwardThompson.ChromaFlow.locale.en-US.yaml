@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
 PackageIdentifier: EdwardThompson.ChromaFlow
-PackageVersion: 0.2.2
+PackageVersion: 1.0.0
 PackageLocale: en-US
 Publisher: Edward Thompson
 PackageName: ChromaFlow

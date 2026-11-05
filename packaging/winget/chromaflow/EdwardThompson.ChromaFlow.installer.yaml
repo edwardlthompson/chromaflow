@@ -1,15 +1,15 @@
 # yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
 # InstallerSha256 filled by scripts/publish-winget-hashes.sh after Release assets exist.
 PackageIdentifier: EdwardThompson.ChromaFlow
-PackageVersion: 0.2.2
+PackageVersion: 1.0.0
 InstallerLocale: en-US
 InstallerType: nullsoft
 Installers:
   - Architecture: x64
-    InstallerUrl: https://github.com/edwardlthompson/chromaflow/releases/download/v0.2.2/ChromaFlow_0.2.2_x64-setup.exe
+    InstallerUrl: https://github.com/edwardlthompson/chromaflow/releases/download/v1.0.0/ChromaFlow_1.0.0_x64-setup.exe
     InstallerSha256: 0000000000000000000000000000000000000000000000000000000000000000
   - Architecture: arm64
-    InstallerUrl: https://github.com/edwardlthompson/chromaflow/releases/download/v0.2.2/ChromaFlow_0.2.2_arm64-setup.exe
+    InstallerUrl: https://github.com/edwardlthompson/chromaflow/releases/download/v1.0.0/ChromaFlow_1.0.0_arm64-setup.exe
     InstallerSha256: 0000000000000000000000000000000000000000000000000000000000000000
 ManifestType: installer
 ManifestVersion: 1.6.0
