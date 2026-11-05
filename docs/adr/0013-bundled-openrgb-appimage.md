@@ -13,7 +13,7 @@ Keychron, GPU, and Aorus lighting on this product talk to the OpenRGB SDK on `12
 - OpenRGB ships as a **separate GPL AppImage** (not in git, no Git LFS). ChromaFlow never pastes C++ and never links in-process.
 - The Mint `.deb` installs that file at `/usr/libexec/chromaflow/OpenRGB.AppImage` (hashed fetch at package build). Pin HTTPS URL + sha256 + max size in `data/openrgb-engine.yaml`.
 - `chromaflow daemon --sdk` (user unit `chromaflow-sdk.service`) reuses a live `127.0.0.1:6742` server or spawns the first allowed binary: `CHROMAFLOW_OPENRGB`, `/usr/libexec/chromaflow/OpenRGB.AppImage`, `~/.local/share/chromaflow/OpenRGB.AppImage`, then PATH `openrgb` only if [openrgb_sandbox.rs](../../crates/chromaflow-core/src/openrgb_sandbox.rs) reports no bwrap. Never Flatpak, bwrap, or Wine.
-- Args: `--server --server-host 127.0.0.1 --noautoconnect --startminimized`. Do **not** set `QT_QPA_PLATFORM=offscreen`. Do **not** install an OpenRGB `.desktop`.
+- Args: `--server --server-host 127.0.0.1 --server-port 6742 --noautoconnect` (shared with Windows private engine; never `--startminimized`, which implies `--gui` + tray — see [ADR-0023](0023-gpl3-private-openrgb-engine.md)). Do **not** set `QT_QPA_PLATFORM=offscreen`. Do **not** install an OpenRGB `.desktop`.
 - Unprivileged. Pid file + SDK mutex + in-flight flag. Do not kill the sibling on GUI exit. `CHROMAFLOW_NO_SPAWN=1` in cargo/pytest.
 - User-space install writes `.part`, enforces 60s / size / sha256, atomic rename, `chmod 0755`. No pkexec. User unit `chromaflow-sdk.service` is `chromaflow daemon --sdk`.
 

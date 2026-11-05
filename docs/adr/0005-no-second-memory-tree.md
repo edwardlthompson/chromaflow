@@ -12,7 +12,7 @@ Agent tooling ecosystems invent parallel “memory” files (`.agents/agents.md`
 
 1. **`AGENTS.md` is the only project law.** Adapters (`.cursor/rules/main.mdc`, `CLAUDE.md`, …) are generated pointers — never a second rule source.
 2. **Do not add `.agents/agents.md`** (or siblings) as canon. If a tool requires that path, make it a thin pointer to `AGENTS.md` after human approval — not a fork.
-3. **Living memory stays thin:** `AGENT_MEMORY.md` only at milestones; session scratch is gitignored (`.cursor-session-state.json`). ADRs under `docs/adr/` record decisions — they are not a competing agent bible.
+3. **Living memory stays thin:** `.agent/AGENT_MEMORY.md` only at milestones; session scratch is gitignored (`.cursor-session-state.json`). ADRs under `docs/adr/` record decisions — they are not a competing agent bible.
 4. **`/adr` keeps files under 150 lines** and must not invent another memory tree (`docs/help/ADR.md`).
 
 ## Alternatives considered

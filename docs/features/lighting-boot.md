@@ -5,7 +5,8 @@
 ## Acceptance criteria
 
 - ✅ User-visible behavior: after login, Lighting lists the NVIDIA controller when `/dev/nvidia0` exists and does not park Keychron VID `3434` under Uncontrolled once OpenRGB names include `keychron` or `q6`
-- ✅ Offline/error behavior: missing X socket waits 20s then still spawns; missing OpenRGB binary is a no-op; PWM watchdog is never restarted
+- ✅ User-visible behavior: after GUI start (any tab), last Lighting `lastColor`/`lastMode` from `session.json` are pushed once to devices (`reapplyFromInventory`); Windows logon starts `chromaflow-gui` via HKCU Run
+- ✅ Offline/error behavior: missing X socket waits 20s then still spawns; missing OpenRGB binary is a no-op; PWM watchdog is never restarted; empty session skips reapply; engine-late retries then quiet give-up
 - ✅ Accessibility: Uncontrolled list still uses the existing research heading; no new unlabeled controls
 - ✅ i18n: reuse `lighting.research` (no new strings)
 
@@ -21,13 +22,13 @@
 |-------|------|
 | Units | `packaging/chromaflow-sdk.service` `packaging/chromaflow-gui.service` `packaging/enable-session.sh` |
 | Logic | `crates/chromaflow-core/src/openrgb_boot.rs` `crates/chromaflow-core/src/openrgb_spawn.rs` |
-| View | `apps/desktop/src/App.svelte` `apps/desktop/src/lib/research.js` |
+| View | `apps/desktop/src/App.svelte` `apps/desktop/src/lib/research.js` `apps/desktop/src/lib/lightingBoot.js` |
 | Tests | `tests/test_chromaflow_daemon.py` `tests/test_chromaflow_lighting.py` |
 | Decision | `docs/adr/0019-lighting-sdk-graphical-session.md` |
 
 ## Tests
 
-- Automated: yes — unit files `WantedBy=graphical-session.target` + SDK `DISPLAY=`; `thin_sdk`; Q6 substring; `skipPoll` uses `researchDevices`; `restart_sdk_once` with `CHROMAFLOW_NO_SPAWN`; no `set_pwm`
+- Automated: yes — unit files `WantedBy=graphical-session.target` + SDK `DISPLAY=`; `thin_sdk`; Q6 substring; `skipPoll` uses `researchDevices`; `restart_sdk_once` with `CHROMAFLOW_NO_SPAWN`; no `set_pwm`; source gates for `reapplyFromInventory` / `scheduleBootReapply`
 - Coverage: no-hid/no-nvidia skips restart; `chromaflowd` stays `WantedBy=default.target`
 
 ## Fallback validation

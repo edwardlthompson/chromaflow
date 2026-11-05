@@ -54,7 +54,7 @@ If processing EU personal data:
 - 🔲 Document processing purpose and legal basis
 - 🔲 Assess necessity and proportionality
 - 🔲 Identify risks and mitigations
-- 🔲 Record in `DECISION_LOG.md` or ADR
+- 🔲 Record in `.agent/DECISION_LOG.md` or ADR
 
 ## Contact
 

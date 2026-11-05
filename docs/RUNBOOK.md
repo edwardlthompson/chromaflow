@@ -31,7 +31,7 @@ Static PWAs and CLIs may skip HTTP endpoints; document stack-specific checks ins
 
 1. Revert to previous release tag or artifact
 2. Confirm health checks pass
-3. Log incident in `DECISION_LOG.md` if user-impacting
+3. Log incident in `.agent/DECISION_LOG.md` if user-impacting
 
 Android APK/AAB signing and store rollback: [`docs/ANDROID_SIGNING.md`](ANDROID_SIGNING.md).
 
@@ -71,4 +71,4 @@ When credentials leak or a team member with access leaves:
 2. **`[AGENT]`** Rotate secrets in GitHub Environments and local `.env` (never commit)
 3. **`[AGENT]`** Update `.env.example` if variable names changed
 4. **`[AUTO]`** Re-run CI with new secrets; confirm deploy health checks pass
-5. **`[HUMAN]`** Log incident in `DECISION_LOG.md`; link advisory if CVE-related
+5. **`[HUMAN]`** Log incident in `.agent/DECISION_LOG.md`; link advisory if CVE-related

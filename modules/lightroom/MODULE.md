@@ -13,7 +13,7 @@
 - 🔲 No direct OS system calls outside SDK boundaries
 - 🔲 Configure `Info.lua` with correct `.lrplugin` wrapper parameters
 - 🔲 Set up `LrLogger` for structured debug output
-- 🔲 Document SDK version compatibility in AGENT_MEMORY.md
+- 🔲 Document SDK version compatibility in .agent/AGENT_MEMORY.md
 - 🔲 Add Lua lint rules if applicable (`scripts/check-lightroom-lua.sh`)
 
 ## Golden Path Reference

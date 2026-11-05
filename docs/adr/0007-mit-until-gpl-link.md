@@ -1,6 +1,6 @@
 # ADR-0007: MIT until an in-process GPL link
 
-- **Status:** Accepted
+- **Status:** Superseded by [ADR-0023](0023-gpl3-private-openrgb-engine.md)
 - **Date:** 2026-09-11
 - **Deciders:** ChromaFlow sprint 0
 
@@ -23,7 +23,6 @@ Ship **MIT** + [`NOTICE`](../../NOTICE). Treat `openrgb` and `liquidctl` as opti
 |-------|------------|
 | Calling GPL binaries from MIT | Documented as separate works in NOTICE |
 | Accidental paste of NetworkClient.cpp | This milestone only TCP-connects localhost; no protocol dump from OpenRGB sources |
-
 ## Consequences
 
 `[HUMAN]` must approve any copyleft crate. Relicense ADR required before in-process OpenRGB.

@@ -66,7 +66,7 @@ def load_progress(root: Path) -> dict:
 
 
 def load_backlog_keys(root: Path) -> set[str]:
-    path = root / "HUMAN_BACKLOG.md"
+    path = root / ".agent/HUMAN_BACKLOG.md"
     if not path.exists():
         return set()
     keys: set[str] = set()

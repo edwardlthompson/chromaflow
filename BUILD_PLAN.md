@@ -66,7 +66,7 @@ _No template gaps; .template-version matches upstream (or template maintainer N/
 
 ### Sacred files (human)
 
-These stay open. Do not copy them from the parent template. See `HUMAN_BACKLOG.md`.
+These stay open. Do not copy them from the parent template. See `.agent/HUMAN_BACKLOG.md`.
 
 - 🔲 [HUMAN] Sacred: AGENTS.md (never blind-overwrite)
 - 🔲 [HUMAN] Sacred: docs/INITIALIZATION_PROMPT.md (never blind-overwrite)

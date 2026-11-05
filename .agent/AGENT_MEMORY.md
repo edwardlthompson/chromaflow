@@ -163,7 +163,7 @@ Golden Path Settings/About/Feedback are a route stack, not three booleans. Web H
 
 ### Retrospective — 2026-09-14 (Sprint 35)
 
-- AGENT rows (Fusion HID apply without hidraw/liquidctl; CHANGELOG product SBOM tag) ✅ and smoked. HUMAN land Unreleased stays on the board (`HUMAN_BACKLOG.md`). CPU usage on motherboard/AIO is host-ticked; Cycle All no longer overwrites Fusion.
+- AGENT rows (Fusion HID apply without hidraw/liquidctl; CHANGELOG product SBOM tag) ✅ and smoked. HUMAN land Unreleased stays on the board (`.agent/HUMAN_BACKLOG.md`). CPU usage on motherboard/AIO is host-ticked; Cycle All no longer overwrites Fusion.
 
 ### Retrospective — 2026-09-13 (Sprint 32)
 

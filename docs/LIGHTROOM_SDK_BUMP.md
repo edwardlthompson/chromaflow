@@ -27,7 +27,7 @@ Do not bump because a beta build exists, or because CI is bored. After the edit,
 3. Update the README compatibility table to the same numbers (bold the target SDK).
 4. Run `bash scripts/check-lightroom-sdk-playbook.sh` and `bash scripts/check-lightroom-lua.sh`.
 5. Optional: File → Plug-in Manager → Add (or Reload) if Adobe Classic is on the machine.
-6. Note the new pair in `AGENT_MEMORY.md` on child repos (this template already documents 13.0 / 6.0).
+6. Note the new pair in `.agent/AGENT_MEMORY.md` on child repos (this template already documents 13.0 / 6.0).
 
 `scripts/check-lightroom-sdk-playbook.sh` fails when the README table drifts from `Info.lua`.
 

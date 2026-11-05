@@ -69,6 +69,6 @@ When the next template tag ships (for example `1.2.1` / `1.3.0`), children typic
 2. Human named item numbers
 3. Canon/Mixed applied; Sacred left alone
 4. `python3 scripts/agent-run.py validate-bootstrap --quick` green
-5. One `DECISION_LOG.md` entry for the upgrade
+5. One `.agent/DECISION_LOG.md` entry for the upgrade
 
 Policy table: [`UPGRADING_FROM_TEMPLATE.md`](../UPGRADING_FROM_TEMPLATE.md).

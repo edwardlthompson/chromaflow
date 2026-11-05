@@ -12,7 +12,7 @@ Read @docs/CURSOR_MODES.md and @docs/INITIALIZATION_PROMPT.md Section 7b.
 
 ## Step 1 — Playbook
 
-Check @KNOWLEDGE_BASE.md and @docs/FOR_AGENTS.md Failure Playbook.
+Check @.agent/KNOWLEDGE_BASE.md and @docs/FOR_AGENTS.md Failure Playbook.
 
 ## Step 2 — Repro, then Agent
 

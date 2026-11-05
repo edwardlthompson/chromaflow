@@ -1,7 +1,15 @@
 # Hardware detection (Linux vs Windows OpenRGB)
 
-ChromaFlow does not claim to match Windows OpenRGB device counts by “scanning harder.” Typical gaps are **permissions, missing kernel modules, or no Linux control channel**.
+ChromaFlow does not claim to match Windows OpenRGB device counts by “scanning harder.” Typical gaps are **permissions, missing kernel modules, or no Linux control channel**. On Windows, motherboard PWM uses SuperIO LPC via the elevated helper (ADR-0022), not hwmon sysfs.
 
+## Windows cooling / lighting gaps
+
+| Gap id | What happened | What ChromaFlow does |
+|--------|---------------|----------------------|
+| `windows_lpc` | LPC helper / PawnIO missing | Support lists install steps; `CHROMAFLOW_LPC_MOCK=1` for UI fixtures |
+| `superio_probe_empty` | Helper up but no ITE/Nuvoton found | Honest empty Cooling list; do not invent headers. Install All suppresses EasyTune/Fan Control autostart; clears Gigabyte FW via IsaBridge `0x947` and ECIO `0x3F4`/`0x3F0` fallback; still no fake PWM if IDs stay `0xFFFF`. Fan Control may show saved `/lpc/it*` cards while its log reports those sensors missing |
+| exclusive HID | iCUE / Armoury holds USB | Conflicts banner; quit competing apps |
+| OpenRGB.exe missing | Sibling engine not installed | Spawn path looks under Program Files and LocalAppData |
 ## Why OpenRGB often sees more on Windows
 
 | Gap id | What happened | What ChromaFlow does |
@@ -45,4 +53,4 @@ Lighting **Uncontrolled devices** → **Report** opens a GitHub issue labelled `
 
 ## Conflicts
 
-If `fancontrol`, `coolercontrold`, or `fan2go` is enabled or running, inventory sets `conflicts[]`. This milestone only warns. A future daemon must not take PWM without an explicit confirm.
+If a competing controller is running (or installed on Windows), inventory sets `conflicts[]` to **friendly app names** (for example Fan Control, CoolerControl, ASUS Armoury Crate, Corsair iCUE). The Cooling banner and Support → Competing controllers tell the user to quit and uninstall those apps. ChromaFlow will not take PWM while conflicts are present.

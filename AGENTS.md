@@ -6,8 +6,8 @@
 4. **Bootstrap mode:** `docs/INITIALIZATION_PROMPT.md`
 5. **Reference mode:** `docs/FOR_AGENTS.md` + `TEMPLATE_INDEX.json`
 6. **Task board:** `BUILD_PLAN.md` (this template’s live board). Child products copy `BUILD_PLAN_TEMPLATE.md`. Status: 🔲 open · ✅ done · ❌ blocked
-7. **Parallel dispatch:** parallel-first BUILD_PLAN; `/build` automates HUMAN/ADB first, backlogs failures to `HUMAN_BACKLOG.md`, never halts on human labels — `scripts/build-sprint-status.sh --lane auto` (child playbook on product repos; Template Maintainer board on this template)
-8. **Living memory:** update `AGENT_MEMORY.md` only at milestone boundaries
+7. **Parallel dispatch:** parallel-first BUILD_PLAN; `/build` automates HUMAN/ADB first, backlogs failures to `.agent/HUMAN_BACKLOG.md`, never halts on human labels — `scripts/build-sprint-status.sh --lane auto` (child playbook on product repos; Template Maintainer board on this template)
+8. **Living memory:** update `.agent/AGENT_MEMORY.md` only at milestone boundaries
 
 > Legacy `.cursorrules` is deprecated. Use `.cursor/rules/*.mdc` and this file instead.
 
@@ -62,7 +62,7 @@ Stack tests: web `npm test` in `examples/web`; product `cargo test --workspace -
 
 ## Architecture Constraints
 
-- Pure FOSS under MIT license; no proprietary closed-source SDKs in production path
+- Pure FOSS under GPL-3.0-or-later (ADR-0023); no proprietary closed-source SDKs in production path
 - Max 300 lines per static data file (UI + i18n), 150 lines per pure logic file
 - Strict type safety and runtime validation at all data boundaries
 - Core business logic decoupled from layout framework (hexagonal: inventory ports vs sysfs/OpenRGB adapters vs Tauri)
@@ -104,12 +104,12 @@ Do not mark a BUILD_PLAN feature row ✅ without tests or that justification. Co
 - On session start: read `START_HERE.md`, pick mode via `docs/CURSOR_MODES.md` (roles if your IDE uses other names), then `BUILD_PLAN.md` Sequential lane. If `CHANGELOG.md` `[Unreleased]` has list items, say so in one line. When `gh` is available, run `python3 scripts/agent-run.py sync-open-prs-build-plan -- --apply` before naming the next 🔲 `[AGENT]` row (or say the AGENT board is empty). After Cloud Agent work on another machine, run `/resume` (or bare `resume`) instead of reconstructing context by hand.
 - If your tool has no slash commands, use `docs/help/*.md` (start with `docs/help/TOUR.md`)
 - When creating or significantly changing a file, state one sentence of why (see `docs/BEST_PRACTICES.md` and `/coach`)
-- On milestone end: update `AGENT_MEMORY.md`, append to `DECISION_LOG.md` or `docs/adr/`
+- On milestone end: update `.agent/AGENT_MEMORY.md`, append to `.agent/DECISION_LOG.md` or `docs/adr/`
 - On 3-strike failure: halt and escalate to human
 - On context bloat: write `.cursor-session-state`, ask human to clear chat
 - Sprint 2+ features: after each AGENT step run `scripts/watch-agent-gates.sh --once --autofix --scope auto` (see `docs/FEATURE_MODULES.md`). After the sprint (or feature) is all ✅, `smoke-sprint --require` must pass before the next sprint — every ✅ row smoked, no errors/crashes, startup + load order (`docs/SPRINT_SMOKE.md`). `/gates` stays full `feature-gate --stack multi` plus `smoke-sprint --if-complete`.
 - Repo hygiene: track source only; run `scripts/check-repo-hygiene.sh` before push (see `docs/REPO_HYGIENE.md`)
-- Log significant agent actions in `DECISION_LOG.md` at milestone boundaries
+- Log significant agent actions in `.agent/DECISION_LOG.md` at milestone boundaries
 
 ## Multi-Agent Adapters
 

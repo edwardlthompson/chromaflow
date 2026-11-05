@@ -34,7 +34,7 @@
 ### 2026-09-18 — Catch up child template 1.4.0 → 1.8.0
 - **Status:** Accepted
 - **Context:** `/build` on 176 parent-template file gaps. Canon files and Mixed files that still matched v1.4.0 were copied from tag `v1.8.0`. Diverged product files were not replaced.
-- **Decision:** Bump `.template-version` and `.release-please-manifest.json` to `1.8.0`. Keep ChromaFlow `CHANGELOG.md`, `BUILD_PLAN.md`, `README.md`, `AGENT_MEMORY.md`, `DECISION_LOG.md`, `COMPLETED_TASKS.md`, `KNOWLEDGE_BASE.md`, `CITATION.cff` title/abstract, `branding/BRANDING.md` locked-PNG rows, and the pruned CodeQL matrix (no `java-kotlin` job). `ci.yml` takes `setup-java@v6` and keeps the Android `hashFiles` guard.
+- **Decision:** Bump `.template-version` and `.release-please-manifest.json` to `1.8.0`. Keep ChromaFlow `CHANGELOG.md`, `BUILD_PLAN.md`, `README.md`, `.agent/AGENT_MEMORY.md`, `.agent/DECISION_LOG.md`, `COMPLETED_TASKS.md`, `.agent/KNOWLEDGE_BASE.md`, `CITATION.cff` title/abstract, `branding/BRANDING.md` locked-PNG rows, and the pruned CodeQL matrix (no `java-kotlin` job). `ci.yml` takes `setup-java@v6` and keeps the Android `hashFiles` guard.
 - **Alternatives considered:** Byte-copy every Mixed file (rejected: wipes product history and the live board). Leave `.template-version` at 1.4.0 (rejected: gap compare would list already-copied files forever).
 - **Consequences:** Sacred `examples/` and `AGENTS.md` / `docs/spec.md` stay `[HUMAN]`. PWM path unchanged. Do not merge a template Release Please PR.
 
@@ -649,7 +649,7 @@
 
 ### 2026-09-10 — Archive stale HUMAN_BACKLOG prose
 - **Status:** Accepted
-- **Context:** `HUMAN_BACKLOG.md` held free-form notes (declined Ollama on template; quarterly radar ownership) that are not deferred automation rows.
+- **Context:** `.agent/HUMAN_BACKLOG.md` held free-form notes (declined Ollama on template; quarterly radar ownership) that are not deferred automation rows.
 - **Decision:** Keep the backlog table empty unless `/build` automation fails a HUMAN/ADB row. Move standing policy into this log: optional Ollama stays in `docs/LOCAL_MODELS.md` for child repos; quarterly radar remains Monday cron (`cursor-feature-radar.sh`), not a board row.
 - **Alternatives considered:** Leave prose in HUMAN_BACKLOG (rejected: confuses automation deferred items). Put Ollama back on BUILD_PLAN (rejected: maintainer declined).
 - **Consequences:** Agents only append table rows via `build-backlog add`. Narrative policy lives here or in docs.
@@ -944,7 +944,7 @@
 ### 2026-08-16 — M37 gap close (verify, env, hooks)
 - **Status:** Accepted
 - **Context:** Checklist audit found core governance/CI present; remaining gaps were docker preflight, unimplemented post-hook flags, no root verify command, no env schema, no commit-msg enforcement, no Dockerfile, and no `.agent/memory` indexes.
-- **Decision:** Extend the existing engine. `scripts/verify.sh` is the harness. Env validation is stack-agnostic JSON schema. Skills/memory under `.agent/` are indexes to `.cursor/skills/` and `DECISION_LOG.md` / `KNOWLEDGE_BASE.md`. Post install/test/git-init stay opt-in. Conventional Commits via pre-commit `commit-msg`, not Node-only commitlint.
+- **Decision:** Extend the existing engine. `scripts/verify.sh` is the harness. Env validation is stack-agnostic JSON schema. Skills/memory under `.agent/` are indexes to `.cursor/skills/` and `.agent/DECISION_LOG.md` / `.agent/KNOWLEDGE_BASE.md`. Post install/test/git-init stay opt-in. Conventional Commits via pre-commit `commit-msg`, not Node-only commitlint.
 - **Alternatives considered:** Duplicate skills into `.github/skills/` (rejected); husky + lint-staged (rejected: pre-commit already covers all stacks); auto-commit after init (rejected: destructive-ops).
 - **Consequences:** `validate-bootstrap` requires env schema, Dockerfile, `.agent/` indexes, and `verify.sh`. Feature-gate fails if `.env.example` drifts from `env.schema.json`.
 
@@ -1107,7 +1107,7 @@ _Seed template ADR: `docs/adr/0000-template-baseline.md`. Child repos use `docs/
 ### 2026-06-30 — Autonomous /build with grouped human section
 - **Status:** Accepted
 - **Context:** `/build` halted on HUMAN/ADB rows; humans needed a single review block after automation; child repos need scripted attempts before manual follow-up
-- **Decision:** Add `build-sprint-status.sh`, `attempt-build-plan-row.sh`, and `HUMAN_BACKLOG.md` (failure-only); restructure BUILD_PLAN with `#### Human & device (after automation)`; AGENT/AUTO runs first, then automation attempts on grouped human rows
+- **Decision:** Add `build-sprint-status.sh`, `attempt-build-plan-row.sh`, and `.agent/HUMAN_BACKLOG.md` (failure-only); restructure BUILD_PLAN with `#### Human & device (after automation)`; AGENT/AUTO runs first, then automation attempts on grouped human rows
 - **Alternatives considered:** Skip human rows entirely during /build (rejected: loses automation catalog value); keep human rows interleaved in Sequential (rejected: hard to review after automation)
 - **Consequences:** Child repos must place HUMAN/ADB rows in the grouped section; `<!-- no-auto-approve -->` disables autonomous ADR ack
 

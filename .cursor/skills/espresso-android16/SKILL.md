@@ -6,7 +6,7 @@ disable-model-invocation: false
 
 # Espresso on Android 16 (API 36)
 
-See **KB-022** in `KNOWLEDGE_BASE.md`.
+See **KB-022** in `.agent/KNOWLEDGE_BASE.md`.
 
 ```bash
 python3 scripts/agent-run.py check-espresso-android16

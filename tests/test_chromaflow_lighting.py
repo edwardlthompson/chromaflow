@@ -99,7 +99,10 @@ class LightingHidTests(unittest.TestCase):
         spawn = (ROOT / "crates/chromaflow-core/src/openrgb_spawn.rs").read_text(encoding="utf-8")
         self.assertIn("CHROMAFLOW_NO_SPAWN", spawn)
         self.assertIn("CHROMAFLOW_OPENRGB_SDK", spawn)
-        self.assertIn("--startminimized", spawn)
+        self.assertNotIn("--startminimized", spawn)
+        self.assertIn("--server", spawn)
+        self.assertIn("server_args", spawn)
+        self.assertIn("clear_openrgb_autostart", spawn)
         self.assertIn("AtomicBool", spawn)
         self.assertNotIn("QT_QPA_PLATFORM", spawn)
         self.assertNotIn("set_pwm", spawn)
@@ -298,7 +301,7 @@ class LightingHidTests(unittest.TestCase):
         self.assertIn("gaugeLane", (ROOT / "apps/desktop/src/lib/gauges.js").read_text(encoding="utf-8"))
         gauges_tick = (ROOT / "apps/desktop/src/lib/gaugesTick.js").read_text(encoding="utf-8")
         self.assertIn("hardware_gauges", gauges_tick)
-        self.assertIn("GAUGE_POLL_MS = 400", gauges_tick)
+        self.assertIn("GAUGE_POLL_MS = 1000", gauges_tick)
         self.assertNotIn("cycleOn", gauges_tick)
         self.assertNotIn("hardware_gauges", tick)
         self.assertNotIn("lastMeter", tick)
@@ -814,6 +817,13 @@ class LightingHidTests(unittest.TestCase):
         self.assertIn("cycleWant", page)
         self.assertNotIn("persistSession(tab, true)", (ROOT / "apps/desktop/src/App.svelte").read_text(encoding="utf-8"))
         self.assertIn("persistSession(name)", (ROOT / "apps/desktop/src/App.svelte").read_text(encoding="utf-8"))
+        app_js = (ROOT / "apps/desktop/src/App.svelte").read_text(encoding="utf-8")
+        boot_js = (ROOT / "apps/desktop/src/lib/lightingBoot.js").read_text(encoding="utf-8")
+        self.assertIn("reapplyFromInventory", boot_js)
+        self.assertIn("reapplySessionLighting", boot_js)
+        self.assertIn("scheduleBootReapply", app_js)
+        self.assertIn("reapplyFromInventory", app_js)
+        self.assertIn("HKCU Run", (ROOT / "scripts/install-windows-runtime.ps1").read_text(encoding="utf-8"))
         self.assertIn("ui.page === \"Lighting\"", page)
         self.assertIn("setHostCycle(false", page)
         self.assertIn("pushFusionNow", page)
@@ -932,7 +942,13 @@ class LightingHidTests(unittest.TestCase):
                 "const hidOnly = lightingDevices({ liquidctl_devices: [], hid_rgb: ["
                 "{ name: 'ITE', vendor_id: '048d', product_id: '5702', readable: true }"
                 "], openrgb: { controllers: [] } });"
-                "if (hidOnly.filter((d) => d.backend === 'liquidctl').length !== 2) throw new Error('hid fusion');",
+                "if (hidOnly.filter((d) => d.backend === 'liquidctl').length !== 2) throw new Error('hid fusion');"
+                "const winSdk = lightingDevices({ liquidctl_devices: [], hid_rgb: [], openrgb: { controllers: ["
+                "{ name: 'Aorus Motherboard', leds: 32 },"
+                "{ name: 'MSI GeForce RTX 4090 SUPRIM LIQUID X', leds: 24 }"
+                "] } });"
+                "if (!winSdk.some((d) => /aorus/i.test(d.name))) throw new Error('keep aorus sdk');"
+                "if (!winSdk.some((d) => /4090/i.test(d.name))) throw new Error('keep 4090 sdk');",
             ],
             cwd=ROOT,
             text=True,

@@ -16,7 +16,7 @@
 - 🔲 Set edition and MSRV in `Cargo.toml`
 - 🔲 Enable `cargo test` and clippy in CI
 - 🔲 Add cargo to `.github/dependabot.yml` (`directory: /examples/rust`, group `rust-dependencies`)
-- 🔲 Document MSRV in `AGENT_MEMORY.md`
+- 🔲 Document MSRV in `.agent/AGENT_MEMORY.md`
 
 ## Golden Path Reference
 
