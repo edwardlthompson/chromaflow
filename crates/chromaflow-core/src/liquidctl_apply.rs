@@ -99,16 +99,19 @@ fn bin() -> String {
 }
 
 fn run(bin: &str, args: &[&str]) -> Result<(), String> {
-    let mut cmd = vec!["3", bin];
-    cmd.extend_from_slice(args);
-    let out = Command::new("timeout")
-        .args(&cmd)
-        .output()
-        .map_err(|e| e.to_string())?;
-    if out.status.success() {
-        Ok(())
-    } else {
-        Err(String::from_utf8_lossy(&out.stderr).trim().to_string())
+    #[cfg(windows)]
+    {
+        let _ = (bin, args);
+        return Err("liquidctl not used on Windows".into());
+    }
+    #[cfg(not(windows))]
+    {
+        let out = crate::win_cmd::run_capped("3", bin, args).map_err(|e| e.to_string())?;
+        if out.status.success() {
+            Ok(())
+        } else {
+            Err(String::from_utf8_lossy(&out.stderr).trim().to_string())
+        }
     }
 }
 

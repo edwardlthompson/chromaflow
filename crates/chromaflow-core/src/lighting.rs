@@ -108,20 +108,30 @@ fn scan_usb_fusion(best: &mut BTreeMap<(String, String), HidRgb>) {
     }
 }
 
+#[cfg(not(windows))]
 const LIQUID_TTL: Duration = Duration::from_secs(15);
+#[cfg(not(windows))]
 const LIQUID_NEG: Duration = Duration::from_secs(2);
 
+#[cfg(not(windows))]
 struct LiquidCache {
     ok: Option<(Instant, Vec<String>)>,
     fail_at: Option<Instant>,
 }
 
+#[cfg(not(windows))]
 static LIQUID: Mutex<LiquidCache> = Mutex::new(LiquidCache {
     ok: None,
     fail_at: None,
 });
 
 pub fn liquidctl_devices() -> Vec<String> {
+    #[cfg(windows)]
+    {
+        return Vec::new();
+    }
+    #[cfg(not(windows))]
+    {
     let now = Instant::now();
     {
         let g = LIQUID.lock().unwrap_or_else(|p| p.into_inner());
@@ -154,6 +164,7 @@ pub fn liquidctl_devices() -> Vec<String> {
             g.ok.as_ref().map(|(_, r)| r.clone()).unwrap_or_default()
         }
     }
+    } // cfg(not(windows))
 }
 
 fn parse_uevent(text: &str) -> (String, String, String) {
@@ -254,6 +265,7 @@ pub fn hid_has_linux_backend(vid: &str, pid: &str, name: &str, sdk: &str, liquid
     !name.is_empty() && sdk.contains(&name)
 }
 
+#[cfg_attr(windows, allow(dead_code))]
 fn parse_liquidctl(text: &str) -> Vec<String> {
     text.lines()
         .filter_map(|line| {

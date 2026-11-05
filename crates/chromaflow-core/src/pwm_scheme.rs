@@ -5,7 +5,12 @@ use crate::pwm_policy::{self, MIN_PERCENT};
 use crate::types::{GpuFan, HwmonChip, Inventory, PwmNode};
 
 fn dir_of(chip: &HwmonChip) -> String {
-    chip.path.rsplit('/').next().unwrap_or("").into()
+    // Linux sysfs uses '/'; Windows mock fixtures use '\'.
+    chip.path
+        .rsplit(['/', '\\'])
+        .next()
+        .unwrap_or("")
+        .into()
 }
 
 fn header(chip: &str, pwm: &str) -> String {

@@ -14,10 +14,7 @@ pub fn owned_path() -> PathBuf {
     if let Ok(p) = std::env::var("CHROMAFLOW_OWNED") {
         return PathBuf::from(p);
     }
-    let base = std::env::var("XDG_RUNTIME_DIR")
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| std::env::temp_dir());
-    base.join("chromaflow/owned")
+    crate::paths::runtime_dir().join("owned")
 }
 
 fn pwm_path(root: &Path, dir: &str, name: &str) -> Result<PathBuf, String> {
@@ -49,7 +46,10 @@ pub fn apply_duty(path: &Path, duty: u8, allow_zero: bool) -> Result<(), String>
     if duty == 0 && !allow_zero {
         return Err("0% needs an explicit confirm".into());
     }
-    put_u8(path, duty)
+    put_u8(path, duty)?;
+    #[cfg(windows)]
+    windows_sync_duty(path, duty)?;
+    Ok(())
 }
 
 pub fn restore_dir(root: &Path, dir: &str, pwm: &str) -> Result<(), String> {
@@ -57,7 +57,61 @@ pub fn restore_dir(root: &Path, dir: &str, pwm: &str) -> Result<(), String> {
     apply_enable(
         &path.parent().unwrap().join(format!("{pwm}_enable")),
         ENABLE_FIRMWARE,
-    )
+    )?;
+    #[cfg(windows)]
+    {
+        let live = crate::windows::lpc::live_root();
+        if root == live || root.starts_with(&live) {
+            // Best-effort: file enable already firmware; pipe may be down at exit.
+            if let Err(e) = windows_sync_release(dir, pwm) {
+                eprintln!("lpc release {dir}/{pwm}: {e}");
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Push a shadow-tree PWM write to chromaflow-lpc (only for the live Helper tree).
+#[cfg(windows)]
+fn windows_sync_duty(path: &Path, duty: u8) -> Result<(), String> {
+    if !matches!(
+        crate::windows::lpc::kind(),
+        crate::windows::lpc::IoKind::Helper
+    ) {
+        return Ok(());
+    }
+    let live = crate::windows::lpc::live_root();
+    let under_live = path.starts_with(&live)
+        || path
+            .canonicalize()
+            .ok()
+            .zip(live.canonicalize().ok())
+            .is_some_and(|(p, r)| p.starts_with(r));
+    if !under_live {
+        return Ok(());
+    }
+    let pwm = path
+        .file_name()
+        .and_then(|s| s.to_str())
+        .ok_or("pwm name")?;
+    let dir = path
+        .parent()
+        .and_then(|p| p.file_name())
+        .and_then(|s| s.to_str())
+        .ok_or("hwmon dir")?;
+    crate::windows::lpc_client::pipe_duty(dir, pwm, duty)
+}
+
+#[cfg(windows)]
+fn windows_sync_release(dir: &str, pwm: &str) -> Result<(), String> {
+    if !matches!(
+        crate::windows::lpc::kind(),
+        crate::windows::lpc::IoKind::Helper
+    ) {
+        return Ok(());
+    }
+    // restore_dir is only called with live/mock roots from production paths.
+    crate::windows::lpc_client::release(dir, pwm)
 }
 
 pub fn record_owned(channels: &[Channel]) -> Result<(), String> {
@@ -91,8 +145,17 @@ pub fn failsafe_at(root: &Path, owned: &Path) -> Result<u32, String> {
 }
 
 pub fn failsafe() -> Result<u32, String> {
-    let n = failsafe_at(&hwmon::hwmon_root(), &owned_path())?;
-    Ok(n + crate::nvidia_fan_apply::failsafe())
+    #[cfg(windows)]
+    {
+        let root = hwmon::hwmon_root();
+        let n = failsafe_at(&root, &owned_path())?;
+        return Ok(n + crate::nvidia_fan_apply::failsafe());
+    }
+    #[cfg(not(windows))]
+    {
+        let n = failsafe_at(&hwmon::hwmon_root(), &owned_path())?;
+        Ok(n + crate::nvidia_fan_apply::failsafe())
+    }
 }
 
 pub fn tick(inv: &Inventory, file: &CurveFile) -> Result<String, String> {

@@ -53,12 +53,14 @@ pub fn restore(app: &tauri::App) {
     let Some(g) = load() else {
         return;
     };
-    let mut g = clamp(g);
+    let g = clamp(g);
     // GTK WebKit: maximize at startup leaves a 1×1 webview child (blank surface).
     #[cfg(target_os = "linux")]
-    {
+    let g = {
+        let mut g = g;
         g.maximized = false;
-    }
+        g
+    };
     let Some(win) = app.get_webview_window("main") else {
         return;
     };

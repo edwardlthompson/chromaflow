@@ -11,11 +11,21 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 static SPAWNING: AtomicBool = AtomicBool::new(false);
+/// First ensure_local_server in this process always restarts so OpenRGB.json
+/// (run_zone_checks=false) is loaded — avoids a stale in-memory Zone Initialization dialog.
+static SETTINGS_RELOADED: AtomicBool = AtomicBool::new(false);
 static CHILD: Mutex<Option<Child>> = Mutex::new(None);
 static HOLD_UNTIL: Mutex<Option<Instant>> = Mutex::new(None);
 
 pub fn sdk_opt_in() -> bool {
-    std::env::var("CHROMAFLOW_OPENRGB_SDK").ok().as_deref() == Some("1")
+    match std::env::var("CHROMAFLOW_OPENRGB_SDK") {
+        Ok(v) => {
+            let t = v.trim();
+            t == "1" || t.eq_ignore_ascii_case("true") || t.eq_ignore_ascii_case("yes")
+        }
+        // Windows: inventory/paint against a local SDK without requiring an env flag.
+        Err(_) => cfg!(windows),
+    }
 }
 
 pub fn spawn_allowed() -> bool {
@@ -36,26 +46,352 @@ fn forbidden(path: &Path) -> bool {
     s.contains("flatpak") || s.contains("bwrap") || s.contains("wine")
 }
 
+#[cfg_attr(windows, allow(dead_code))]
 fn which_openrgb() -> Option<PathBuf> {
     let path = std::env::var("PATH").ok()?;
-    path.split(':')
-        .map(|d| PathBuf::from(d).join("openrgb"))
-        .find(|p| p.is_file())
+    #[cfg(windows)]
+    let sep = ';';
+    #[cfg(not(windows))]
+    let sep = ':';
+    #[cfg(windows)]
+    let names = ["OpenRGB.exe", "openrgb.exe"];
+    #[cfg(not(windows))]
+    let names = ["openrgb"];
+    for dir in path.split(sep) {
+        for name in names {
+            let p = PathBuf::from(dir).join(name);
+            if p.is_file() {
+                return Some(p);
+            }
+        }
+    }
+    None
+}
+
+fn windows_install_candidates() -> Vec<PathBuf> {
+    #[cfg(windows)]
+    {
+        let mut out = Vec::new();
+        if let Ok(pf) = std::env::var("ProgramFiles") {
+            out.push(
+                PathBuf::from(&pf)
+                    .join("ChromaFlow")
+                    .join("engine")
+                    .join("OpenRGB")
+                    .join("OpenRGB.exe"),
+            );
+            // Legacy flat layout from early Windows builds.
+            out.push(PathBuf::from(&pf).join("ChromaFlow").join("OpenRGB.exe"));
+        }
+        if let Ok(local) = std::env::var("LOCALAPPDATA") {
+            out.push(
+                PathBuf::from(&local)
+                    .join("chromaflow")
+                    .join("engine")
+                    .join("OpenRGB")
+                    .join("OpenRGB.exe"),
+            );
+            out.push(
+                PathBuf::from(&local)
+                    .join("chromaflow")
+                    .join("OpenRGB.exe"),
+            );
+        }
+        out
+    }
+    #[cfg(not(windows))]
+    {
+        Vec::new()
+    }
+}
+
+pub fn is_private_engine_path(path: &Path) -> bool {
+    let s = path.to_string_lossy().to_ascii_lowercase().replace('/', "\\");
+    s.contains("chromaflow\\engine\\") || s.contains("chromaflow\\openrgb")
+}
+
+fn private_bin_candidates() -> Vec<PathBuf> {
+    let mut cands = Vec::new();
+    cands.push(crate::openrgb_engine::packaged_engine_path());
+    cands.push(dest_path());
+    cands.extend(windows_install_candidates());
+    cands
 }
 
 pub fn resolve_bin() -> Option<PathBuf> {
-    let mut cands = Vec::new();
+    // Prefer the private ChromaFlow engine over CHROMAFLOW_OPENRGB (seed source)
+    // or a user-installed OpenRGB, so we never launch a standalone GUI copy.
+    let mut cands = private_bin_candidates();
     if let Ok(p) = std::env::var("CHROMAFLOW_OPENRGB") {
         cands.push(PathBuf::from(p));
     }
-    cands.push(PathBuf::from("/usr/libexec/chromaflow/OpenRGB.AppImage"));
-    cands.push(dest_path());
+    #[cfg(not(windows))]
     if !crate::openrgb_sandbox::sandboxed() {
         if let Some(p) = which_openrgb() {
             cands.push(p);
         }
     }
-    cands.into_iter().find(|p| p.is_file() && !forbidden(p))
+    // Windows: never fall through to PATH OpenRGB when any private candidate exists on disk.
+    #[cfg(windows)]
+    {
+        if let Some(p) = cands.iter().find(|p| p.is_file() && !forbidden(p)).cloned() {
+            return Some(p);
+        }
+        // Last resort only when no private engine is installed yet.
+        if !crate::openrgb_sandbox::sandboxed() {
+            if let Some(p) = which_openrgb() {
+                if p.is_file() && !forbidden(&p) {
+                    return Some(p);
+                }
+            }
+        }
+        return None;
+    }
+    #[cfg(not(windows))]
+    {
+        cands.into_iter().find(|p| p.is_file() && !forbidden(p))
+    }
+}
+
+/// SDK server argv — headless only. Do not pass the tray/minimized GUI flag (implies `--gui`).
+pub fn server_args() -> &'static [&'static str] {
+    &[
+        "--server",
+        "--server-host",
+        "127.0.0.1",
+        "--server-port",
+        "6742",
+        "--noautoconnect",
+    ]
+}
+
+/// Kill OpenRGB.exe processes that are not under ChromaFlow\\engine (standalone tray hijack).
+pub fn kill_non_private_openrgb() -> String {
+    #[cfg(windows)]
+    {
+        let script = "Get-CimInstance Win32_Process -Filter \"Name='OpenRGB.exe'\" | \
+            ForEach-Object { \
+              $p = $_.ExecutablePath; \
+              if (-not $p) { return }; \
+              $l = $p.ToLower(); \
+              if ($l -like '*chromaflow*engine*' -or $l -like '*chromaflow\\openrgb*') { return }; \
+              Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue; \
+              Write-Output $p \
+            }";
+        let mut cmd = Command::new("powershell");
+        cmd.args([
+            "-NoProfile",
+            "-NonInteractive",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            script,
+        ]);
+        let out = crate::win_cmd::hidden_capture(cmd).output();
+        let text = out
+            .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+            .unwrap_or_default();
+        if text.is_empty() {
+            "no standalone OpenRGB process".into()
+        } else {
+            format!("stopped standalone OpenRGB: {}", text.replace('\n', "; "))
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        "n/a".into()
+    }
+}
+
+/// Clear standalone OpenRGB Run / Startup entries so logon does not relaunch a tray app.
+pub fn clear_openrgb_autostart() -> String {
+    #[cfg(windows)]
+    {
+        let mut notes = Vec::new();
+        for (hive, label) in [
+            (r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run", "HKCU"),
+            (r"HKLM\Software\Microsoft\Windows\CurrentVersion\Run", "HKLM"),
+        ] {
+            for name in ["OpenRGB", "openrgb", "OpenRGB.OpenRGB"] {
+                let mut cmd = Command::new("reg");
+                cmd.args(["delete", hive, "/v", name, "/f"]);
+                if crate::win_cmd::hidden(cmd)
+                    .status()
+                    .map(|s| s.success())
+                    .unwrap_or(false)
+                {
+                    notes.push(format!("cleared {label} Run\\{name}"));
+                }
+            }
+        }
+        let script = "$dirs = @(\
+            [Environment]::GetFolderPath('Startup'),\
+            [Environment]::GetFolderPath('CommonStartup')\
+          ); \
+          foreach ($d in $dirs) { \
+            if (-not $d) { continue }; \
+            Get-ChildItem -LiteralPath $d -Filter '*OpenRGB*' -ErrorAction SilentlyContinue | \
+              ForEach-Object { Remove-Item -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue; $_.Name } \
+          }";
+        let mut cmd = Command::new("powershell");
+        cmd.args([
+            "-NoProfile",
+            "-NonInteractive",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            script,
+        ]);
+        if let Ok(o) = crate::win_cmd::hidden_capture(cmd).output() {
+            let t = String::from_utf8_lossy(&o.stdout).trim().to_string();
+            if !t.is_empty() {
+                notes.push(format!("removed Startup: {}", t.replace('\n', "; ")));
+            }
+        }
+        if notes.is_empty() {
+            "no OpenRGB Run/Startup entries".into()
+        } else {
+            notes.join("; ")
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        "n/a".into()
+    }
+}
+
+fn listening_is_private() -> bool {
+    #[cfg(windows)]
+    {
+        let script = "$p = Get-CimInstance Win32_Process -Filter \"Name='OpenRGB.exe'\" | \
+            Select-Object -First 1 -ExpandProperty ExecutablePath; \
+            if (-not $p) { '' } else { $p }";
+        let mut cmd = Command::new("powershell");
+        cmd.args([
+            "-NoProfile",
+            "-NonInteractive",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            script,
+        ]);
+        let path = crate::win_cmd::hidden_capture(cmd)
+            .output()
+            .ok()
+            .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+            .unwrap_or_default();
+        if path.is_empty() {
+            // Port open but no OpenRGB.exe named — treat as unknown; force restart.
+            return false;
+        }
+        is_private_engine_path(Path::new(&path))
+    }
+    #[cfg(not(windows))]
+    {
+        true
+    }
+}
+
+/// Start a local OpenRGB SDK server when the binary is known and :6742 is down.
+pub fn ensure_local_server() -> Result<String, String> {
+    // Rewrite settings first; restart when JSON changed or first call this process
+    // so run_zone_checks=false is actually loaded (stale process shows Zone Initialization).
+    let settings_dirty = crate::openrgb_engine::configure_engine_ui().unwrap_or(false);
+    let first_load = !SETTINGS_RELOADED.swap(true, Ordering::SeqCst);
+    let must_reload = settings_dirty || first_load;
+    if crate::openrgb_proto::connect().is_ok() {
+        if listening_is_private() && !must_reload {
+            return Ok("private lighting engine already on 127.0.0.1:6742".into());
+        }
+        let _ = kill_non_private_openrgb();
+        let _ = clear_openrgb_autostart();
+        let _ = restart_sdk_force_stop();
+        thread::sleep(Duration::from_millis(500));
+    }
+    let _ = kill_non_private_openrgb();
+    let _ = clear_openrgb_autostart();
+    let bin = resolve_bin().ok_or_else(|| {
+        "Lighting engine not found. Use Support → Install lighting engine (private OpenRGB under ChromaFlow\\engine)."
+            .to_string()
+    })?;
+    if !is_private_engine_path(&bin) && private_bin_candidates().iter().any(|p| p.is_file()) {
+        return Err(format!(
+            "refusing to start non-private OpenRGB at {}",
+            bin.display()
+        ));
+    }
+    let _ = crate::openrgb_engine::configure_engine_ui();
+    let mut cmd = Command::new(&bin);
+    cmd.args(server_args());
+    let child = crate::win_cmd::hidden(cmd)
+        .spawn()
+        .map_err(|e| format!("spawn lighting engine: {e}"))?;
+    let child_pid = child.id();
+    if let Ok(mut g) = CHILD.lock() {
+        *g = Some(child);
+    }
+    let deadline = Instant::now() + Duration::from_secs(20);
+    while Instant::now() < deadline {
+        if crate::openrgb_proto::connect().is_ok() {
+            // Port opens mid-detection; wait for at least one controller (Keychron/MB/GPU).
+            match crate::openrgb_proto::wait_for_controllers(Duration::from_secs(12)) {
+                Ok(n) => {
+                    let _ = fs::write(pid_path(), format!("{child_pid}"));
+                    return Ok(format!(
+                        "started {} — SDK 127.0.0.1:6742 ({n} controllers)",
+                        bin.display()
+                    ));
+                }
+                Err(_) => {
+                    // Keep waiting until overall deadline; detection can exceed 12s cold.
+                    if Instant::now() + Duration::from_secs(2) >= deadline {
+                        break;
+                    }
+                }
+            }
+        }
+        thread::sleep(Duration::from_millis(250));
+    }
+    Err("OpenRGB started but SDK did not list controllers in time".into())
+}
+
+/// Stop OpenRGB via pid file / child handle without immediately respawning (Windows boot uses ensure_local_server).
+fn restart_sdk_force_stop() -> bool {
+    {
+        let mut g = CHILD.lock().unwrap_or_else(|p| p.into_inner());
+        if let Some(mut ch) = g.take() {
+            let _ = ch.kill();
+            let _ = ch.wait();
+        }
+    }
+    if let Some(pid) = sibling_pid() {
+        if proc_running(pid) {
+            #[cfg(windows)]
+            {
+                let mut kill = Command::new("taskkill");
+                kill.args(["/PID", &pid.to_string(), "/F"]);
+                let _ = crate::win_cmd::hidden(kill).status();
+            }
+            #[cfg(not(windows))]
+            {
+                let _ = Command::new("kill")
+                    .args(["-TERM", &pid.to_string()])
+                    .status();
+            }
+            for _ in 0..25 {
+                if !proc_running(pid) {
+                    break;
+                }
+                thread::sleep(Duration::from_millis(200));
+            }
+        }
+    }
+    let _ = kill_non_private_openrgb();
+    let _ = fs::remove_file(pid_path());
+    SPAWNING.store(false, Ordering::SeqCst);
+    *HOLD_UNTIL.lock().unwrap_or_else(|p| p.into_inner()) = None;
+    crate::openrgb::drop_probe_cache();
+    true
 }
 
 fn pid_path() -> PathBuf {
@@ -68,13 +404,29 @@ fn sibling_pid() -> Option<u32> {
     (pid >= 2).then_some(pid)
 }
 
+#[cfg_attr(windows, allow(dead_code))]
 fn proc_state(stat: &str) -> Option<char> {
     stat.rsplit_once(')')?.1.trim().chars().next()
 }
 
 fn proc_running(pid: u32) -> bool {
-    let text = fs::read_to_string(format!("/proc/{pid}/stat")).unwrap_or_default();
-    matches!(proc_state(&text), Some(s) if s != 'Z' && s != 'X')
+    #[cfg(windows)]
+    {
+        let mut cmd = Command::new("tasklist");
+        cmd.args(["/FI", &format!("PID eq {pid}"), "/NH"]);
+        crate::win_cmd::hidden_capture(cmd)
+            .output()
+            .map(|o| {
+                let t = String::from_utf8_lossy(&o.stdout);
+                t.contains(&pid.to_string())
+            })
+            .unwrap_or(false)
+    }
+    #[cfg(not(windows))]
+    {
+        let text = fs::read_to_string(format!("/proc/{pid}/stat")).unwrap_or_default();
+        matches!(proc_state(&text), Some(s) if s != 'Z' && s != 'X')
+    }
 }
 
 fn reap_child() {
@@ -153,6 +505,7 @@ fn fuse_hint(log: &str, err: &str) -> String {
 }
 
 fn spawn_bin(bin: &Path) -> Result<(), String> {
+    let _ = crate::openrgb_engine::configure_engine_ui();
     let dir = share_dir();
     fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     let log_path = dir.join("openrgb.log");
@@ -171,17 +524,17 @@ fn spawn_bin(bin: &Path) -> Result<(), String> {
     {
         cmd.env("APPIMAGE_EXTRACT_AND_RUN", "1");
     }
+    cmd.args(server_args())
+    .stdin(Stdio::null())
+    .stdout(Stdio::from(log))
+    .stderr(Stdio::from(err_log));
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+        cmd.creation_flags(CREATE_NO_WINDOW);
+    }
     let child = cmd
-        .args([
-            "--server",
-            "--server-host",
-            "127.0.0.1",
-            "--noautoconnect",
-            "--startminimized",
-        ])
-        .stdin(Stdio::null())
-        .stdout(Stdio::from(log))
-        .stderr(Stdio::from(err_log))
         .spawn()
         .map_err(|e| fuse_hint("", &e.to_string()))?;
     let _ = fs::write(pid_path(), format!("{}\n", child.id()));
@@ -247,9 +600,18 @@ pub fn restart_sdk_once() -> bool {
     }
     if let Some(pid) = sibling_pid() {
         if proc_running(pid) {
-            let _ = Command::new("kill")
-                .args(["-TERM", &pid.to_string()])
-                .status();
+            #[cfg(windows)]
+            {
+                let mut kill = Command::new("taskkill");
+                kill.args(["/PID", &pid.to_string(), "/F"]);
+                let _ = crate::win_cmd::hidden(kill).status();
+            }
+            #[cfg(not(windows))]
+            {
+                let _ = Command::new("kill")
+                    .args(["-TERM", &pid.to_string()])
+                    .status();
+            }
             for _ in 0..25 {
                 if !proc_running(pid) {
                     break;
@@ -265,7 +627,14 @@ pub fn restart_sdk_once() -> bool {
     SPAWNING.store(false, Ordering::SeqCst);
     *HOLD_UNTIL.lock().unwrap_or_else(|p| p.into_inner()) = None;
     crate::openrgb::drop_probe_cache();
-    ensure_sdk();
+    #[cfg(windows)]
+    {
+        let _ = ensure_local_server();
+    }
+    #[cfg(not(windows))]
+    {
+        ensure_sdk();
+    }
     true
 }
 
@@ -283,6 +652,9 @@ mod tests {
         let _ = fs::create_dir_all(&dir);
         let env_bin = dir.join("env-openrgb");
         fs::write(&env_bin, b"#!/bin/sh\nexit 0\n").unwrap();
+        // Isolate from a real private engine under the user's LocalAppData.
+        std::env::set_var("LOCALAPPDATA", dir.join("local"));
+        std::env::set_var("ProgramFiles", dir.join("pf"));
         std::env::set_var("CHROMAFLOW_OPENRGB", &env_bin);
         std::env::set_var("CHROMAFLOW_DATA_HOME", dir.join("share"));
         assert_eq!(resolve_bin().as_deref(), Some(env_bin.as_path()));
@@ -308,10 +680,7 @@ mod tests {
             format!("#!/bin/sh\necho ran > {}\n", marker.display()),
         )
         .unwrap();
-        use std::os::unix::fs::PermissionsExt;
-        let mut p = fs::metadata(&stub).unwrap().permissions();
-        p.set_mode(0o755);
-        fs::set_permissions(&stub, p).unwrap();
+        crate::fs_mode::set_mode(&stub, 0o755).unwrap();
         std::env::set_var("CHROMAFLOW_OPENRGB", &stub);
         std::env::set_var("CHROMAFLOW_NO_SPAWN", "1");
         std::env::set_var("CHROMAFLOW_ALLOW_SPAWN", "1");
@@ -329,5 +698,15 @@ mod tests {
         assert_eq!(proc_state("3116 (OpenRGB) S 2746"), Some('S'));
         assert!(!matches!(proc_state("3116 (OpenRGB) Z 2746"), Some(s) if s != 'Z' && s != 'X'));
         let _ = engine_missing();
+    }
+
+    #[test]
+    fn headless_server_args_no_tray() {
+        let args = server_args();
+        assert!(args.contains(&"--server"));
+        assert!(args.contains(&"--noautoconnect"));
+        assert!(args.contains(&"127.0.0.1"));
+        assert!(!args.iter().any(|a| a.contains("minimized")));
+        assert!(!args.iter().any(|a| *a == "--gui"));
     }
 }

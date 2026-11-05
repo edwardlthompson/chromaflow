@@ -161,14 +161,20 @@ fn i2c_sets(bus: u8, pairs: &[(u8, u8)]) -> Result<(), String> {
         .map(|(reg, val)| format!("i2cset -y -f {bus} {ADDR:#04x} {reg:#04x} {val:#04x}"))
         .collect::<Vec<_>>()
         .join(" && ");
-    let out = Command::new("timeout")
-        .args(["0.4", "sh", "-c", &script])
-        .output()
-        .map_err(|e| e.to_string())?;
-    if out.status.success() {
-        Ok(())
-    } else {
-        Err(String::from_utf8_lossy(&out.stderr).trim().to_string())
+    #[cfg(windows)]
+    {
+        let _ = script;
+        return Err("MSI GPU RGB i2cset not available on Windows".into());
+    }
+    #[cfg(not(windows))]
+    {
+        let out = crate::win_cmd::run_capped("0.4", "sh", &["-c", &script])
+            .map_err(|e| e.to_string())?;
+        if out.status.success() {
+            Ok(())
+        } else {
+            Err(String::from_utf8_lossy(&out.stderr).trim().to_string())
+        }
     }
 }
 
@@ -220,16 +226,21 @@ fn on_bus(f: impl Fn(u8) -> Result<String, String>) -> Result<String, String> {
 }
 
 fn i2c(args: &[&str]) -> Result<(), String> {
-    let out = Command::new("timeout")
-        .args(["0.4"])
-        .args(args)
-        .output()
-        .map_err(|e| e.to_string())?;
-    if out.status.success() {
-        thread::sleep(Duration::from_millis(20));
-        Ok(())
-    } else {
-        Err(String::from_utf8_lossy(&out.stderr).trim().to_string())
+    #[cfg(windows)]
+    {
+        let _ = args;
+        return Err("i2cset not used on Windows".into());
+    }
+    #[cfg(not(windows))]
+    {
+        let out = crate::win_cmd::run_capped("0.4", args[0], &args[1..])
+            .map_err(|e| e.to_string())?;
+        if out.status.success() {
+            thread::sleep(Duration::from_millis(20));
+            Ok(())
+        } else {
+            Err(String::from_utf8_lossy(&out.stderr).trim().to_string())
+        }
     }
 }
 
@@ -310,6 +321,10 @@ mod tests {
     fn pci_match_prefer_adapter_one() {
         let dir = std::env::temp_dir().join("cf-gpu-pci");
         let _ = fs::create_dir_all(&dir);
+        // Windows forbids ':' in filenames; Linux sysfs uses PCI BDF with colons.
+        #[cfg(windows)]
+        let slot = dir.join("0000-0b-00.0");
+        #[cfg(not(windows))]
         let slot = dir.join("0000:0b:00.0");
         let _ = fs::create_dir_all(&slot);
         fs::write(slot.join("vendor"), "0x10de\n").unwrap();

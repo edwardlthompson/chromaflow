@@ -4,6 +4,8 @@ use std::process::Command;
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
+use crate::win_cmd;
+
 const GPU_TTL: Duration = Duration::from_secs(2);
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -41,6 +43,39 @@ pub fn parse_nvidia_util(text: &str) -> Option<f64> {
     best
 }
 
+fn query_gpu_text() -> Option<String> {
+    #[cfg(windows)]
+    {
+        // Never use Windows `timeout.exe` — it allocates a console and steals focus.
+        let mut cmd = Command::new("nvidia-smi");
+        cmd.args([
+            "--query-gpu=temperature.gpu,utilization.gpu",
+            "--format=csv,noheader,nounits",
+        ]);
+        let out = win_cmd::hidden_capture(cmd).output().ok()?;
+        if !out.status.success() {
+            return None;
+        }
+        Some(String::from_utf8_lossy(&out.stdout).into_owned())
+    }
+    #[cfg(not(windows))]
+    {
+        let out = Command::new("timeout")
+            .args([
+                "1",
+                "nvidia-smi",
+                "--query-gpu=temperature.gpu,utilization.gpu",
+                "--format=csv,noheader,nounits",
+            ])
+            .output()
+            .ok()?;
+        if !out.status.success() {
+            return None;
+        }
+        Some(String::from_utf8_lossy(&out.stdout).into_owned())
+    }
+}
+
 pub fn cached_gpu() -> GpuSmi {
     let now = Instant::now();
     if let Ok(g) = GPU_SMI.lock() {
@@ -50,22 +85,7 @@ pub fn cached_gpu() -> GpuSmi {
             }
         }
     }
-    let out = Command::new("timeout")
-        .args([
-            "1",
-            "nvidia-smi",
-            "--query-gpu=temperature.gpu,utilization.gpu",
-            "--format=csv,noheader,nounits",
-        ])
-        .output()
-        .ok();
-    let v = out
-        .and_then(|o| {
-            if !o.status.success() {
-                return None;
-            }
-            Some(String::from_utf8_lossy(&o.stdout).into_owned())
-        })
+    let v = query_gpu_text()
         .map(|text| GpuSmi {
             temp_c: parse_nvidia_smi(&text),
             load: parse_nvidia_util(&text),
@@ -95,5 +115,24 @@ mod tests {
         assert!(parse_nvidia_smi("N/A\n").is_none());
         assert!(parse_nvidia_util("46, N/A\n").is_none());
         assert!(parse_nvidia_smi("").is_none());
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn windows_query_does_not_use_timeout_exe() {
+        // Regression: Command::new("timeout") on Windows is timeout.exe (focus steal).
+        let src = include_str!("nvidia_smi.rs");
+        let win_block = src
+            .split("#[cfg(windows)]")
+            .nth(1)
+            .unwrap_or("")
+            .split("#[cfg(not(windows))]")
+            .next()
+            .unwrap_or("");
+        assert!(
+            !win_block.contains("Command::new(\"timeout\")"),
+            "Windows nvidia-smi path must not invoke timeout.exe"
+        );
+        assert!(win_block.contains("nvidia-smi"));
     }
 }

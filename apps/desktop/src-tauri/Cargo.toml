@@ -14,8 +14,11 @@ path = "src/main.rs"
 tauri-build.workspace = true
 
 [features]
-# Embed Vite dist (`tauri://` / asset.localhost). Required for the .deb.
-# Omit for `tauri dev` so the webview can use http://127.0.0.1:1420.
+# Embed Vite dist (`tauri://` / asset.localhost). Default so plain
+# `cargo build --release` is not a blank Edge "refresh" page on :1420.
+# For live Vite: `cargo run -p chromaflow-desktop --no-default-features`
+# (or `npm run tauri -- dev`, which passes --no-default-features).
+default = ["custom-protocol"]
 custom-protocol = ["tauri/custom-protocol"]
 
 [dependencies]

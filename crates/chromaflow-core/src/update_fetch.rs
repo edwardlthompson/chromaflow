@@ -1,16 +1,25 @@
 //! Curl GitHub Releases and pkexec the pinned helper. No PWM.
 
+#[cfg(not(windows))]
 use std::fs;
-use std::os::unix::fs::PermissionsExt;
+#[cfg(not(windows))]
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output, Stdio};
+use std::process::{Command, Output};
+#[cfg(not(windows))]
+use std::process::Stdio;
+
+#[cfg(not(windows))]
+use crate::fs_mode;
 
 use serde_json::{json, Value};
 
 use crate::privilege::refuse_if_root;
-use crate::update_check::{classify_release, deb_name, pinned_asset_url, sha_arg_ok, UpdateReport};
+use crate::update_check::{classify_release, UpdateReport};
+#[cfg(not(windows))]
+use crate::update_check::{deb_name, pinned_asset_url, sha_arg_ok};
 
 const API: &str = "https://api.github.com/repos/edwardlthompson/chromaflow/releases/latest";
+#[cfg(not(windows))]
 const HELPER: &str = "/usr/libexec/chromaflow/install-update.sh";
 
 pub fn check_now() -> Value {
@@ -25,41 +34,55 @@ pub fn check_now() -> Value {
 
 pub fn install_now() -> Result<Value, String> {
     refuse_if_root()?;
-    let report = probe().map_err(|status| status.to_string())?;
-    if report.status != "available" {
-        return Ok(to_json(&report));
+    #[cfg(windows)]
+    {
+        return Ok(json!({
+            "status": "unsupported",
+            "detail": "use the NSIS installer or Winget on Windows",
+            "current": env!("CARGO_PKG_VERSION"),
+            "latest": "", "asset_url": "", "sha256": "",
+        }));
     }
-    if report.asset_url != pinned_asset_url(&report.latest) || !sha_arg_ok(&report.sha256) {
-        return Err("refusing asset".into());
-    }
-    if !Path::new(HELPER).is_file() {
-        return Ok(
-            json!({"status": "helper_missing", "asset_url": report.asset_url, "latest": report.latest}),
-        );
-    }
-    let dest = runtime_dir()?.join(deb_name(&report.latest));
-    download(&report.asset_url, &dest)?;
-    if file_sha(&dest)? != report.sha256 {
+    #[cfg(not(windows))]
+    {
+        let report = probe().map_err(|status| status.to_string())?;
+        if report.status != "available" {
+            return Ok(to_json(&report));
+        }
+        if report.asset_url != pinned_asset_url(&report.latest) || !sha_arg_ok(&report.sha256) {
+            return Err("refusing asset".into());
+        }
+        if !Path::new(HELPER).is_file() {
+            return Ok(json!({
+                "status": "helper_missing",
+                "asset_url": report.asset_url,
+                "latest": report.latest
+            }));
+        }
+        let dest = runtime_dir()?.join(deb_name(&report.latest));
+        download(&report.asset_url, &dest)?;
+        if file_sha(&dest)? != report.sha256 {
+            let _ = fs::remove_file(&dest);
+            return Err("digest mismatch".into());
+        }
+        let out = Command::new("pkexec")
+            .arg(HELPER)
+            .arg(&dest)
+            .arg(&report.sha256)
+            .stdin(Stdio::null())
+            .output()
+            .map_err(|e| e.to_string())?;
+        if !out.status.success() {
+            let err = String::from_utf8_lossy(&out.stderr);
+            return Err(if err.trim().is_empty() {
+                "install failed".into()
+            } else {
+                err.trim().to_string()
+            });
+        }
         let _ = fs::remove_file(&dest);
-        return Err("digest mismatch".into());
+        Ok(json!({ "status": "installed", "latest": report.latest }))
     }
-    let out = Command::new("pkexec")
-        .arg(HELPER)
-        .arg(&dest)
-        .arg(&report.sha256)
-        .stdin(Stdio::null())
-        .output()
-        .map_err(|e| e.to_string())?;
-    if !out.status.success() {
-        let err = String::from_utf8_lossy(&out.stderr);
-        return Err(if err.trim().is_empty() {
-            "install failed".into()
-        } else {
-            err.trim().to_string()
-        });
-    }
-    let _ = fs::remove_file(&dest);
-    Ok(json!({ "status": "installed", "latest": report.latest }))
 }
 
 fn probe() -> Result<UpdateReport, &'static str> {
@@ -105,39 +128,30 @@ fn fetch_api() -> Result<String, &'static str> {
 }
 
 fn arch() -> String {
-    let Ok(out) = Command::new("uname").arg("-m").output() else {
-        return String::new();
-    };
-    String::from_utf8_lossy(&out.stdout).trim().to_string()
+    #[cfg(windows)]
+    {
+        return std::env::var("PROCESSOR_ARCHITECTURE")
+            .unwrap_or_default()
+            .to_ascii_lowercase();
+    }
+    #[cfg(not(windows))]
+    {
+        let Ok(out) = Command::new("uname").arg("-m").output() else {
+            return String::new();
+        };
+        String::from_utf8_lossy(&out.stdout).trim().to_string()
+    }
 }
 
-fn set_mode(path: &Path, bits: u32) -> Result<(), String> {
-    let mut perm = fs::metadata(path).map_err(|e| e.to_string())?.permissions();
-    perm.set_mode(bits);
-    fs::set_permissions(path, perm).map_err(|e| e.to_string())
-}
-
+#[cfg(not(windows))]
 fn runtime_dir() -> Result<PathBuf, String> {
-    let base = std::env::var("XDG_RUNTIME_DIR").unwrap_or_default();
-    let root = if !base.is_empty() {
-        PathBuf::from(base)
-    } else {
-        let out = Command::new("id")
-            .arg("-u")
-            .output()
-            .map_err(|e| e.to_string())?;
-        let uid = String::from_utf8_lossy(&out.stdout).trim().to_string();
-        if !uid.chars().all(|c| c.is_ascii_digit()) {
-            return Err("uid".into());
-        }
-        PathBuf::from(format!("/run/user/{uid}"))
-    };
-    let dir = root.join("chromaflow-update");
+    let dir = crate::paths::runtime_dir().join("update");
     fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
-    set_mode(&dir, 0o700)?;
+    fs_mode::set_mode(&dir, 0o700)?;
     Ok(dir)
 }
 
+#[cfg(not(windows))]
 fn download(url: &str, dest: &Path) -> Result<(), String> {
     let status = Command::new("curl")
         .args([
@@ -161,28 +175,18 @@ fn download(url: &str, dest: &Path) -> Result<(), String> {
         let _ = fs::remove_file(dest);
         return Err("download failed".into());
     }
-    set_mode(dest, 0o600)
+    fs_mode::set_mode(dest, 0o600)
 }
 
+#[cfg(not(windows))]
 fn file_sha(path: &Path) -> Result<String, String> {
-    let out = Command::new("sha256sum")
-        .arg(path)
-        .output()
-        .map_err(|e| e.to_string())?;
-    if !out.status.success() {
-        return Err("sha256sum failed".into());
-    }
-    let text = String::from_utf8_lossy(&out.stdout);
-    let hex = text
-        .split_whitespace()
-        .next()
-        .unwrap_or("")
-        .to_ascii_lowercase();
-    if sha_arg_ok(&hex) {
-        Ok(hex)
-    } else {
-        Err("sha256sum failed".into())
-    }
+    crate::openrgb_engine::file_sha256(path).and_then(|hex| {
+        if sha_arg_ok(&hex) {
+            Ok(hex)
+        } else {
+            Err("sha256 failed".into())
+        }
+    })
 }
 
 fn to_json(report: &UpdateReport) -> Value {

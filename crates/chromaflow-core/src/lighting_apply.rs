@@ -15,7 +15,14 @@ pub fn parse_rrggbb(raw: &str) -> Result<[u8; 3], String> {
 
 fn ready(backend: &str) {
     if backend == "openrgb" {
-        crate::openrgb_spawn::ensure_sdk();
+        #[cfg(windows)]
+        {
+            let _ = crate::openrgb_spawn::ensure_local_server();
+        }
+        #[cfg(not(windows))]
+        {
+            crate::openrgb_spawn::ensure_sdk();
+        }
         crate::openrgb_preview::drop_session();
         crate::keychron_preview::drop_session();
     }
@@ -117,7 +124,7 @@ mod tests {
         assert_eq!(parse_rrggbb("aabbcc").unwrap(), [0xaa, 0xbb, 0xcc]);
         assert!(parse_rrggbb("").is_err());
         assert!(parse_rrggbb("xyzxyz").is_err());
-        assert!(apply("hidraw", "Arena", "0052FF").is_err());
+        assert!(apply("nope", "x", "0052FF").is_err());
         assert!(apply("openrgb", "", "0052FF").is_err());
         assert!(apply("keychron", "Q6", "").is_err());
         let zone = crate::openrgb_dled::zone_body(0, 2, [0, 0x52, 0xff]);

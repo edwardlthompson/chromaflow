@@ -2,19 +2,29 @@ use crate::types::BinaryProbe;
 use std::process::Command;
 
 pub fn liquidctl() -> BinaryProbe {
-    match Command::new("liquidctl").arg("--version").output() {
-        Ok(out) if out.status.success() => BinaryProbe {
-            available: true,
-            detail: String::from_utf8_lossy(&out.stdout).trim().to_string(),
-        },
-        Ok(out) => BinaryProbe {
+    #[cfg(windows)]
+    {
+        BinaryProbe {
             available: false,
-            detail: format!("exit {}", out.status),
-        },
-        Err(err) => BinaryProbe {
-            available: false,
-            detail: err.to_string(),
-        },
+            detail: "liquidctl not used on Windows yet".into(),
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        match Command::new("liquidctl").arg("--version").output() {
+            Ok(out) if out.status.success() => BinaryProbe {
+                available: true,
+                detail: String::from_utf8_lossy(&out.stdout).trim().to_string(),
+            },
+            Ok(out) => BinaryProbe {
+                available: false,
+                detail: format!("exit {}", out.status),
+            },
+            Err(err) => BinaryProbe {
+                available: false,
+                detail: err.to_string(),
+            },
+        }
     }
 }
 

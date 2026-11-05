@@ -11,7 +11,7 @@ commands.allow = ["support_dry_run", "update_check", "update_install"]
 [[permission]]
 identifier = "allow-support-apply"
 description = "pkexec pinned install-support.sh --apply"
-commands.allow = ["support_apply"]
+commands.allow = ["support_apply", "support_progress"]
 
 [[permission]]
 identifier = "allow-competitors"
@@ -56,4 +56,4 @@ commands.allow = ["open_url"]
 [[permission]]
 identifier = "allow-pwm"
 description = "PWM watchdog take-over, tick, and firmware failsafe"
-commands.allow = ["pwm_takeover", "pwm_tick", "pwm_release", "pwm_load", "pwm_store", "pwm_calibrate"]
+commands.allow = ["pwm_takeover", "pwm_tick", "pwm_release", "pwm_load", "pwm_store", "pwm_calibrate", "pwm_identify"]

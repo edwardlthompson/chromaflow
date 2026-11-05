@@ -56,9 +56,16 @@ pub fn save() -> Result<String, String> {
 }
 
 pub fn set_color(rgb: [u8; 3]) -> Result<String, String> {
-    let note = set_live(rgb)?;
-    save()?;
-    Ok(note)
+    #[cfg(windows)]
+    {
+        return crate::windows::hid_write::prime_color(rgb);
+    }
+    #[cfg(not(windows))]
+    {
+        let note = set_live(rgb)?;
+        save()?;
+        Ok(note)
+    }
 }
 
 /// Report ID 0 + command 0x62 0x01 + RGB + documented suffix ending 0xFF.

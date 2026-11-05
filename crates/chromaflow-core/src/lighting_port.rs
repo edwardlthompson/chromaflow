@@ -40,17 +40,40 @@ pub fn rewrite(backend: &str, device: &str) -> String {
             backend.into()
         };
     }
-    let b = backend.to_ascii_lowercase();
-    if b == "liquidctl" || fusionish(device) {
-        return "liquidctl".into();
+    // Windows: Fusion/GPU via OpenRGB; Arena/Prime via native HID helper; Keychron via SDK.
+    #[cfg(windows)]
+    {
+        let b = backend.to_ascii_lowercase();
+        let n = device.to_ascii_lowercase();
+        if b == "arena" || n.contains("arena") {
+            return "arena".into();
+        }
+        if b == "prime" || n.contains("prime neo") || n.contains("prime") && n.contains("steel") {
+            return "prime".into();
+        }
+        if fusionish(device) || gpuish(device) || b == "liquidctl" || b == "msi_gpu" || b == "openrgb"
+        {
+            return "openrgb".into();
+        }
+        if b == "keychron" || skip_sdk(device) {
+            return "openrgb".into();
+        }
+        return backend.into();
     }
-    if b == "msi_gpu" || gpuish(device) {
-        return "msi_gpu".into();
+    #[cfg(not(windows))]
+    {
+        let b = backend.to_ascii_lowercase();
+        if b == "liquidctl" || fusionish(device) {
+            return "liquidctl".into();
+        }
+        if b == "msi_gpu" || gpuish(device) {
+            return "msi_gpu".into();
+        }
+        if b == "keychron" || skip_sdk(device) {
+            return "keychron".into();
+        }
+        backend.into()
     }
-    if b == "keychron" || skip_sdk(device) {
-        return "keychron".into();
-    }
-    backend.into()
 }
 
 pub fn arenaish(name: &str) -> bool {
@@ -74,12 +97,24 @@ mod tests {
         }
         assert_eq!(super::claim("3434", "0b60"), Some("keychron"));
         assert_eq!(super::claim("1038", "1a00"), Some("arena"));
-        assert_eq!(super::rewrite("openrgb", "Keychron Q6 HE"), "keychron");
-        assert_eq!(super::rewrite("openrgb", "X570S AORUS MASTER"), "liquidctl");
-        assert_eq!(
-            super::rewrite("openrgb", "MSI GeForce RTX 4090 Suprim Liquid X"),
-            "msi_gpu"
-        );
+        #[cfg(windows)]
+        {
+            assert_eq!(super::rewrite("openrgb", "Keychron Q6 HE"), "openrgb");
+            assert_eq!(super::rewrite("openrgb", "X570S AORUS MASTER"), "openrgb");
+            assert_eq!(
+                super::rewrite("openrgb", "MSI GeForce RTX 4090 Suprim Liquid X"),
+                "openrgb"
+            );
+        }
+        #[cfg(not(windows))]
+        {
+            assert_eq!(super::rewrite("openrgb", "Keychron Q6 HE"), "keychron");
+            assert_eq!(super::rewrite("openrgb", "X570S AORUS MASTER"), "liquidctl");
+            assert_eq!(
+                super::rewrite("openrgb", "MSI GeForce RTX 4090 Suprim Liquid X"),
+                "msi_gpu"
+            );
+        }
         assert!(super::skip_sdk("Keychron Q6 HE"));
         assert!(super::arenaish("SteelSeries Arena 7"));
         assert_eq!(super::pad_id("0x3434"), "3434");

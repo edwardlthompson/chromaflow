@@ -3,9 +3,29 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 pub fn hwmon_root() -> PathBuf {
-    std::env::var("CHROMAFLOW_HWMON_ROOT")
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| PathBuf::from("/sys/class/hwmon"))
+    if let Ok(p) = std::env::var("CHROMAFLOW_HWMON_ROOT") {
+        return PathBuf::from(p);
+    }
+    #[cfg(windows)]
+    {
+        match crate::windows::lpc::kind() {
+            crate::windows::lpc::IoKind::Mock => {
+                return crate::windows::lpc::ensure_mock_fixture();
+            }
+            crate::windows::lpc::IoKind::Helper => {
+                let root = crate::windows::lpc::live_root();
+                let _ = std::fs::create_dir_all(&root);
+                return root;
+            }
+            crate::windows::lpc::IoKind::Unavailable => {
+                return PathBuf::from(r"C:\chromaflow\hwmon-missing");
+            }
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        PathBuf::from("/sys/class/hwmon")
+    }
 }
 
 pub fn scan(root: &Path) -> Vec<HwmonChip> {

@@ -36,6 +36,11 @@ static GPU_FANS: Mutex<Option<(Instant, Vec<GpuFan>)>> = Mutex::new(None);
 static REFRESHING: AtomicBool = AtomicBool::new(false);
 
 pub fn snapshot() -> Vec<GpuFan> {
+    // nvidia-settings is an X11 client; spawning it on Windows costs hundreds of ms
+    // for a guaranteed miss. GPU fans on Windows need a later NVAPI path.
+    if cfg!(windows) {
+        return Vec::new();
+    }
     let now = Instant::now();
     let stale = GPU_FANS.lock().unwrap_or_else(|p| p.into_inner()).clone();
     if let Some((at, v)) = stale {
@@ -47,6 +52,7 @@ pub fn snapshot() -> Vec<GpuFan> {
     store(query_fans())
 }
 
+#[cfg_attr(windows, allow(dead_code))]
 fn kick_refresh() {
     if REFRESHING.swap(true, Ordering::SeqCst) {
         return;
@@ -58,10 +64,12 @@ fn kick_refresh() {
     });
 }
 
+#[cfg_attr(windows, allow(dead_code))]
 fn query_fans() -> Vec<GpuFan> {
     query().map(|t| parse(&t)).unwrap_or_default()
 }
 
+#[cfg_attr(windows, allow(dead_code))]
 fn store(fans: Vec<GpuFan>) -> Vec<GpuFan> {
     if let Ok(mut g) = GPU_FANS.lock() {
         *g = Some((Instant::now(), fans.clone()));
@@ -69,6 +77,7 @@ fn store(fans: Vec<GpuFan>) -> Vec<GpuFan> {
     fans
 }
 
+#[cfg_attr(windows, allow(dead_code))]
 fn query() -> Option<String> {
     let out = command()
         .args(["-q", "GPUCurrentFanSpeedRPM", "-q", "GPUCurrentFanSpeed"])

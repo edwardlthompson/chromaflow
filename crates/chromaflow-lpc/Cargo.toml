@@ -1,0 +1,27 @@
+[package]
+name = "chromaflow-lpc"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Elevated SuperIO LPC helper via PawnIO (ADR-0022). Windows only."
+publish = false
+
+[[bin]]
+name = "chromaflow-lpc"
+path = "src/main.rs"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[target.'cfg(windows)'.dependencies]
+libloading = "0.8"
+windows-sys = { version = "0.59", features = [
+  "Win32_Foundation",
+  "Win32_Security",
+  "Win32_Storage_FileSystem",
+  "Win32_System_Pipes",
+  "Win32_System_IO",
+  "Win32_System_Threading",
+] }
