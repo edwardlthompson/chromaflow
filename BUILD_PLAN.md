@@ -1,7 +1,7 @@
 # Build Plan
 
 <!-- remaining-tally -->
-**Remaining:** AGENT 0 · LOCAL 0 · CLOUD 0 · AUTO 0 · HUMAN 19 · ADB 0 · **19 open**
+**Remaining:** AGENT 1 · LOCAL 1 · CLOUD 0 · AUTO 13 · HUMAN 19 · ADB 0 · **33 open**
 <!-- /remaining-tally -->
 
 Live board for ChromaFlow. Finished work: [`COMPLETED_TASKS.md`](COMPLETED_TASKS.md). Catalog vs original brief: [`docs/PRODUCT_GAPS.md`](docs/PRODUCT_GAPS.md).
@@ -53,7 +53,20 @@ python3 scripts/agent-run.py smoke-sprint --require
 > Auto-managed. Do not hand-edit rows inside the markers.
 
 <!-- open-prs-sync:begin -->
-_No open Dependabot or Release Please PRs._
+- 🔲 [AUTO] Merge Dependabot [#81](https://github.com/edwardlthompson/chromaflow/pull/81) (chore(deps-dev): bump source-map-js from 1.2.1 to 1.2.2 in /examples/web)
+- 🔲 [AUTO] Merge Dependabot [#80](https://github.com/edwardlthompson/chromaflow/pull/80) (chore(deps): bump source-map-js from 1.2.1 to 1.2.2 in /apps/desktop)
+- 🔲 [AUTO] Merge Dependabot [#77](https://github.com/edwardlthompson/chromaflow/pull/77) (chore(deps): bump the chromaflow-rust group across 1 directory with 4 updates)
+- 🔲 [AUTO] Merge Dependabot [#73](https://github.com/edwardlthompson/chromaflow/pull/73) (chore(deps-dev): bump vite from 8.3.0 to 8.3.6 in /examples/web)
+- 🔲 [AUTO] Merge Dependabot [#70](https://github.com/edwardlthompson/chromaflow/pull/70) (chore(deps-dev): bump vite from 8.3.0 to 8.3.5 in /apps/desktop)
+- 🔲 [AUTO] Merge Dependabot [#69](https://github.com/edwardlthompson/chromaflow/pull/69) (chore(deps-dev): bump js-yaml from 5.2.3 to 5.5.0 in /examples/web)
+- 🔲 [AUTO] Merge Dependabot [#66](https://github.com/edwardlthompson/chromaflow/pull/66) (chore(deps-dev): bump undici from 7.29.0 to 7.30.2 in /examples/web)
+- 🔲 [AUTO] Merge Dependabot [#63](https://github.com/edwardlthompson/chromaflow/pull/63) (chore(deps): bump the github-actions group across 1 directory with 4 updates)
+- 🔲 [AUTO] Merge Dependabot [#57](https://github.com/edwardlthompson/chromaflow/pull/57) (chore(deps-dev): bump the web-dependencies group across 1 directory with 8 updates)
+- 🔲 [AUTO] Merge Dependabot [#49](https://github.com/edwardlthompson/chromaflow/pull/49) (chore(deps-dev): bump compression from 1.8.1 to 1.8.2 in /examples/web)
+- 🔲 [AUTO] Merge Dependabot [#47](https://github.com/edwardlthompson/chromaflow/pull/47) (chore(deps-dev): bump proxy-addr from 2.0.7 to 2.0.8 in /examples/web)
+- 🔲 [AUTO] Merge Dependabot [#38](https://github.com/edwardlthompson/chromaflow/pull/38) (chore(deps): bump the chromaflow-desktop group across 1 directory with 5 updates)
+- 🔲 [AUTO] Merge Dependabot [#30](https://github.com/edwardlthompson/chromaflow/pull/30) (chore(deps): bump devalue from 5.9.2 to 5.9.4 in /apps/desktop)
+- 🔲 [AGENT][LOCAL] Merge release [#10](https://github.com/edwardlthompson/chromaflow/pull/10) (chore(main): release 1.9.0) — scope: .
 <!-- open-prs-sync:end -->
 
 ### Template gaps (synced)
