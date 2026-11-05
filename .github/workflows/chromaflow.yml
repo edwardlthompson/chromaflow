@@ -15,13 +15,13 @@ permissions:
   contents: read
 
 jobs:
-  product:
-    name: Product crates (${{ matrix.os }})
+  product-smoke:
+    name: Product smoke (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
@@ -32,30 +32,18 @@ jobs:
           node-version: "22"
           cache: npm
           cache-dependency-path: apps/desktop/package-lock.json
-      - name: ShellCheck support script
-        run: sudo apt-get update && sudo apt-get install -y shellcheck
-      - name: Rust fmt clippy test (CLI/core; Tauri needs WebKit)
-        run: |
-          cargo fmt --all -- --check
-          cargo clippy --workspace --exclude chromaflow-desktop -- -D warnings
-          cargo test --workspace --exclude chromaflow-desktop
-      - name: Support dry-run
-        run: |
-          bash scripts/install-support.sh --dry-run
-          python3 -m unittest tests.test_chromaflow_support tests.test_no_pwm_write tests.test_chromaflow_tauri
-          shellcheck scripts/install-support.sh
-      - name: Desktop UI build
-        working-directory: apps/desktop
-        run: npm ci && npm run build
+      - name: Shared product smoke
+        shell: bash
+        run: bash scripts/smoke-chromaflow.sh
 
   tauri-attempt:
     name: Tauri 2 compile (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.os == 'ubuntu-22.04' }}
+    continue-on-error: ${{ matrix.os == 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
@@ -65,6 +53,7 @@ jobs:
           cache: npm
           cache-dependency-path: apps/desktop/package-lock.json
       - name: WebKit/GTK (Tauri 2)
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y \
