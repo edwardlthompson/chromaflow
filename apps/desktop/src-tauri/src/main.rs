@@ -4,6 +4,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use chromaflow_core::gauges;
+#[cfg(not(windows))]
 use chromaflow_core::hwmon;
 use chromaflow_core::lighting;
 use chromaflow_core::lighting_apply as color_apply;
@@ -41,9 +42,33 @@ fn support_dry_run(advanced: bool) -> Result<Value, String> {
 }
 
 #[tauri::command]
-fn support_apply(advanced: bool, extra: Option<String>) -> Result<Value, String> {
+async fn support_apply(
+    app: tauri::AppHandle,
+    advanced: bool,
+    extra: Option<String>,
+) -> Result<Value, String> {
     refuse_if_root()?;
-    support::apply(advanced, extra.as_deref())
+    use tauri::Emitter;
+    tauri::async_runtime::spawn_blocking(move || {
+        support::apply_with_progress(
+            advanced,
+            extra.as_deref(),
+            Some(Box::new(move |p| {
+                let _ = app.emit("support-progress", p);
+            })),
+        )
+    })
+    .await
+    .map_err(|e| format!("support apply join: {e}"))?
+}
+
+#[tauri::command]
+fn support_progress() -> Result<Option<Value>, String> {
+    refuse_if_root()?;
+    Ok(
+        chromaflow_core::support_progress::read_progress()
+            .and_then(|p| serde_json::to_value(p).ok()),
+    )
 }
 
 #[tauri::command]
@@ -53,15 +78,19 @@ fn competitors_plan() -> Result<Value, String> {
 }
 
 #[tauri::command]
-fn competitors_remove() -> Result<Value, String> {
+async fn competitors_remove() -> Result<Value, String> {
     refuse_if_root()?;
-    support::competitors_remove()
+    // Heavy taskkill / reg / sc — never block the UI thread (was freezing Take control).
+    tauri::async_runtime::spawn_blocking(support::competitors_remove)
+        .await
+        .map_err(|e| format!("take control join: {e}"))?
 }
 
 #[tauri::command]
 fn inventory(light: Option<bool>) -> Result<Value, String> {
     refuse_if_root()?;
     if light.unwrap_or(false) {
+        // Never block the UI thread starting OpenRGB — setup() kicks that off.
         serde_json::to_value(collect_inventory()).map_err(|e| e.to_string())
     } else {
         serde_json::to_value(collect_cooling()).map_err(|e| e.to_string())
@@ -71,6 +100,9 @@ fn inventory(light: Option<bool>) -> Result<Value, String> {
 #[tauri::command]
 fn hardware_gauges() -> Result<Value, String> {
     refuse_if_root()?;
+    #[cfg(windows)]
+    let chips = chromaflow_core::cooling::active().snapshot().chips;
+    #[cfg(not(windows))]
     let chips = hwmon::scan_temps(&hwmon::hwmon_root());
     serde_json::to_value(gauges::snapshot(&chips)).map_err(|e| e.to_string())
 }
@@ -235,20 +267,37 @@ fn pwm_store(file: pwm_curves::CurveFile) -> Result<Value, String> {
 }
 
 #[tauri::command]
-fn pwm_calibrate(dir: String, pwm: String) -> Result<Value, String> {
+async fn pwm_calibrate(dir: String, pwm: String) -> Result<Value, String> {
     refuse_if_root()?;
-    let inv = collect_inventory();
-    let mut file = pwm_curves::load()?;
-    let rows = pwm_cal::sweep(&inv, &dir, &pwm, file.allow_zero)?;
-    let key = format!("{dir}/{pwm}");
-    if rows.last().map(|r| r[1]).unwrap_or(0) == 0 {
-        file.calibration.insert(key, Vec::new());
-    } else {
-        file.calibration.insert(key, rows.clone());
-    }
-    pwm_curves::save(&file)?;
-    let detail = pwm_apply::tick(&inv, &file).unwrap_or_else(|e| e);
-    Ok(serde_json::json!({ "ok": true, "rows": rows, "detail": detail }))
+    // Long duty↔RPM dwell — never block the UI thread (looked like "quit after first PWM").
+    tauri::async_runtime::spawn_blocking(move || {
+        let inv = collect_inventory();
+        let mut file = pwm_curves::load()?;
+        let rows = pwm_cal::sweep(&inv, &dir, &pwm, file.allow_zero)?;
+        let key = format!("{dir}/{pwm}");
+        if rows.last().map(|r| r[1]).unwrap_or(0) == 0 {
+            file.calibration.insert(key, Vec::new());
+        } else {
+            file.calibration.insert(key, rows.clone());
+        }
+        pwm_curves::save(&file)?;
+        let detail = pwm_apply::tick(&inv, &file).unwrap_or_else(|e| e);
+        Ok(serde_json::json!({ "ok": true, "rows": rows, "detail": detail }))
+    })
+    .await
+    .map_err(|e| format!("calibrate join: {e}"))?
+}
+
+#[tauri::command]
+async fn pwm_identify(dir: String, pwm: String) -> Result<Value, String> {
+    refuse_if_root()?;
+    tauri::async_runtime::spawn_blocking(move || {
+        let inv = collect_inventory();
+        let detail = pwm_cal::identify(&inv, &dir, &pwm)?;
+        Ok(serde_json::json!({ "ok": true, "detail": detail }))
+    })
+    .await
+    .map_err(|e| format!("identify join: {e}"))?
 }
 
 fn prepare_webkit() {
@@ -274,6 +323,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             support_dry_run,
             support_apply,
+            support_progress,
             competitors_plan,
             competitors_remove,
             update_check,
@@ -297,13 +347,53 @@ fn main() {
             pwm_release,
             pwm_load,
             pwm_store,
-            pwm_calibrate
+            pwm_calibrate,
+            pwm_identify
         ])
         .setup(move |app| {
             single_instance::watch(app.handle().clone(), lock);
             icon::apply(app);
             let _ = tray::attach(app);
             window_geom::restore(app);
+            #[cfg(windows)]
+            {
+                std::thread::Builder::new()
+                    .name("cf-lighting-engine".into())
+                    .spawn(|| {
+                        // configure → kill standalone/GG → private SDK → RESIZE (no blind 2s sleep)
+                        let _ = chromaflow_core::openrgb_engine::configure_engine_ui();
+                        let _ = chromaflow_core::windows::conflicts::uninstall_standalone_openrgb();
+                        let _ = chromaflow_core::windows::hid::release_steelseries_locks();
+                        let _ = chromaflow_core::openrgb_engine::ensure_private_engine();
+                        let _ = chromaflow_core::openrgb_engine::configure_engine_ui();
+                        let _ = chromaflow_core::openrgb_spawn::ensure_local_server();
+                        // Second chance: restart engine so Keychron / SteelSeries USB attach after locks clear.
+                        std::thread::sleep(std::time::Duration::from_millis(800));
+                        let n = chromaflow_core::openrgb::probe_fresh()
+                            .controllers
+                            .len();
+                        if n < 3 {
+                            let _ = chromaflow_core::windows::hid::release_steelseries_locks();
+                            let _ = chromaflow_core::openrgb_spawn::restart_sdk_once();
+                            let _ = chromaflow_core::openrgb_spawn::ensure_local_server();
+                        }
+                        let _ = chromaflow_core::openrgb_zones::auto_configure_all();
+                        if chromaflow_core::openrgb_zones::zero_led_linear_zones() > 0 {
+                            let _ = chromaflow_core::openrgb_zones::auto_configure_all();
+                        }
+                        chromaflow_core::openrgb::drop_probe_cache();
+                    })
+                    .ok();
+            }
+            #[cfg(not(windows))]
+            {
+                std::thread::Builder::new()
+                    .name("cf-lighting-engine".into())
+                    .spawn(|| {
+                        chromaflow_core::openrgb_spawn::ensure_sdk();
+                    })
+                    .ok();
+            }
             Ok(())
         })
         .on_window_event(|window, event| {

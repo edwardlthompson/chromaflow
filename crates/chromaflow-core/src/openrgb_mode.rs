@@ -11,7 +11,14 @@ use crate::openrgb_proto::{
 
 pub fn set_mode(name: &str, mode: &str, rgb: [u8; 3]) -> Result<String, String> {
     let label = mode.trim();
-    if label.eq_ignore_ascii_case("direct") || label.eq_ignore_ascii_case("custom") {
+    let lower = label.to_ascii_lowercase();
+    // Host catalog "Solid Color" and empty mode → Direct fill (SET_CUSTOM + UPDATE_LEDS).
+    if lower.is_empty()
+        || lower == "direct"
+        || lower == "custom"
+        || lower == "solid color"
+        || lower == "solid"
+    {
         return crate::openrgb_apply::set_color(name, rgb);
     }
     crate::openrgb_preview::drop_session();

@@ -6,12 +6,12 @@
 
 <h1 align="center">ChromaFlow</h1>
 
-<p align="center"><strong>Fans, pumps, and lighting in one Linux Mint app</strong></p>
+<p align="center"><strong>Fans, pumps, and lighting — Linux Mint and Windows</strong></p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/template-1.8.0-656d76?style=flat-square" alt="template-1.8.0" />
-  <img src="https://img.shields.io/badge/license-MIT-2ea043?style=flat-square" alt="MIT" />
-  <img src="https://img.shields.io/badge/FOSS-no_tracking-656d76?style=flat-square" alt="FOSS" />
+  <img src="https://img.shields.io/badge/license-GPL--3.0--or--later-2ea043?style=flat-square" alt="GPL-3.0-or-later" />
+  <img src="https://img.shields.io/badge/no_tracking-656d76?style=flat-square" alt="no tracking" />
   <img src="https://img.shields.io/badge/status-active-14B8A6?style=flat-square" alt="status" />
   <a href="https://github.com/edwardlthompson/chromaflow/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/edwardlthompson/chromaflow/ci.yml?style=flat-square&label=CI" alt="CI" /></a>
   <img src="https://api.securityscorecards.dev/projects/github.com/edwardlthompson/chromaflow/badge" alt="OpenSSF Scorecard" />
@@ -32,7 +32,7 @@
 
 ## Pitch
 
-ChromaFlow is an independent Linux-native desktop app for cooling (fans, pumps, AIO) and RGB/LED control. It discovers what the kernel actually exposes, explains the usual Linux gaps versus Windows OpenRGB, and offers one-click Install detection support plus rescan — without shipping kernel modules or running the GUI as root.
+ChromaFlow is a FOSS desktop app for cooling (fans, pumps, AIO) and RGB/LED control on Linux Mint and Windows. It discovers what the OS actually exposes, explains gaps versus closed vendor tools, and never ships kernel modules or runs the GUI as root/elevated.
 
 ## Demo
 
@@ -46,18 +46,33 @@ ChromaFlow is an independent Linux-native desktop app for cooling (fans, pumps, 
 
 ## Features
 
-- Read-only inventory of hwmon, hidraw, i2c, optional liquidctl, and a localhost OpenRGB SDK probe
-- Support page: curated modules/udev/apt checklist with dry-run JSON; live apply only via polkit
+- Inventory of hwmon / SuperIO, HID RGB, optional liquidctl, and a localhost lighting SDK probe
+- Support page: curated install checklist (polkit on Linux; PawnIO + LPC helper on Windows)
 - Never bundles .ko files; never modprobe names that are not on the YAML allowlist
-- GUI and CLI refuse to run as root; PWM duty uses a watchdog daemon and a firmware failsafe (never silent 0%)
-- Detects CoolerControl, fancontrol, and fan2go so we do not fight them silently
+- GUI and CLI refuse to run elevated; PWM duty uses a watchdog daemon and a firmware failsafe (never silent 0%)
+- Warns when CoolerControl, Fan Control, EasyTune, or similar controllers already own the bus
+
+## Supported hardware (by OS)
+
+| Controller / path | Linux Mint | Windows | Notes |
+|-------------------|------------|---------|-------|
+| ITE / Nuvoton SuperIO PWM (IT8689, IT87952, …) | Tested via hwmon + frankcrawford `it87-dkms` | Tested via PawnIO + `chromaflow-lpc` on Gigabyte X570S | Empty probe stays honest — no fake headers |
+| NVIDIA GPU fans (`nvidia-settings`) | Tested (hybrid 4090) | Untested on this port | Needs DISPLAY / Coolbits on Linux |
+| OpenRGB SDK localhost | Tested | Partial (private engine sibling) | `127.0.0.1:6742` only |
+| Keychron VIA HID | Tested | Untested | Native HID path |
+| SteelSeries Arena / Prime HID | Tested | Untested | Research leftovers stay read-only |
+| Gigabyte Fusion HID / liquidctl AIO | Tested | Untested | USB claim can empty hidraw |
+| AMD `amdgpu` hwmon PWM | Untested (this host is NVIDIA) | N/A | YAML allowlist only |
+| ASUS Armoury / Corsair iCUE exclusive HID | Conflict warning | Conflict warning | Quit competing apps first |
+
+Plainly **untested** on Windows today: Keychron, Arena/Prime, Fusion/liquidctl, and NVIDIA fan take-over. Lab hardware sign-off for those rows is still open — see `docs/HARDWARE.md` and `docs/features/windows-desktop.md`.
 
 ## Quick start
 
-1. On Linux Mint 21/22: install Rust (stable) and Node 22, then `cargo test --workspace --exclude chromaflow-desktop` in the repo root (product crates) and `cd apps/desktop && npm ci`.
-2. Run `cargo run -p chromaflow-cli -- sensors` and `bash scripts/install-support.sh --dry-run` (no root, no modprobe).
-3. Missing fans or LEDs: open the Support tab and use Install detection support + rescan. Log out of Cinnamon after udev/group changes.
-4. Read `NOTICE`, `docs/HARDWARE.md`, and `docs/SUPPORT-SCRIPT.md` before enabling experimental modules.
+1. Install Rust (stable) and Node 22. On Windows also install WebView2 + VS Build Tools (see `docs/WINDOWS_DEV.md`). Then `cargo test --workspace --exclude chromaflow-desktop` and `cd apps/desktop && npm ci`.
+2. Run `cargo run -p chromaflow-cli -- sensors`. On Linux: `bash scripts/install-support.sh --dry-run`. On Windows: `cargo run -p chromaflow-cli -- support`.
+3. Missing fans or LEDs: open the Support tab. On Linux, Install detection support + rescan (log out after udev/group changes). On Windows, install the NSIS package and enable `chromaflowd` for LPC PWM (ADR-0022).
+4. Read `NOTICE`, `docs/HARDWARE.md`, `docs/WINDOWS_DEV.md`, and `docs/SUPPORT-SCRIPT.md` before enabling experimental modules.
 
 ## For humans
 
@@ -78,11 +93,11 @@ flowchart TD
 
 ## Install
 
-Primary test target is Linux Mint 21/22 (Cinnamon). We do not ship kernel modules. Inventory (`chromaflow sensors|devices|rescan`) works offline as an unprivileged user. Install the app with `bash scripts/build-chromaflow-deb.sh` then `sudo dpkg -i target/deb/chromaflow_0.2.2_amd64.deb` (see `packaging/README.md`). The package ships the color app icon (hicolor PNG + SVG). `apps/desktop/src-tauri/icons/icon.ico` is the Windows taskbar/Start icon for a future NSIS/MSI build — PWM on Windows is not in this release. After udev or group changes (i2c, plugdev), log out. OpenRGB is a hidden sibling engine, not a second Start-menu app.
+Primary targets are Linux Mint 21/22 (Cinnamon) and Windows 10/11 x64. We do not ship kernel modules. Inventory (`chromaflow sensors|devices|rescan`) works offline as an unprivileged user. Linux package: `bash scripts/build-chromaflow-deb.sh` then `sudo dpkg -i target/deb/chromaflow_1.0.0_amd64.deb`. Windows: NSIS via `scripts/build-chromaflow-nsis.ps1` / GitHub Release `ChromaFlow_*_x64-setup.exe` (arm64 row reserved). After udev or group changes (i2c, plugdev), log out on Linux.
 
 ## Usage
 
-Do not run the GUI or `chromaflow` with sudo. Use Support → Install detection support for modules/udev (polkit prompt). Never set PWM to 0% without an explicit confirm — the watchdog failsafe restores motherboard firmware control if the app or daemon stops. If CoolerControl or fancontrol is already running, ChromaFlow warns and does not take over. Lighting talks to OpenRGB on 127.0.0.1:6742 (spawn a pinned engine if the port is down). Uncontrolled USB HID is listed for research (no Apply). Config lives in `~/.config/chromaflow/`.
+Do not run the GUI or `chromaflow` elevated. Use Support → Install for modules/udev (polkit) or PawnIO/LPC (Windows). Never set PWM to 0% without an explicit confirm — the watchdog failsafe restores motherboard firmware control if the app or daemon stops. If CoolerControl or Fan Control is already running, ChromaFlow warns and does not take over. Config: `~/.config/chromaflow/` (Linux) or `%APPDATA%\chromaflow` (Windows).
 
 ## Configuration
 
@@ -98,7 +113,7 @@ See [`SECURITY.md`](SECURITY.md). Enable Dependabot alerts and follow [`docs/SEC
 
 ## License
 
-[MIT License](LICENSE) — see the license file for terms.
+[GPL-3.0-or-later](LICENSE) — see the license file for terms.
 
 ## Acknowledgments
 

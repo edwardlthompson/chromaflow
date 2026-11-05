@@ -45,7 +45,11 @@ def queue_status(text: str, *, lane: str, backlog_keys: set[str], idle: dict) ->
 def child_status(text: str, progress: dict, backlog_keys: set[str], idle: dict) -> dict:
     if not uses_legacy_playbook(text):
         return queue_status(text, lane="child", backlog_keys=backlog_keys, idle=idle)
-    for title, block_lines in parse_sprint_blocks(text):
+    blocks = parse_sprint_blocks(text)
+    # Slim boards use #### Sequential without ## Child Repo Playbook — fall back to board queue.
+    if not blocks:
+        return queue_status(text, lane="child", backlog_keys=backlog_keys, idle=idle)
+    for title, block_lines in blocks:
         status = resolve_sprint(title, block_lines, progress, backlog_keys)
         if not status["sprint_agent_auto_complete"] or status.get("next_row"):
             status["lane"] = "child"

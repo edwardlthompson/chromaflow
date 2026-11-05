@@ -130,7 +130,7 @@ def automate_release_sbom(root: Path, _cfg: dict) -> AttemptResult:
 
 
 def automate_glib_defer(root: Path, _cfg: dict) -> AttemptResult:
-    text = (root / "DECISION_LOG.md").read_text(encoding="utf-8")
+    text = (root / ".agent/DECISION_LOG.md").read_text(encoding="utf-8")
     if "GHSA-wrw7-89jp-8q8g" not in text or "gtk-rs" not in text:
         return AttemptResult(1, "glib-defer", "DECISION_LOG missing gtk-rs deferral", True)
     return AttemptResult(

@@ -3,7 +3,8 @@
 use std::io::{Read, Write};
 use std::net::{IpAddr, Ipv4Addr, Shutdown, SocketAddr, TcpStream};
 use std::sync::{Mutex, MutexGuard};
-use std::time::Duration;
+use std::thread;
+use std::time::{Duration, Instant};
 
 static SDK: Mutex<()> = Mutex::new(());
 
@@ -30,6 +31,9 @@ pub const UPDATE_LED: u32 = 1052;
 pub const SET_CUSTOM: u32 = 1100;
 pub const UPDATE_MODE: u32 = 1101;
 pub const PROTO: u32 = 40;
+#[cfg(windows)]
+pub const TIMEOUT: Duration = Duration::from_millis(1000);
+#[cfg(not(windows))]
 pub const TIMEOUT: Duration = Duration::from_millis(200);
 pub const CLIENT_PROTO: u32 = 3;
 
@@ -67,6 +71,59 @@ pub fn connect() -> Result<TcpStream, String> {
         .map_err(|e| e.to_string())?;
     let _ = stream.set_nodelay(true);
     Ok(stream)
+}
+
+/// SDK port can accept before detection finishes — wait until COUNT > 0.
+pub fn controller_count() -> Result<usize, String> {
+    let _sdk = lock_sdk();
+    let (mut stream, _proto) = open_client()?;
+    write_pkt(&mut stream, 0, COUNT, &[])?;
+    let payload = read_pkt(&mut stream)?;
+    close(&mut stream);
+    if payload.len() < 4 {
+        return Ok(0);
+    }
+    Ok(u32::from_le_bytes(payload[0..4].try_into().map_err(|_| "count")?) as usize)
+}
+
+pub fn wait_for_controllers(max_wait: Duration) -> Result<usize, String> {
+    let deadline = Instant::now() + max_wait;
+    let mut last_err = "no SDK".to_string();
+    let mut prev = 0usize;
+    let mut stable_ticks = 0u32;
+    while Instant::now() < deadline {
+        match controller_count() {
+            // Port opens mid-detection — require the same non-zero COUNT twice (~600ms)
+            // so Keychron/MB join after the first GPU hit.
+            Ok(n) if n > 0 && n <= 64 => {
+                if n == prev {
+                    stable_ticks += 1;
+                    if stable_ticks >= 2 {
+                        return Ok(n);
+                    }
+                } else {
+                    prev = n;
+                    stable_ticks = 0;
+                }
+            }
+            Ok(0) => {
+                prev = 0;
+                stable_ticks = 0;
+                last_err = "0 controllers (detection?)".into();
+            }
+            Ok(n) => last_err = format!("odd controller count {n}"),
+            Err(e) => {
+                prev = 0;
+                stable_ticks = 0;
+                last_err = e;
+            }
+        }
+        thread::sleep(Duration::from_millis(300));
+    }
+    if prev > 0 {
+        return Ok(prev);
+    }
+    Err(format!("OpenRGB SDK not ready: {last_err}"))
 }
 
 pub fn write_pkt(

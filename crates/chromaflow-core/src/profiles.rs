@@ -1,4 +1,5 @@
 //! Profile store: curve set + RGB name. Never writes PWM.
+//! Config directory comes from `platform::config_dir` (`CHROMAFLOW_CONFIG_HOME` override).
 
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -19,15 +20,7 @@ pub struct Profile {
 }
 
 pub fn config_dir() -> PathBuf {
-    if let Ok(p) = std::env::var("CHROMAFLOW_CONFIG_HOME") {
-        return PathBuf::from(p);
-    }
-    let base = std::env::var("XDG_CONFIG_HOME")
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| {
-            PathBuf::from(std::env::var("HOME").unwrap_or_else(|_| ".".into())).join(".config")
-        });
-    base.join("chromaflow")
+    crate::paths::config_dir()
 }
 
 pub fn empty() -> ProfilesFile {

@@ -8,7 +8,14 @@ const VID: &str = "1038";
 const PID: &str = "1a00";
 
 pub fn set_color(rgb: [u8; 3]) -> Result<String, String> {
-    write_report(&color_report(rgb))
+    #[cfg(windows)]
+    {
+        return crate::windows::hid_write::arena_color(rgb);
+    }
+    #[cfg(not(windows))]
+    {
+        write_report(&color_report(rgb))
+    }
 }
 
 pub fn set_zones(hexes: &[String]) -> Result<String, String> {

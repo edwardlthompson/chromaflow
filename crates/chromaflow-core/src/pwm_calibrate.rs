@@ -95,6 +95,47 @@ pub fn sweep(
     )
 }
 
+/// Drive one owned header to `target_pct`; all other owned headers stay at `floor`
+/// so Auto-calibrate is audible one fan/pump at a time.
+fn apply_solo(
+    root: &Path,
+    owned: &Path,
+    dir: &str,
+    pwm: &str,
+    target_pct: u8,
+    floor: u8,
+    allow_zero: bool,
+) -> Result<(), String> {
+    let text = fs::read_to_string(owned).map_err(|e| e.to_string())?;
+    let mut hit = false;
+    for line in text.lines() {
+        let mut parts = line.split_whitespace();
+        let (Some(d), Some(p)) = (parts.next(), parts.next()) else {
+            continue;
+        };
+        if !pwm_policy::valid_dir(d) || !pwm_policy::valid_pwm(p) {
+            continue;
+        }
+        let pct = if d == dir && p == pwm {
+            hit = true;
+            target_pct
+        } else {
+            floor
+        };
+        let duty = pwm_policy::percent_to_duty(pct, allow_zero)?;
+        let path = root.join(d).join(p);
+        pwm_apply::apply_enable(
+            &path.parent().unwrap().join(format!("{p}_enable")),
+            ENABLE_MANUAL,
+        )?;
+        pwm_apply::apply_duty(&path, duty, allow_zero)?;
+    }
+    if !hit {
+        return Err("take-over first".into());
+    }
+    Ok(())
+}
+
 pub fn sweep_at(
     root: &Path,
     owned: &Path,
@@ -118,19 +159,18 @@ pub fn sweep_at(
     } else {
         pwm_policy::MIN_PERCENT
     };
+    let floor = if allow_zero {
+        0u8
+    } else {
+        pwm_policy::MIN_PERCENT
+    };
     let result = (|| {
         let mut rows = Vec::new();
         for pct in (start..=100).step_by(10) {
             if pct == 0 && !allow_zero {
                 continue;
             }
-            let duty = pwm_policy::percent_to_duty(pct, allow_zero)?;
-            let path = root.join(dir).join(pwm);
-            pwm_apply::apply_enable(
-                &path.parent().unwrap().join(format!("{pwm}_enable")),
-                ENABLE_MANUAL,
-            )?;
-            pwm_apply::apply_duty(&path, duty, allow_zero)?;
+            apply_solo(root, owned, dir, pwm, pct, floor, allow_zero)?;
             let ms = dwell_ms();
             if ms > 0 {
                 thread::sleep(Duration::from_millis(ms));
@@ -141,6 +181,95 @@ pub fn sweep_at(
     })();
     if result.is_err() {
         let _ = pwm_apply::restore_dir(root, dir, pwm);
+    }
+    set_busy_at(owned, false);
+    result
+}
+
+fn hold_ms() -> u64 {
+    std::env::var("CHROMAFLOW_IDENTIFY_MS")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(if cfg!(test) { 0 } else { 5000 })
+}
+
+/// Spin one owned header at 100%; peers at floor (never silent 0% unless allow_zero).
+/// Restores the saved recipe via `pwm_apply::tick` when done.
+pub fn identify(inv: &Inventory, dir: &str, pwm: &str) -> Result<String, String> {
+    let owned = pwm_apply::owned_path();
+    let file = crate::pwm_curves::load().unwrap_or_else(|_| crate::pwm_curves::empty());
+    let allow_zero = file.allow_zero;
+    let floor = if allow_zero {
+        0u8
+    } else {
+        file.min_duty.max(pwm_policy::MIN_PERCENT)
+    };
+    identify_at(
+        &hwmon::hwmon_root(),
+        &owned,
+        &inv.conflicts,
+        dir,
+        pwm,
+        hold_ms(),
+        floor,
+        allow_zero,
+    )?;
+    let detail = pwm_apply::tick(inv, &file).unwrap_or_else(|e| e);
+    Ok(format!("identified {dir}/{pwm}; {detail}"))
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn identify_at(
+    root: &Path,
+    owned: &Path,
+    conflicts: &[String],
+    dir: &str,
+    pwm: &str,
+    hold: u64,
+    floor: u8,
+    allow_zero: bool,
+) -> Result<u32, String> {
+    if !conflicts.is_empty() {
+        return Err(format!("conflicts: {}", conflicts.join(", ")));
+    }
+    if !pwm_policy::valid_dir(dir) || !pwm_policy::valid_pwm(pwm) {
+        return Err("pwm path".into());
+    }
+    if !is_owned(owned, dir, pwm) {
+        return Err("take-over first".into());
+    }
+    set_busy_at(owned, true);
+    let result = (|| -> Result<u32, String> {
+        let text = fs::read_to_string(owned).map_err(|e| e.to_string())?;
+        let mut n = 0u32;
+        for line in text.lines() {
+            let mut parts = line.split_whitespace();
+            let (Some(d), Some(p)) = (parts.next(), parts.next()) else {
+                continue;
+            };
+            if !pwm_policy::valid_dir(d) || !pwm_policy::valid_pwm(p) {
+                continue;
+            }
+            let pct = if d == dir && p == pwm { 100u8 } else { floor };
+            let duty = pwm_policy::percent_to_duty(pct, allow_zero)?;
+            let path = root.join(d).join(p);
+            pwm_apply::apply_enable(
+                &path.parent().unwrap().join(format!("{p}_enable")),
+                ENABLE_MANUAL,
+            )?;
+            pwm_apply::apply_duty(&path, duty, allow_zero)?;
+            n += 1;
+        }
+        if n == 0 {
+            return Err("no owned channels".into());
+        }
+        if hold > 0 {
+            thread::sleep(Duration::from_millis(hold));
+        }
+        Ok(n)
+    })();
+    if result.is_err() {
+        let _ = pwm_apply::failsafe_at(root, owned);
     }
     set_busy_at(owned, false);
     result
@@ -166,6 +295,59 @@ mod tests {
         assert!(rows.iter().all(|r| r[1] == 0));
         assert_ne!(fs::read_to_string(chip.join("pwm1")).unwrap().trim(), "0");
         assert!(pwm_policy::percent_to_duty(0, false).is_err());
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn sweep_floors_peers_while_target_steps() {
+        let root = std::env::temp_dir().join(format!("cf-cal-peer-{}", std::process::id()));
+        let chip = root.join("hwmon0");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&chip).unwrap();
+        for n in 1..=2u8 {
+            fs::write(chip.join(format!("pwm{n}")), "200\n").unwrap();
+            fs::write(chip.join(format!("pwm{n}_enable")), "2\n").unwrap();
+            fs::write(chip.join(format!("fan{n}_input")), "900\n").unwrap();
+        }
+        let owned = root.join("owned");
+        fs::write(&owned, "hwmon0 pwm1\nhwmon0 pwm2\n").unwrap();
+        let rows = sweep_at(&root, &owned, &[], "hwmon0", "pwm1", false).unwrap();
+        assert_eq!(rows.last().map(|r| r[0]), Some(100));
+        assert_eq!(fs::read_to_string(chip.join("pwm1")).unwrap().trim(), "255");
+        assert_eq!(
+            fs::read_to_string(chip.join("pwm2")).unwrap().trim(),
+            "51",
+            "peer stays at 20% floor while target sweeps"
+        );
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn identify_spins_target_and_floors_peer() {
+        let root = std::env::temp_dir().join(format!("cf-id-{}", std::process::id()));
+        let chip = root.join("hwmon0");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&chip).unwrap();
+        fs::write(chip.join("pwm1"), "51\n").unwrap();
+        fs::write(chip.join("pwm1_enable"), "2\n").unwrap();
+        fs::write(chip.join("pwm2"), "51\n").unwrap();
+        fs::write(chip.join("pwm2_enable"), "2\n").unwrap();
+        let owned = root.join("owned");
+        fs::write(&owned, "hwmon0 pwm1\nhwmon0 pwm2\n").unwrap();
+        let n = identify_at(
+            &root,
+            &owned,
+            &[],
+            "hwmon0",
+            "pwm1",
+            0,
+            pwm_policy::MIN_PERCENT,
+            false,
+        )
+        .unwrap();
+        assert_eq!(n, 2);
+        assert_eq!(fs::read_to_string(chip.join("pwm1")).unwrap().trim(), "255");
+        assert_eq!(fs::read_to_string(chip.join("pwm2")).unwrap().trim(), "51");
         let _ = fs::remove_dir_all(&root);
     }
 }

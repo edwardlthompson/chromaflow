@@ -45,41 +45,49 @@ fn ping(slot: &mut Option<Serve>, kind: &str, hex: &str) -> Result<(), String> {
 }
 
 fn start(slot: &mut Option<Serve>) -> Result<(), String> {
-    let script = script().ok_or_else(|| "fusion-hid.py missing".to_string())?;
-    let mut child = Command::new("python3")
-        .args(["-u", &script, "serve"])
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::null())
-        .spawn()
-        .map_err(|e| e.to_string())?;
-    let stdin = child
-        .stdin
-        .take()
-        .ok_or_else(|| "Fusion HID stdin".to_string())?;
-    let stdout = child
-        .stdout
-        .take()
-        .ok_or_else(|| "Fusion HID stdout".to_string())?;
-    let (tx, rx) = mpsc::channel();
-    thread::Builder::new()
-        .name("fusion-hid".into())
-        .spawn(move || {
-            let mut lines = BufReader::new(stdout);
-            let mut line = String::new();
-            while lines.read_line(&mut line).is_ok() {
-                if line.is_empty() {
-                    break;
+    #[cfg(windows)]
+    {
+        let _ = slot;
+        return Err("fusion-hid.py not used on Windows".into());
+    }
+    #[cfg(not(windows))]
+    {
+        let script = script().ok_or_else(|| "fusion-hid.py missing".to_string())?;
+        let mut child = Command::new("python3")
+            .args(["-u", &script, "serve"])
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .spawn()
+            .map_err(|e| e.to_string())?;
+        let stdin = child
+            .stdin
+            .take()
+            .ok_or_else(|| "Fusion HID stdin".to_string())?;
+        let stdout = child
+            .stdout
+            .take()
+            .ok_or_else(|| "Fusion HID stdout".to_string())?;
+        let (tx, rx) = mpsc::channel();
+        thread::Builder::new()
+            .name("fusion-hid".into())
+            .spawn(move || {
+                let mut lines = BufReader::new(stdout);
+                let mut line = String::new();
+                while lines.read_line(&mut line).is_ok() {
+                    if line.is_empty() {
+                        break;
+                    }
+                    if tx.send(line.clone()).is_err() {
+                        break;
+                    }
+                    line.clear();
                 }
-                if tx.send(line.clone()).is_err() {
-                    break;
-                }
-                line.clear();
-            }
-        })
-        .map_err(|e| e.to_string())?;
-    *slot = Some(Serve { child, stdin, rx });
-    Ok(())
+            })
+            .map_err(|e| e.to_string())?;
+        *slot = Some(Serve { child, stdin, rx });
+        Ok(())
+    }
 }
 
 fn stop(slot: &mut Option<Serve>) {
@@ -90,15 +98,21 @@ fn stop(slot: &mut Option<Serve>) {
 }
 
 fn oneshot(kind: &str, hex: &str) -> Result<String, String> {
-    let script = script().ok_or_else(|| "fusion-hid.py missing".to_string())?;
-    let out = Command::new("timeout")
-        .args(["0.4", "python3", "-u", &script, kind, hex])
-        .output()
-        .map_err(|e| e.to_string())?;
-    if out.status.success() {
-        Ok(String::from_utf8_lossy(&out.stdout).trim().to_string())
-    } else {
-        Err(String::from_utf8_lossy(&out.stderr).trim().to_string())
+    #[cfg(windows)]
+    {
+        let _ = (kind, hex);
+        return Err("fusion-hid.py not used on Windows".into());
+    }
+    #[cfg(not(windows))]
+    {
+        let script = script().ok_or_else(|| "fusion-hid.py missing".to_string())?;
+        let out = crate::win_cmd::run_capped("0.4", "python3", &["-u", &script, kind, hex])
+            .map_err(|e| e.to_string())?;
+        if out.status.success() {
+            Ok(String::from_utf8_lossy(&out.stdout).trim().to_string())
+        } else {
+            Err(String::from_utf8_lossy(&out.stderr).trim().to_string())
+        }
     }
 }
 

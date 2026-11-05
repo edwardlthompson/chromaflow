@@ -15,7 +15,7 @@
 - 🔲 Keep `examples/blender/` and `modules/blender/`
 - 🔲 Install Blender 4.x on PATH for local renders
 - 🔲 Set `BLENDER_CYCLES_DEVICE=OPTIX` when `nvidia-smi` shows a GPU (skip if missing)
-- 🔲 Document GPU device in `AGENT_MEMORY.md`
+- 🔲 Document GPU device in `.agent/AGENT_MEMORY.md`
 
 ## Golden Path Reference
 

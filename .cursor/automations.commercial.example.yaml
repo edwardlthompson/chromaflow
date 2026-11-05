@@ -10,7 +10,7 @@ recipes:
     deny: [git push, force-push, skip-hooks]
     prompt: |
       Read failing CI logs. Comment root-cause hypotheses.
-      Point maintainers at /debug and KNOWLEDGE_BASE.md.
+      Point maintainers at /debug and .agent/KNOWLEDGE_BASE.md.
       Do not git push. Do not read .env.
   - id: nightly-digest
     trigger:

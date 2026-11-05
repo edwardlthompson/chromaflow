@@ -123,6 +123,7 @@ def render_readme(root: Path, product: dict, *, for_preview: bool = False) -> st
         "{{tagline}}": product["tagline"],
         "{{pitch}}": product["pitch"],
         "{{features}}": render_list(product["features"]),
+        "{{hardware_matrix}}": str(product.get("hardware_matrix") or "_See docs/HARDWARE.md._"),
         "{{quick_start}}": render_list(product["quick_start"], ordered=True),
         "{{install}}": product["install"],
         "{{usage}}": product["usage"],
@@ -155,7 +156,7 @@ def render_readme(root: Path, product: dict, *, for_preview: bool = False) -> st
         "{{url_agents}}": _rel_url("AGENTS.md", from_preview=for_preview),
         "{{url_tour}}": _rel_url("docs/help/TOUR.md", from_preview=for_preview),
         "{{ci_repo}}": str(urls.get("github_repo") or "OWNER/REPO"),
-        "{{license_name}}": "MIT License",
+        "{{license_name}}": str(product.get("license_name") or "GPL-3.0-or-later"),
     }
     out = template
     for key, value in replacements.items():

@@ -98,7 +98,7 @@
   "static_analysis_common_vulnerabilities_status": "Met",
   "static_analysis_common_vulnerabilities_justification": "CodeQL plus Semgrep prompt-injection pack.",
   "static_analysis_fixed_status": "Met",
-  "static_analysis_fixed_justification": "Confirmed findings are fixed or dismissed in DECISION_LOG.md / SECURITY_TRIAGE.md.",
+  "static_analysis_fixed_justification": "Confirmed findings are fixed or dismissed in .agent/DECISION_LOG.md / SECURITY_TRIAGE.md.",
   "static_analysis_often_status": "Met",
   "static_analysis_often_justification": "CodeQL and CI lint on every push/PR to main.",
   "dynamic_analysis_status": "Met",

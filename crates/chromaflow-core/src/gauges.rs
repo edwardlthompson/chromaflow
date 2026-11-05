@@ -3,6 +3,7 @@
 use crate::types::HwmonChip;
 use serde::Serialize;
 use std::fs;
+#[cfg(not(windows))]
 use std::process::Command;
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
@@ -24,17 +25,22 @@ pub struct Gauges {
 }
 
 pub fn snapshot(hwmon: &[HwmonChip]) -> Gauges {
-    let cpu_c = max_group_c(hwmon, "cpu");
     let gpu = crate::nvidia_smi::cached_gpu();
+    // Live OS/GPU sensors win over LPC mock hwmon (Windows lab fixture is static).
+    #[cfg(windows)]
+    let cpu_c = crate::win_gauges::cpu_temp_c().or_else(|| max_group_c(hwmon, "cpu"));
+    #[cfg(not(windows))]
+    let cpu_c = max_group_c(hwmon, "cpu");
+    #[cfg(windows)]
+    let gpu_c = gpu.temp_c.or_else(|| max_group_c(hwmon, "gpu"));
+    #[cfg(not(windows))]
     let gpu_c = max_group_c(hwmon, "gpu").or(gpu.temp_c);
-    let ram = fs::read_to_string("/proc/meminfo")
-        .ok()
-        .as_deref()
-        .and_then(parse_meminfo);
-    let disk = disk_used("/");
+    let ram = ram_used_ratio();
+    let disk = disk_used_ratio();
     let ram_c = max_group_c(hwmon, "ram");
+    // Prefer live CPU/GPU for "combined" feel; keep mock disk/ram only as hwmon labels.
     let disk_c = max_group_c(hwmon, "disk");
-    let cpu_load = crate::cpu_load::cached_cpu_load();
+    let cpu_load = cpu_load_ratio();
     let gpu_load = gpu.load;
     let note = if cpu_c.is_none() && gpu_c.is_none() {
         "CPU/GPU temp not in hwmon".into()
@@ -110,17 +116,65 @@ pub fn disk_used(path: &str) -> Option<f64> {
             }
         }
     }
-    let out = Command::new("df").args(["-P", path]).output().ok();
-    let v = out.and_then(|o| {
-        if !o.status.success() {
-            return None;
-        }
-        parse_df_p(&String::from_utf8_lossy(&o.stdout))
-    });
+    let v = disk_used_uncached(path);
     if let Ok(mut g) = DISK.lock() {
         *g = Some((now, v));
     }
     v
+}
+
+fn ram_used_ratio() -> Option<f64> {
+    #[cfg(windows)]
+    {
+        crate::win_gauges::ram_used()
+    }
+    #[cfg(not(windows))]
+    {
+        fs::read_to_string("/proc/meminfo")
+            .ok()
+            .as_deref()
+            .and_then(parse_meminfo)
+    }
+}
+
+fn disk_used_ratio() -> Option<f64> {
+    #[cfg(windows)]
+    {
+        crate::win_gauges::disk_used()
+    }
+    #[cfg(not(windows))]
+    {
+        disk_used("/")
+    }
+}
+
+fn cpu_load_ratio() -> Option<f64> {
+    #[cfg(windows)]
+    {
+        crate::win_gauges::cpu_load()
+    }
+    #[cfg(not(windows))]
+    {
+        crate::cpu_load::cached_cpu_load()
+    }
+}
+
+fn disk_used_uncached(path: &str) -> Option<f64> {
+    #[cfg(windows)]
+    {
+        let _ = path;
+        crate::win_gauges::disk_used()
+    }
+    #[cfg(not(windows))]
+    {
+        let out = Command::new("df").args(["-P", path]).output().ok();
+        out.and_then(|o| {
+            if !o.status.success() {
+                return None;
+            }
+            parse_df_p(&String::from_utf8_lossy(&o.stdout))
+        })
+    }
 }
 
 fn max_group_c(hwmon: &[HwmonChip], want: &str) -> Option<f64> {
@@ -157,7 +211,13 @@ fn channel_group(chip: &str, label: &str) -> &'static str {
         "disk"
     } else if n.contains("amdgpu") || n.contains("nvidia") || n.contains("nouveau") {
         "gpu"
-    } else if n.contains("k10") || n.contains("coretemp") || n.contains("zenpower") {
+    } else if n.contains("k10")
+        || n.contains("coretemp")
+        || n.contains("zenpower")
+        || n.contains("cpu")
+        || n.contains("tctl")
+        || n.contains("tdie")
+    {
         "cpu"
     } else {
         "other"
@@ -239,8 +299,21 @@ mod tests {
             },
         ];
         let g = snapshot(&chips);
-        assert!((g.cpu_c.unwrap() - 70.0).abs() < 0.01);
-        assert!((g.gpu_c.unwrap() - 50.0).abs() < 0.01);
+        // Live Windows CPU/GPU sensors win over fixture hwmon when present.
+        #[cfg(windows)]
+        {
+            assert!(g.cpu_c.is_some());
+            assert!(g.gpu_c.is_some());
+            let cpu = g.cpu_c.unwrap();
+            let gpu = g.gpu_c.unwrap();
+            assert!((-40.0..=125.0).contains(&cpu), "cpu_c={cpu}");
+            assert!((-40.0..=125.0).contains(&gpu), "gpu_c={gpu}");
+        }
+        #[cfg(not(windows))]
+        {
+            assert!((g.cpu_c.unwrap() - 70.0).abs() < 0.01);
+            assert!((g.gpu_c.unwrap() - 50.0).abs() < 0.01);
+        }
         assert!((g.disk_c.unwrap() - 56.85).abs() < 0.01);
         assert!((g.ram_c.unwrap() - 42.0).abs() < 0.01);
         let none = snapshot(&[]);
@@ -281,5 +354,21 @@ mod tests {
         let g = snapshot(&chips);
         assert!((g.ram_c.unwrap() - 41.0).abs() < 0.01);
         assert!(g.cpu_c.is_none());
+    }
+
+    #[test]
+    fn cpu_from_label_on_ite_superio() {
+        let chips = vec![HwmonChip {
+            name: "it8689".into(),
+            path: "/sys/class/hwmon/hwmon0".into(),
+            temps: vec![LabeledValue {
+                label: "CPU".into(),
+                value: "55000".into(),
+            }],
+            fans: vec![],
+            pwms: vec![],
+        }];
+        let g = snapshot(&chips);
+        assert!((g.cpu_c.unwrap() - 55.0).abs() < 0.01);
     }
 }

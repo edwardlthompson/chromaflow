@@ -5,7 +5,9 @@
 pub mod allowlist;
 pub mod arena_apply;
 pub mod conflicts;
+pub mod cooling;
 pub mod cpu_load;
+pub mod fs_mode;
 pub mod fusion_hid;
 pub mod gaps;
 pub mod gauges;
@@ -35,7 +37,10 @@ pub mod openrgb_preview;
 pub mod openrgb_proto;
 pub mod openrgb_sandbox;
 pub mod openrgb_spawn;
+pub mod openrgb_zones;
 pub mod prime_apply;
+pub mod paths;
+pub mod platform;
 pub mod privilege;
 pub mod probes;
 pub mod profiles;
@@ -49,9 +54,16 @@ pub mod pwm_recipe;
 pub mod pwm_scheme;
 pub mod scan;
 pub mod support;
+pub mod support_progress;
 pub mod types;
 pub mod update_check;
 pub mod update_fetch;
+pub mod win_cmd;
+#[cfg(windows)]
+pub mod win_gauges;
+
+#[cfg(windows)]
+pub mod windows;
 
 pub use privilege::refuse_if_root;
 pub use scan::{collect_cooling, collect_inventory};

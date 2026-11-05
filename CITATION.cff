@@ -7,16 +7,16 @@ authors:
 repository-code: https://github.com/edwardlthompson/chromaflow
 url: https://github.com/edwardlthompson/chromaflow
 abstract: >-
-  Linux Mint desktop app for fan/pump curves and RGB/LED control, with hwmon
-  inventory, an OpenRGB localhost SDK probe, and a polkit install-support path.
+  Desktop app for fan/pump curves and RGB/LED control on Linux Mint and Windows,
+  with hwmon/SuperIO inventory, HID RGB, and a localhost lighting SDK probe.
   Does not ship kernel modules.
 keywords:
   - linux
-  - mint
+  - windows
   - fans
   - rgb
-  - openrgb
+  - tauri
   - hwmon
-license: MIT
+license: GPL-3.0-or-later
 version: 1.8.0
 date-released: 2026-09-18

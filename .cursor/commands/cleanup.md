@@ -2,7 +2,7 @@
 
 Run after BUILD_PLAN execution when local gates pass. Moves finished work off the active board into @COMPLETED_TASKS.md.
 
-**Do not archive** while any `[AGENT]` or `[AUTO]` row in the active sprint/feature block is still 🔲 or ❌. Rows auto-completed by `/build` automation (✅ HUMAN/ADB) may be archived with AGENT/AUTO work. Items in `HUMAN_BACKLOG.md` stay 🔲 on the board until a human clears them.
+**Do not archive** while any `[AGENT]` or `[AUTO]` row in the active sprint/feature block is still 🔲 or ❌. Rows auto-completed by `/build` automation (✅ HUMAN/ADB) may be archived with AGENT/AUTO work. Items in `.agent/HUMAN_BACKLOG.md` stay 🔲 on the board until a human clears them.
 
 ## Step 1 — Confirm completion
 
@@ -54,6 +54,6 @@ python3 scripts/agent-run.py gc-worktrees -- --apply
 python3 scripts/check-file-encoding.py BUILD_PLAN.md COMPLETED_TASKS.md
 ```
 
-Active board should contain no ✅ rows except backlogged `[HUMAN]`/`[ADB]` items explicitly left open (see `HUMAN_BACKLOG.md`).
+Active board should contain no ✅ rows except backlogged `[HUMAN]`/`[ADB]` items explicitly left open (see `.agent/HUMAN_BACKLOG.md`).
 
 Begin now.

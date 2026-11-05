@@ -1,7 +1,6 @@
 //! Confirmed take-over: Balanced scheme, calibrate, watchdog. Never silent 0%.
 
 use chromaflow_core::collect_inventory;
-use chromaflow_core::hwmon;
 use chromaflow_core::pwm_apply;
 use chromaflow_core::pwm_calibrate;
 use chromaflow_core::pwm_curves;
@@ -12,16 +11,6 @@ use std::fs;
 
 fn skip_daemon() -> bool {
     std::env::var("CHROMAFLOW_SKIP_DAEMON").ok().as_deref() == Some("1")
-}
-
-fn rpm_of(dir: &str, pwm: &str) -> u32 {
-    pwm.strip_prefix("pwm")
-        .filter(|n| !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()))
-        .and_then(|n| {
-            fs::read_to_string(hwmon::hwmon_root().join(dir).join(format!("fan{n}_input"))).ok()
-        })
-        .and_then(|s| s.trim().parse().ok())
-        .unwrap_or(0)
 }
 
 pub fn run_takeover() -> i32 {
@@ -48,25 +37,42 @@ pub fn run_takeover() -> i32 {
             Err(err) => eprintln!("chromaflowd: {err}"),
         }
     }
+    let mut ok_n = 0u32;
+    let mut fail_n = 0u32;
+    let mut silent_n = 0u32;
+    let total = file
+        .channels
+        .iter()
+        .filter(|ch| ch.chip != "nvidia" && ch.enabled && pwm_policy::valid_dir(&ch.dir))
+        .count();
     for ch in file.channels.clone() {
         if ch.chip == "nvidia" || !ch.enabled || !pwm_policy::valid_dir(&ch.dir) {
             continue;
         }
-        if rpm_of(&ch.dir, &ch.pwm) == 0 {
-            eprintln!("calibrate {}/{}: 0 RPM, skip", ch.dir, ch.pwm);
-            continue;
-        }
+        // Sweep every writable header (incl. 0 RPM) so no-tach is learned; never abort the board.
         match pwm_calibrate::sweep(&inv, &ch.dir, &ch.pwm, file.allow_zero) {
             Ok(rows) => {
                 let key = format!("{}/{}", ch.dir, ch.pwm);
                 let empty = rows.last().map(|r| r[1]).unwrap_or(0) == 0;
                 file.calibration
                     .insert(key, if empty { Vec::new() } else { rows.clone() });
-                eprintln!("calibrate {}/{} {:?}", ch.dir, ch.pwm, rows.last());
+                if empty {
+                    silent_n += 1;
+                    eprintln!("calibrate {}/{}: no tach (0 RPM @ 100%)", ch.dir, ch.pwm);
+                } else {
+                    ok_n += 1;
+                    eprintln!("calibrate {}/{} {:?}", ch.dir, ch.pwm, rows.last());
+                }
             }
-            Err(err) => eprintln!("calibrate {}/{}: {err}", ch.dir, ch.pwm),
+            Err(err) => {
+                fail_n += 1;
+                eprintln!("calibrate {}/{}: {err}", ch.dir, ch.pwm);
+            }
         }
     }
+    eprintln!(
+        "calibrate board: {total} headers, {ok_n} with tach, {silent_n} no-tach, {fail_n} failed"
+    );
     let _ = pwm_curves::save(&file);
     match pwm_apply::tick(&inv, &file) {
         Ok(msg) => {

@@ -740,14 +740,14 @@
     },
     {
       "path": ".agent/memory/decisions.md",
-      "purpose": "Index to DECISION_LOG.md (not a second log)",
+      "purpose": "Index to .agent/DECISION_LOG.md (not a second log)",
       "read_when": "session_start",
       "update_when": "milestone_boundary",
       "owner": "maintainer"
     },
     {
       "path": ".agent/memory/pitfalls.md",
-      "purpose": "Index to KNOWLEDGE_BASE.md",
+      "purpose": "Index to .agent/KNOWLEDGE_BASE.md",
       "read_when": "session_start",
       "update_when": "milestone_boundary",
       "owner": "maintainer"
@@ -963,7 +963,7 @@
       "owner": "maintainer"
     },
     {
-      "path": "AGENT_MEMORY.md",
+      "path": ".agent/AGENT_MEMORY.md",
       "purpose": "Tech stack, threat model, retrospectives index",
       "read_when": "session_start",
       "update_when": "milestone_boundary",
@@ -991,21 +991,21 @@
       "owner": "agent"
     },
     {
-      "path": "DECISION_LOG.md",
+      "path": ".agent/DECISION_LOG.md",
       "purpose": "Append-only decision register",
       "read_when": "architectural_decision",
       "update_when": "architectural_decision",
       "owner": "agent+human"
     },
     {
-      "path": "KNOWLEDGE_BASE.md",
+      "path": ".agent/KNOWLEDGE_BASE.md",
       "purpose": "Stack-specific edge cases and resolved bugs",
       "read_when": "debugging",
       "update_when": "bug_resolved",
       "owner": "agent"
     },
     {
-      "path": "PROMPT_LIBRARY.md",
+      "path": ".agent/PROMPT_LIBRARY.md",
       "purpose": "Effective prompt strategies for this repo",
       "read_when": "prompt_needed",
       "update_when": "milestone_boundary",
@@ -1237,7 +1237,7 @@
     },
     {
       "path": ".github/workflows/dependency-review.yml",
-      "purpose": "PR dependency review — fail on new High/Critical vulnerabilities",
+      "purpose": "PR dependency review \u2014 fail on new High/Critical vulnerabilities",
       "read_when": "contributing",
       "update_when": "milestone_boundary",
       "owner": "maintainer"
@@ -1475,21 +1475,21 @@
     },
     {
       "path": "scripts/build-backlog.sh",
-      "purpose": "Append failed HUMAN/ADB automation to HUMAN_BACKLOG.md",
+      "purpose": "Append failed HUMAN/ADB automation to .agent/HUMAN_BACKLOG.md",
       "read_when": "session_start",
       "update_when": "milestone_boundary",
       "owner": "maintainer"
     },
     {
       "path": "scripts/lib/build_backlog.py",
-      "purpose": "HUMAN_BACKLOG.md dedupe and list helpers",
+      "purpose": ".agent/HUMAN_BACKLOG.md dedupe and list helpers",
       "read_when": "reference",
       "update_when": "milestone_boundary",
       "owner": "maintainer"
     },
     {
-      "path": "HUMAN_BACKLOG.md.example",
-      "purpose": "Template for /build failure backlog (child repos copy to HUMAN_BACKLOG.md)",
+      "path": ".agent/HUMAN_BACKLOG.md.example",
+      "purpose": "Template for /build failure backlog (child repos copy to .agent/HUMAN_BACKLOG.md)",
       "read_when": "bootstrap_session_start",
       "update_when": "never",
       "owner": "maintainer"
@@ -2021,7 +2021,7 @@
     },
     {
       "path": "scripts/run-codex-review.sh",
-      "purpose": "Local Codex CLI review → CODE_REVIEW.md",
+      "purpose": "Local Codex CLI review \u2192 CODE_REVIEW.md",
       "read_when": "audit",
       "update_when": "milestone_boundary",
       "owner": "maintainer"
@@ -3251,6 +3251,34 @@
       "read_when": "ui_work",
       "update_when": "design_change",
       "owner": "maintainer"
+    },
+    {
+      "path": "scripts/check-linguist-attribution.sh",
+      "purpose": "Child Linguist attribution gate"
+    },
+    {
+      "path": "scripts/lib/check_linguist_attribution.py",
+      "purpose": "Linguist attribution Python gate"
+    },
+    {
+      "path": "scripts/lib/linguist_attrs.py",
+      "purpose": "Linguist .gitattributes helpers"
+    },
+    {
+      "path": "scripts/publish-winget-hashes.sh",
+      "purpose": "Hash NSIS installers into Winget installer YAML"
+    },
+    {
+      "path": "scripts/smoke-chromaflow.sh",
+      "purpose": "Shared Linux/Windows product smoke"
+    },
+    {
+      "path": "templates/linguist/child.gitattributes",
+      "purpose": "Child Linguist attribution block template"
+    },
+    {
+      "path": "docs/REPO_PRESENTATION.md",
+      "purpose": "GitHub About presentation notes"
     }
   ],
   "modules": {

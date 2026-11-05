@@ -4,10 +4,10 @@
 
 ## Acceptance criteria
 
-- ✅ User-visible behavior: Cooling conflict banner and Support competitor list use active/enabled units or `pidof`, not leftover `.service` files
-- ✅ Offline/error behavior: `CHROMAFLOW_CONFLICTS=none` is empty; missing systemctl falls back to pidof
+- ✅ User-visible behavior: Cooling conflict banner and Support competitor list name friendly product apps (Fan Control, Armoury Crate, iCUE, …) so users know what to uninstall
+- ✅ Offline/error behavior: `CHROMAFLOW_CONFLICTS=none` is empty; missing systemctl falls back to pidof; Windows uses tasklist + Program Files hints
 - ✅ Accessibility: existing `role="alert"` banner
-- ✅ i18n: existing `cooling.conflict`
+- ✅ i18n: `cooling.conflict` tells users to quit and uninstall, then rescan
 
 ## Smoke scenario
 
@@ -23,7 +23,6 @@
 | View | Cooling banner / Support competitor card (no new UI) |
 | Tests | `tests/test_chromaflow_support.py` |
 | Wiring | `collect_inventory` |
-
 ## Tests
 
 - Automated: yes — source asserts `is-active`/`is-enabled`; env override; no unit-dir scan

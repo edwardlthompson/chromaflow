@@ -138,7 +138,7 @@ and branch protection (CI, Security Scan, CodeQL) are enabled on main.
 
 ```
 Init stack selection is in .cursor/stack-selection.json.
-Read AGENT_MEMORY.md active modules (checkboxes synced by init-project).
+Read .agent/AGENT_MEMORY.md active modules (checkboxes synced by init-project).
 Prune examples/ only via init script; never delete LICENSE, CI, or scripts/.
 Confirm TEMPLATE_INDEX modules match checked boxes before Parallel lane.
 
@@ -177,7 +177,7 @@ After merging a Release Please release PR or tagging vX.Y.Z:
 2. Verify GitHub Release includes root + per-stack SBOM slices and Winget stub.
 3. Confirm GitHub Pages demo deployed (examples/web) with no tracking scripts.
 4. Run scripts/simulate-template-upgrade.sh locally or check CI upgrade-simulation job.
-5. Append any regressions to KNOWLEDGE_BASE.md and BUILD_PLAN [AUTO] items.
+5. Append any regressions to .agent/KNOWLEDGE_BASE.md and BUILD_PLAN [AUTO] items.
 
 ```
 
@@ -242,7 +242,7 @@ Read @docs/CURSOR_MODES.md and INITIALIZATION_PROMPT.md Section 7b.
 Read .cursor/last-feature-gate.json first (failed_stage, log_tail, human_hint).
 Read .cursor/agent-progress.json strikes — halt if >= 3 (evidence summary, not a fourth guess).
 If the JSON is missing: collect command output, CI log URL, repro steps.
-Check KNOWLEDGE_BASE.md and docs/FOR_AGENTS.md Failure Playbook.
+Check .agent/KNOWLEDGE_BASE.md and docs/FOR_AGENTS.md Failure Playbook.
 Confirm repro locally before editing code. Switch to Agent Mode to apply fix.
 
 ```

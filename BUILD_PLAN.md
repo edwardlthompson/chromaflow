@@ -66,7 +66,7 @@ _No template gaps; .template-version matches upstream (or template maintainer N/
 
 ### Sacred files (human)
 
-These stay open. Do not copy them from the parent template. See `HUMAN_BACKLOG.md`.
+These stay open. Do not copy them from the parent template. See `.agent/HUMAN_BACKLOG.md`.
 
 - 🔲 [HUMAN] Sacred: AGENTS.md (never blind-overwrite)
 - 🔲 [HUMAN] Sacred: docs/INITIALIZATION_PROMPT.md (never blind-overwrite)
@@ -95,6 +95,36 @@ Complete list from construction gaps and `/ux-review`. Status is only planned / 
 <!-- ux-inventory:begin -->
 _No UX inventory items._
 <!-- ux-inventory:end -->
+
+### Sprint 41 — Windows SuperIO FC-parity (GPL-3)
+
+Keep GPL-3.0-or-later (ADR-0023). No proprietary relicense. No reboot. Do not paste Fan Control / LHM sources. Official PawnIO stays a separate install (winget / PawnIO.Setup) — GPL-3 must not embed the proprietary driver binary in our package.
+
+### Sequential
+
+- ✅ [AGENT][LOCAL] Windows: suppress EasyTune/Fan Control autostart (services + tasks + Run) in seize + Install All probe — scope: `crates/chromaflow-core/src/windows/conflicts.rs`, `support.rs`, tests
+- ✅ [AGENT][LOCAL] Windows: Gigabyte EC firmware-disable via IsaBridgeEC MMIO (offset 0x947) then re-probe — scope: `crates/chromaflow-lpc/src/isa_bridge.rs`, `server.rs`, docs
+- ✅ [AGENT][LOCAL] Windows: first-run Install All keeps winget PawnIO + LPC/chromaflowd autostart; Cooling banner Install all CTA — scope: `support.rs`, `docs/features/windows-lpc-bridge.md`, `docs/HARDWARE.md`
+
+### Parallel
+
+<!-- parallel_exception: Sequential-only Windows SuperIO sprint; all AGENT rows complete -->
+_None until Sequential lock._
+
+### Sprint 42 — FC live SuperIO parity (ECIO)
+
+Fan Control UI shows saved `/lpc/it8689e` + `/lpc/it87952e` cards; FC log still reports those sensors missing. Same empty probe as ChromaFlow. Implement LHM-style ECIO Gigabyte fallback (original Rust, no paste). GPL-3. No reboot.
+
+### Sequential
+
+1. ✅ [AGENT][LOCAL] Windows: probe-debug stages (LpcIO IDs, IsaBridge find, 0x947, ECIO) + Cooling/docs honesty vs FC ghost cards — scope: `crates/chromaflow-lpc/src/probe_debug.rs`, `docs/features/windows-lpc-bridge.md`, `docs/HARDWARE.md`, `apps/desktop/src/locales/en.json`
+2. ✅ [AGENT][LOCAL] Windows: ECIO Gigabyte firmware-disable fallback when IsaBridge latch is 0xFF / IDs 0xFFFF, then retry ITE probe — scope: `crates/chromaflow-lpc/src/isa_bridge.rs`, `ecio.rs`, `server.rs`, tests
+3. ✅ [AGENT][LOCAL] Windows: redeploy LPC helper, verify pipe probe / docs; keep EasyTune/FC autostart suppressed — scope: install path, `windows-lpc-bridge.md`
+
+### Parallel
+
+<!-- parallel_exception: Sequential-only ECIO sprint; all AGENT rows complete -->
+_None until Sequential lock._
 
 ### Local agent (This Computer)
 
