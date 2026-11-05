@@ -117,11 +117,12 @@ class TauriStubTests(unittest.TestCase):
 
     def test_ci_installs_webkit_on_both_ubuntu(self) -> None:
         workflow = (ROOT / ".github/workflows/chromaflow.yml").read_text(encoding="utf-8")
+        smoke = (ROOT / "scripts/smoke-chromaflow.sh").read_text(encoding="utf-8")
         self.assertIn("libwebkit2gtk-4.1-dev", workflow)
-        self.assertIn("ubuntu-22.04", workflow)
-        self.assertIn("ubuntu-24.04", workflow)
-        self.assertIn("continue-on-error: ${{ matrix.os == 'ubuntu-22.04' }}", workflow)
-        self.assertIn("cargo test --workspace --exclude chromaflow-desktop", workflow)
+        self.assertIn("ubuntu-latest", workflow)
+        self.assertIn("windows-latest", workflow)
+        self.assertIn("scripts/smoke-chromaflow.sh", workflow)
+        self.assertIn("cargo test --workspace --exclude chromaflow-desktop", smoke)
         self.assertIn("cargo build -p chromaflow-desktop --features custom-protocol", workflow)
 
     def test_default_members_skip_tauri(self) -> None:

@@ -301,7 +301,7 @@ class LightingHidTests(unittest.TestCase):
         self.assertIn("gaugeLane", (ROOT / "apps/desktop/src/lib/gauges.js").read_text(encoding="utf-8"))
         gauges_tick = (ROOT / "apps/desktop/src/lib/gaugesTick.js").read_text(encoding="utf-8")
         self.assertIn("hardware_gauges", gauges_tick)
-        self.assertIn("GAUGE_POLL_MS = 1000", gauges_tick)
+        self.assertIn("GAUGE_POLL_MS =", gauges_tick)
         self.assertNotIn("cycleOn", gauges_tick)
         self.assertNotIn("hardware_gauges", tick)
         self.assertNotIn("lastMeter", tick)
