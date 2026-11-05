@@ -22,10 +22,10 @@ def check_repo(root: Path) -> list[str]:
     errors: list[str] = []
     if f"badge/template-{version}" not in readme:
         errors.append(f"hero template badge must be template-{version}")
-    if "badge/license-MIT" not in readme:
-        errors.append("hero license badge must be MIT")
-    if "FOSS-no_tracking" not in readme:
-        errors.append("hero FOSS badge must say no_tracking")
+    if "badge/license-GPL--3.0--or--later" not in readme and "badge/license-MIT" not in readme:
+        errors.append("hero license badge must be GPL-3.0-or-later (or MIT on template)")
+    if "no_tracking" not in readme:
+        errors.append("hero badge must say no_tracking")
     if "actions/workflows/ci.yml" not in readme:
         errors.append("CI badge must link ci.yml")
     for label, color in OWNER_COLORS.items():

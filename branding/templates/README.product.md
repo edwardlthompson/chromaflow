@@ -10,8 +10,8 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/template-1.4.0-656d76?style=flat-square" alt="template-1.4.0" />
-  <img src="https://img.shields.io/badge/license-MIT-{{badge_license}}?style=flat-square" alt="MIT" />
-  <img src="https://img.shields.io/badge/FOSS-no_tracking-{{badge_foss}}?style=flat-square" alt="FOSS" />
+  <img src="https://img.shields.io/badge/license-GPL--3.0--or--later-{{badge_license}}?style=flat-square" alt="GPL-3.0-or-later" />
+  <img src="https://img.shields.io/badge/no_tracking-{{badge_foss}}?style=flat-square" alt="no tracking" />
   <img src="https://img.shields.io/badge/status-active-{{badge_primary}}?style=flat-square" alt="status" />
   <a href="https://github.com/{{ci_repo}}/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/{{ci_repo}}/ci.yml?style=flat-square&label=CI" alt="CI" /></a>
   <img src="https://api.securityscorecards.dev/projects/github.com/{{ci_repo}}/badge" alt="OpenSSF Scorecard" />
@@ -45,6 +45,10 @@
 ## Features
 
 {{features}}
+
+## Supported hardware (by OS)
+
+{{hardware_matrix}}
 
 ## Quick start
 
