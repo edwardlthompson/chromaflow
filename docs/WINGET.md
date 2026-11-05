@@ -1,6 +1,8 @@
 # Winget publish runbook
 
-Use this when a **child** repo ships a native Windows installer. This template ships a committed example at `packaging/winget/example/manifest.yaml` and can generate a stub. `[HUMAN]` opens the `microsoft/winget-pkgs` PR.
+ChromaFlow ships a multi-file Winget package under `packaging/winget/chromaflow/` (version + locale + installer with **x64** and **arm64**). After a Release uploads `ChromaFlow_*_{x64,arm64}-setup.exe`, hash with `bash scripts/publish-winget-hashes.sh` and open the `microsoft/winget-pkgs` PR (`[HUMAN]`). Validate locally: `winget validate --manifest packaging/winget/chromaflow`.
+
+The bootstrap template example remains at `packaging/winget/example/manifest.yaml` for other children.
 
 ## Example
 
@@ -39,7 +41,7 @@ bash scripts/validate-winget-stub.sh packaging/winget/manifest.stub.yaml
 1. Replace `Example.Publisher.App` and `Example Publisher` with the real identity.
 2. Set `InstallerUrl` to the GitHub Release asset (HTTPS).
 3. Set `InstallerSha256` to the SHA-256 of that asset. Never invent a hash.
-4. Keep `License: MIT` unless the child repo changed `LICENSE`.
+4. Keep `License: GPL-3.0-or-later` in sync with root `LICENSE` (ADR-0023).
 5. Re-run `bash scripts/validate-winget-stub.sh packaging/winget/manifest.stub.yaml`.
 
 Do not commit live installer URLs that embed tokens. Do not commit `.env`.

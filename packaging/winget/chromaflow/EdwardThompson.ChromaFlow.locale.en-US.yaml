@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
+PackageIdentifier: EdwardThompson.ChromaFlow
+PackageVersion: 0.2.2
+PackageLocale: en-US
+Publisher: Edward Thompson
+PackageName: ChromaFlow
+License: GPL-3.0-or-later
+ShortDescription: Fans, pumps, and lighting — Linux Mint and Windows
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0
