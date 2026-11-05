@@ -4,50 +4,52 @@ Copyright (c) 2026 ChromaFlow contributors
 This product is independent software. It is not affiliated with, endorsed by,
 or an official fork of Fan Control, OpenRGB, or liquidctl.
 
+License: GPL-3.0-or-later (see LICENSE). ADR-0023 supersedes the former MIT
+policy (ADR-0007) so ChromaFlow may ship a private OpenRGB lighting engine and
+later link OpenRGB/liquidctl in-process if needed.
+
 This product does not ship kernel modules, out-of-tree .ko files, or unsigned
 kernel code.
 
-Third-party attribution (inspiration and optional separate programs)
---------------------------------------------------------------------
+Third-party attribution
+-----------------------
 
 Fan Control
   Author: Rémi Mercier (Rem0o)
   https://github.com/Rem0o/FanControl.Releases
   The Fan Control *application* is proprietary (personal, non-commercial
-  license). ChromaFlow uses it only as UX inspiration for a Linux-native
-  cooling UI. No Fan Control source code is copied or linked.
+  license). ChromaFlow uses it only as UX inspiration. No Fan Control source
+  code is copied or linked.
 
-OpenRGB
+OpenRGB (private lighting engine)
   Author: Adam Honse (CalcProgrammer1) and contributors
   https://gitlab.com/CalcProgrammer1/OpenRGB
   License: GPL-2.0-or-later
-  ChromaFlow talks to a locally running OpenRGB SDK server (127.0.0.1:6742)
-  as a separate process. The Mint .deb ships the official OpenRGB AppImage at
-  /usr/libexec/chromaflow/OpenRGB.AppImage (GPL; not in this git tree).
-  `chromaflow daemon --sdk` keeps that sibling on localhost. OpenRGB source is
-  not vendored. Linking OpenRGB in-process would require a license discussion
-  (likely GPL) before any such change.
-  Detector identity (name, bus, VID/PID) for the lighting gap list is extracted
-  from the AppImage-pinned git revision into data/openrgb-device-index.csv
-  (GPL index of facts; not controller source). Refresh:
-  `python3 scripts/agent-run.py fetch-openrgb-device-index`.
+  On Windows, ChromaFlow installs OpenRGB under
+  Program Files\ChromaFlow\engine\OpenRGB\ (or %LOCALAPPDATA%\chromaflow\engine)
+  as a private SDK server on 127.0.0.1:6742 — a separate process, not a
+  standalone user app (no Start Menu shortcut). On Linux Mint the .deb may ship
+  OpenRGB.AppImage under /usr/libexec/chromaflow/. Detector identity for the
+  lighting gap list is in data/openrgb-device-index.csv (GPL index of facts; not
+  controller source). Refresh: `python3 scripts/agent-run.py fetch-openrgb-device-index`.
 
 liquidctl
   https://github.com/liquidctl/liquidctl
   License: GPL-3.0-or-later
-  Optional PATH binary invoked as a separate process. Not linked.
+  Optional PATH binary on Linux; not the primary Windows lighting path.
+
+PawnIO + LpcIO.bin (Windows SuperIO helper)
+  Author: namazso and contributors
+  https://github.com/namazso/PawnIO
+  https://github.com/namazso/PawnIO.Modules
+  LpcIO.bin + IsaBridgeEC.bin vendored from PawnIO.Modules release 0.2.11
+  (crates/chromaflow-lpc/modules/)
+  LpcIO.bin SHA256: B3896A1CAB0D808FCA31FE2EBCAE045D59DAC690DA87B17C858BB8DA357EB45E
+  IsaBridgeEC.bin SHA256: 2C5EC9D09BA42C980C917F83F528E9643CEEE386C84FFA8765C521CD1BBBA304
+  PawnIO is installed separately (winget id namazso.PawnIO). ChromaFlow’s
+  elevated chromaflow-lpc loads PawnIOLib.dll + those modules; it does not
+  ship WinRing0. Gigabyte AMD boards often need IsaBridgeEC (MMIO) when
+  classic LpcIO chip-ID reads return 0xFFFF.
 
 rivalcfg
-  Author: Fabien Loison (flozz) and contributors
-  https://github.com/flozz/rivalcfg
-  License: GPL-3.0-or-later
-  Prime Neo HID command bytes (output 0x62 / save 0x59) are documented by
-  the public Prime device profile. ChromaFlow writes those bytes to hidraw
-  itself. rivalcfg is not vendored, linked, or spawned.
-
-lm-sensors, i2c-tools, and other distro packages remain separate works
-installed by the user or by the polkit helper from official apt repositories.
-
-Agent scaffolding
-  This repository was initialized from agent-project-bootstrap (MIT):
-  https://github.com/edwardlthompson/agent-project-bootstrap
+  Cited for public SteelSeries command bytes only; not vendored (GPL-3).
