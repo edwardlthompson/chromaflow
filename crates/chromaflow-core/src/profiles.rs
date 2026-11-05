@@ -1,4 +1,5 @@
 //! Profile store: curve set + RGB name. Never writes PWM.
+//! Config directory comes from `platform::config_dir` (`CHROMAFLOW_CONFIG_HOME` override).
 
 use serde::{Deserialize, Serialize};
 use std::fs;

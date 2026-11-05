@@ -9,6 +9,20 @@ Bootstrapped from [agent-project-bootstrap](https://github.com/edwardlthompson/a
 
 ## [Unreleased]
 
+### Added
+
+- Shared `scripts/smoke-chromaflow.sh` run on both Linux and Windows CI matrix jobs
+- Multi-file Winget package under `packaging/winget/chromaflow/` with x64 and arm64 installer rows, plus `scripts/publish-winget-hashes.sh`
+- README supported-hardware matrix (per OS) with plain untested controller callouts
+- Linguist attribution block and `check-linguist-attribution` gate so Rust leads language stats
+
+### Changed
+
+- Config paths, device discovery, and startup guards route through `crates/chromaflow-core/src/platform/` (Linux + Windows backends)
+- Living agent memory lives under `.agent/` (`AGENT_MEMORY.md`, `DECISION_LOG.md`, and related logs)
+- GitHub About description/topics and CITATION/`LICENSE` metadata confirm GPL-3.0-or-later (no generic `foss`/`mit` topics)
+- LPC pipe duty command renamed to `pwm_apply` (no `set_pwm` symbols)
+
 ## [0.2.2] - 2026-09-18
 
 ### Added
