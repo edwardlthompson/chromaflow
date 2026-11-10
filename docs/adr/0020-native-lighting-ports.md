@@ -25,7 +25,7 @@ OpenRGB remains the sibling on `127.0.0.1:6742`. MIT forbids translating `Contro
 ### Critique
 
 | Issue | Resolution |
-|-------|------------|
+| ------- | ------------ |
 | Null hidraw / wrong interface | VIA descriptor `06 60 ff` only; missing node is typed Err |
 | Network timeout | Native HID has none; SDK compare stays 200ms optional |
 | Race native vs SDK on Keychron | Native apply `drop_session`; skip SDK `UPDATE_LEDS` for claimed VID `3434` |
