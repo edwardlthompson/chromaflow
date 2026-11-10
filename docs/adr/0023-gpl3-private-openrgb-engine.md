@@ -27,7 +27,7 @@ OpenRGB is GPL-2.0-or-later; liquidctl is GPL-3.0-or-later. Shipping a private b
 ### Critique
 
 | Issue | Resolution |
-|-------|------------|
+| ------- | ------------ |
 | MIT sacred drift | Explicit HUMAN direction; LICENSE + NOTICE + this ADR in one change |
 | Console focus steal | `nvidia_smi` Windows path + `win_cmd` on tasklist/sc/spawn |
 | Users still see OpenRGB UI | No shortcuts; hidden server flags; Support copy says “lighting engine” |
