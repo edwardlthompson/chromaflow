@@ -20,7 +20,7 @@ Ship **MIT** + [`NOTICE`](../../NOTICE). Treat `openrgb` and `liquidctl` as opti
 ### Critique
 
 | Issue | Resolution |
-|-------|------------|
+| ------- | ------------ |
 | Calling GPL binaries from MIT | Documented as separate works in NOTICE |
 | Accidental paste of NetworkClient.cpp | This milestone only TCP-connects localhost; no protocol dump from OpenRGB sources |
 ## Consequences
