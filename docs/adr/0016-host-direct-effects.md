@@ -22,7 +22,7 @@ ChromaFlow renders QMK RGB-matrix-style effects on the host (`effectQmk.js`) and
 ### Critique
 
 | Issue | Resolution |
-|-------|------------|
+| ------- | ------------ |
 | Null/empty device or color | Skip empty frames; picker hex or last color; tests cover classify + frame |
 | Network timeout | Preview pull is 400 ms; host-effect push skips DATA and returns written pixels |
 | Race with firmware | Pull marks non-Direct modes unpainted so the next push re-sends `SET_CUSTOM` |
