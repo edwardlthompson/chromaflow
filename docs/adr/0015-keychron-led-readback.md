@@ -23,7 +23,7 @@ OpenRGB `REQUEST_CONTROLLER_DATA` and Keychron firmware Rainbow Wave do not shar
 ### Critique
 
 | Issue | Resolution |
-|-------|------------|
+| ------- | ------------ |
 | Null/empty hidraw | Missing VIA node returns no overlay; SDK pixels still show |
 | Network timeout | Localhost SDK 80 ms; HID is a char device on a worker thread |
 | Race with OpenRGB | `lock_sdk` around TCP; apply drops both SDK and HID sessions |

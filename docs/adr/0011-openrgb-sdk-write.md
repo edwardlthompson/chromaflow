@@ -24,7 +24,7 @@ Lighting offers color, mode, and per-LED apply for OpenRGB backends that exist (
 ### Critique
 
 | Issue | Resolution |
-|-------|------------|
+| ------- | ------------ |
 | Null/empty color or device | Reject unless RRGGBB and a non-empty name; tests cover both |
 | Network timeout | 200ms localhost; failure is a JSON/UI error, no retry storm |
 | Race | Apply uses a fresh TCP session; UI rescan is already 2.5s |

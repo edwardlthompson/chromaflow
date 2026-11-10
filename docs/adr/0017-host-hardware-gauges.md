@@ -27,7 +27,7 @@ Hue 120→0. Combined uses the **average** of CPU and GPU ratios (35 °C = 0, 90
 ### Critique
 
 | Issue | Resolution |
-|-------|------------|
+| ------- | ------------ |
 | Null/empty sensors | `Option` fields; last `ui.gauges` then green; tests empty meminfo / parse N/A smi |
 | Network timeout | Gauges are local sysfs/`df`/`nvidia-smi`; probe cache + try_lock for SDK |
 | Race vs lighting_sync | try_lock never waits; 10 Hz motion / skip unchanged gauge frames |

@@ -25,7 +25,7 @@ OpenRGB on this host held GPU I2C and still returned SMBus `EIO` at `0x68`. Keyc
 ### Critique
 
 | Issue | Resolution |
-|-------|------------|
+| ------- | ------------ |
 | Null hidraw / liquidctl | Typed Err; Lighting lists only present backends |
 | Network timeout | No 6742 probe when SDK off |
 | Race GUI vs leftover AppImage | GUI does not `ensure_sdk`; unit disabled |
