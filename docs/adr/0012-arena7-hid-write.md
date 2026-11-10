@@ -24,7 +24,7 @@ Fusion apply also sends OpenRGB `RESIZEZONE` (1000) to 32 LEDs and `UPDATE_ZONE_
 ### Critique
 
 | Issue | Resolution |
-|-------|------------|
+| ------- | ------------ |
 | Null/empty color | Same RRGGBB parse as ADR-0011; tests cover report layout |
 | Network timeout | N/A — local hidraw write; OpenRGB D_LED uses existing 2s I/O |
 | Race | Vendor hidraw is not the Fusion node OpenRGB holds; SDK mutex still serializes D_LED |
