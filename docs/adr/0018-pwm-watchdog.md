@@ -28,7 +28,7 @@ PWM duty is written only by `chromaflow daemon --watchdog` or the same `pwm_appl
 ### Critique
 
 | Issue | Resolution |
-|-------|------------|
+| ------- | ------------ |
 | Null/empty owned list | Failsafe is a no-op; test empty owned file |
 | Write timeout | Sysfs write is local; tick errors restore that channel |
 | Race: GUI tick vs daemon | Same curves file; last apply wins; failsafe still enable=2 |
