@@ -24,7 +24,7 @@
 ### Critique
 
 | Issue | Resolution |
-|-------|------------|
+| ------- | ------------ |
 | Null/empty DISPLAY or missing X socket | 20s wait then spawn with `:0` + `~/.Xauthority`; no hid/nvidia skips restart |
 | Network timeout | N/A — localhost 200ms SDK connect |
 | Race vs GUI apply | Restart only in the 45s SDK boot window, once; `lock_sdk` serializes TCP |
