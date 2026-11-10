@@ -26,7 +26,7 @@ CI greps for forbidden write APIs.
 ### Critique
 
 | Issue | Resolution |
-|-------|------------|
+| ------- | ------------ |
 | Milestone cannot demo a live curve | Inventory + placeholder graph still prove the GUI shell |
 ## Consequences
 
