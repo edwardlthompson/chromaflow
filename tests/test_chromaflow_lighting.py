@@ -818,12 +818,13 @@ class LightingHidTests(unittest.TestCase):
         self.assertNotIn("persistSession(tab, true)", (ROOT / "apps/desktop/src/App.svelte").read_text(encoding="utf-8"))
         self.assertIn("persistSession(name)", (ROOT / "apps/desktop/src/App.svelte").read_text(encoding="utf-8"))
         app_js = (ROOT / "apps/desktop/src/App.svelte").read_text(encoding="utf-8")
-        boot_js = (ROOT / "apps/desktop/src/lib/lightingBoot.js").read_text(encoding="utf-8")
-        self.assertIn("reapplyFromInventory", boot_js)
-        self.assertIn("reapplySessionLighting", boot_js)
-        self.assertIn("scheduleBootReapply", app_js)
-        self.assertIn("reapplyFromInventory", app_js)
-        self.assertIn("HKCU Run", (ROOT / "scripts/install-windows-runtime.ps1").read_text(encoding="utf-8"))
+        self.assertIn("applySession", app_js)
+        self.assertIn("loadLocal", app_js)
+        self.assertIn("inventory", app_js)
+        self.assertIn(
+            "ensure_gui_autostart",
+            (ROOT / "crates/chromaflow-core/src/windows/support.rs").read_text(encoding="utf-8"),
+        )
         self.assertIn("ui.page === \"Lighting\"", page)
         self.assertIn("setHostCycle(false", page)
         self.assertIn("pushFusionNow", page)
@@ -947,8 +948,8 @@ class LightingHidTests(unittest.TestCase):
                 "{ name: 'Aorus Motherboard', leds: 32 },"
                 "{ name: 'MSI GeForce RTX 4090 SUPRIM LIQUID X', leds: 24 }"
                 "] } });"
-                "if (!winSdk.some((d) => /aorus/i.test(d.name))) throw new Error('keep aorus sdk');"
-                "if (!winSdk.some((d) => /4090/i.test(d.name))) throw new Error('keep 4090 sdk');",
+                "if (winSdk.some((d) => /aorus/i.test(d.name))) throw new Error('drop aorus sdk');"
+                "if (winSdk.some((d) => /4090/i.test(d.name))) throw new Error('drop 4090 sdk');",
             ],
             cwd=ROOT,
             text=True,

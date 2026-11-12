@@ -70,7 +70,8 @@ class ProfileAndSelectTests(unittest.TestCase):
         self.assertIn("schema: u32", text)
         self.assertIn("curve_set", text)
         self.assertNotIn("set_pwm", text)
-        self.assertIn(".config", text)
+        self.assertIn("CHROMAFLOW_CONFIG_HOME", text)
+        self.assertIn("config_dir", text)
 
     def test_config_home_override_is_documented(self) -> None:
         text = (ROOT / "crates/chromaflow-core/src/profiles.rs").read_text(encoding="utf-8")

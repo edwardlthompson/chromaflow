@@ -138,7 +138,7 @@ class ProductReleaseSbomTests(unittest.TestCase):
             text=True,
             cwd=str(ROOT),
         )
-        self.assertEqual(proc.stdout.strip(), "0.2.2")
+        self.assertEqual(proc.stdout.strip(), "1.0.0")
         spec = (ROOT / "docs/features/product-release-sbom.md").read_text(encoding="utf-8")
         self.assertIn("product-release-version.sh", spec)
         job = release.split("linux-deb:", 1)[1].split("sbom-assets:", 1)[0]

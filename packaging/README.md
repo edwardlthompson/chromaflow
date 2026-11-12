@@ -18,7 +18,7 @@ Build and install one package (GUI, CLI, icon, helper):
 
 ```bash
 bash scripts/build-chromaflow-deb.sh
-sudo dpkg -i target/deb/chromaflow_0.2.2_amd64.deb
+sudo dpkg -i target/deb/chromaflow_1.0.0_amd64.deb
 sudo apt-get install -f
 
 ```
