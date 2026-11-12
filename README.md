@@ -9,7 +9,7 @@
 <p align="center"><strong>Fans, pumps, and lighting — Linux Mint and Windows</strong></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/template-1.8.0-656d76?style=flat-square" alt="template-1.8.0" />
+  <img src="https://img.shields.io/badge/template-1.13.0-656d76?style=flat-square" alt="template-1.13.0" />
   <img src="https://img.shields.io/badge/license-GPL--3.0--or--later-2ea043?style=flat-square" alt="GPL-3.0-or-later" />
   <img src="https://img.shields.io/badge/no_tracking-656d76?style=flat-square" alt="no tracking" />
   <img src="https://img.shields.io/badge/status-active-14B8A6?style=flat-square" alt="status" />
