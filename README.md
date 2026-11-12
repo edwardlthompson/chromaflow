@@ -93,7 +93,7 @@ flowchart TD
 
 ## Install
 
-Primary targets are Linux Mint 21/22 (Cinnamon) and Windows 10/11 x64. We do not ship kernel modules. Inventory (`chromaflow sensors|devices|rescan`) works offline as an unprivileged user. Linux package: `bash scripts/build-chromaflow-deb.sh` then `sudo dpkg -i target/deb/chromaflow_1.0.0_amd64.deb`. Windows: NSIS via `scripts/build-chromaflow-nsis.ps1` / GitHub Release `ChromaFlow_*_x64-setup.exe` (arm64 row reserved). After udev or group changes (i2c, plugdev), log out on Linux.
+Primary targets are Linux Mint 21/22 (Cinnamon) and Windows 10/11 x64. We do not ship kernel modules. Inventory (`chromaflow sensors|devices|rescan`) works offline as an unprivileged user. Linux package: `bash scripts/build-chromaflow-deb.sh` then `sudo dpkg -i target/deb/chromaflow_1.0.1_amd64.deb`. Windows: NSIS via `scripts/build-chromaflow-nsis.ps1` / GitHub Release `ChromaFlow_*_x64-setup.exe` (arm64 row reserved). After udev or group changes (i2c, plugdev), log out on Linux.
 
 ## Usage
 

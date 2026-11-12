@@ -15,6 +15,14 @@
 
 ```
 
+### 2026-11-12 — Ship 1.0.1 without template Release Please
+
+- **Status:** Accepted
+- **Context:** Open PR backlog cleared. Template Release Please wanted `v1.14.0` (bootstrap lineage), not product semver. `upd audit --check` still exit 6 on Medium `glib` / unmaintained RUSTSEC warnings (allowed in `cargo audit`). npm Highs cleared via patch bumps + `examples/web` overrides.
+- **Decision:** Product tag `v1.0.1` from CHANGELOG/Cargo. Do not merge template Release Please. Document remaining Medium glib as GTK/Tauri transitive.
+- **Alternatives considered:** Merge Release Please 1.14.0 (rejected: wrong product version). Block ship on Medium glib (rejected: prior 0.2.2 precedent).
+- **Consequences:** GitHub Release `v1.0.1` should publish `.deb` / NSIS via release workflow. PWM unchanged.
+
 ### 2026-09-18 — Ship 0.2.2 without merging template Release Please
 
 - **Status:** Accepted

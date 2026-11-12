@@ -9,6 +9,19 @@ Bootstrapped from [agent-project-bootstrap](https://github.com/edwardlthompson/a
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-12
+
+### Fixed
+
+- BUILD_PLAN sync reuses one stable PR when `main` is protected (no ci-sync spam)
+- Argus agent memory lives only under `.agent/` (root pointer removed)
+- npm High/Critical advisories in `examples/web` and `apps/desktop` via patch bumps and overrides
+- Stale bootstrap/UI gate assertions aligned with shipped cooling and lighting code
+
+### Changed
+
+- Bootstrap template lineage at 1.13.0 (Argus contract/rules pack)
+
 ## [1.0.0] - 2026-11-04
 
 ### Added
