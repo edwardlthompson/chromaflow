@@ -16,6 +16,9 @@ class CiPushOrPrTests(unittest.TestCase):
         self.assertIn("gh pr create", text)
         self.assertIn("chore/ci-sync-", text)
         self.assertIn("DEFAULT_BRANCH", text)
+        self.assertIn("--force-with-lease", text)
+        self.assertIn("Updated existing open PR", text)
+        self.assertNotIn("GITHUB_RUN_ID", text)
         self.assertNotIn("set_pwm", text)
 
     def test_weekly_health_uses_helper(self) -> None:
