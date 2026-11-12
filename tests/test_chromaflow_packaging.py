@@ -65,7 +65,7 @@ class DebPackagingTests(unittest.TestCase):
             env["CHROMAFLOW_DEB_GUI"] = str(gui)
             env["CHROMAFLOW_DEB_CLI"] = str(cli)
             proc = subprocess.run(
-                ["bash", str(SCRIPT)],
+                ["bash", "scripts/build-chromaflow-deb.sh"],
                 check=False,
                 capture_output=True,
                 text=True,
@@ -74,7 +74,7 @@ class DebPackagingTests(unittest.TestCase):
             )
             self.assertEqual(proc.returncode, 0, proc.stderr)
             ver = subprocess.run(
-                ["bash", str(ROOT / "scripts" / "product-release-version.sh")],
+                ["bash", "scripts/product-release-version.sh"],
                 check=True,
                 capture_output=True,
                 text=True,
@@ -132,13 +132,13 @@ class ProductReleaseSbomTests(unittest.TestCase):
         self.assertNotIn("set_pwm", text)
         self.assertNotIn("i2cdump", text)
         proc = subprocess.run(
-            ["bash", str(script)],
+            ["bash", "scripts/product-release-version.sh"],
             check=True,
             capture_output=True,
             text=True,
             cwd=str(ROOT),
         )
-        self.assertEqual(proc.stdout.strip(), "1.0.2")
+        self.assertEqual(proc.stdout.strip(), "1.0.3")
         spec = (ROOT / "docs/features/product-release-sbom.md").read_text(encoding="utf-8")
         self.assertIn("product-release-version.sh", spec)
         job = release.split("linux-deb:", 1)[1].split("sbom-assets:", 1)[0]

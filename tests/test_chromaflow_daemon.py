@@ -73,7 +73,14 @@ class DaemonFailsafeTests(unittest.TestCase):
             env = os.environ.copy()
             env["CHROMAFLOW_HWMON_ROOT"] = str(root)
             env["CHROMAFLOW_OWNED"] = str(owned)
-            proc = subprocess.run(["bash", str(script)], check=False, capture_output=True, text=True, env=env)
+            proc = subprocess.run(
+                ["bash", "packaging/pwm-failsafe.sh"],
+                check=False,
+                capture_output=True,
+                text=True,
+                env=env,
+                cwd=str(ROOT),
+            )
             self.assertEqual(proc.returncode, 0, proc.stderr)
             self.assertEqual((chip / "pwm1_enable").read_text(encoding="utf-8").strip(), "2")
             self.assertEqual((chip / "pwm1").read_text(encoding="utf-8").strip(), "51")
@@ -273,7 +280,14 @@ class DaemonFailsafeTests(unittest.TestCase):
             enable.write_text("2\n", encoding="utf-8")
             env = os.environ.copy()
             env["CHROMAFLOW_HWMON_ROOT"] = str(root)
-            proc = subprocess.run(["bash", str(script)], check=False, capture_output=True, text=True, env=env)
+            proc = subprocess.run(
+                ["bash", "packaging/pwm-acl.sh"],
+                check=False,
+                capture_output=True,
+                text=True,
+                env=env,
+                cwd=str(ROOT),
+            )
             self.assertEqual(proc.returncode, 0, proc.stderr)
             self.assertEqual(pwm.read_text(encoding="utf-8").strip(), "77")
             self.assertEqual(enable.read_text(encoding="utf-8").strip(), "2")

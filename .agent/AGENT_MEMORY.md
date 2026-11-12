@@ -7,7 +7,7 @@
 
 | Layer | Technology | Version | Notes |
 |-------|-----------|---------|-------|
-| Product | ChromaFlow | 1.0.0 | Linux Mint cooling + lighting |
+| Product | ChromaFlow | 1.0.3 | Linux Mint cooling + lighting |
 | GUI | Tauri 2 + Svelte | 2.x | Real `apps/desktop/src-tauri` host; Vite preview for browser; `cargo test` skips GUI; GitHub `edwardlthompson/chromaflow` |
 | Core | Rust | stable | `crates/chromaflow-core`, `chromaflow-cli` |
 | Helper | bash + polkit | - | pinned `install-support.sh`, `install-update.sh`, and `manage-competitors.sh`; GUI pkexec only |
@@ -53,6 +53,7 @@ Cline is the first-run agent in Cursor: GitHub sign-in, FREE models, no API keys
 
 Golden Path Settings/About/Feedback are a route stack, not three booleans. Web History API and Android BackHandler pop one level; at home Back stays in the app. Persist key `gp.nav.v1` restores location after theme/crash/share-target (web) and rotation/process death (Android). Home chrome is Settings-only; theme, About, and donate live in sectioned Settings/About menus with dropdowns.
 
+| 2026-11-12 | Ship 1.0.3 | CfHidW restore; HID dedupe; pickerFit squares; solid+kelvin row; product tag (not RP 1.14.0) | Skip bogus CodeQL upd; Medium glib accepted; never chromaflowd |
 | 2026-11-12 | Ship 1.0.2 | Lighting boot reapply; Sacred HUMAN cleared; product tag (not RP 1.14.0); local GUI 1.0.2 installed | Skip bogus CodeQL upd; Medium glib accepted; never chromaflowd |
 | 2026-11-12 | Sprint 41–42 + lighting boot | SuperIO EasyTune seize + IsaBridge/ECIO Gigabyte latch; GUI one-shot `lightingBoot` reapply + Win broadcast Keychron/GPU | Never paste Fan Control; never save EEPROM every tick; never chromaflowd |
 | 2026-09-14 | Tab keep-alive | Four pages stay mounted; OpenRGB not on every rail click; Support dry-run on first visit | First Lighting visit still scans; never chromaflowd |

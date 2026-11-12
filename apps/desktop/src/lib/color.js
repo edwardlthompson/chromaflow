@@ -1,4 +1,4 @@
-/** HSV/RGB helpers, suggested chips, and last two manual colors. */
+/** HSV/RGB helpers, suggested chips, and recent manual colors. */
 
 export const SUGGESTED_HEX = [
   "#000000",
@@ -10,6 +10,8 @@ export const SUGGESTED_HEX = [
   "#ff00ff",
   "#ffffff",
 ];
+
+export const RECENT_MAX = 8;
 
 const RECENT_KEY = "chromaflow.recent-colors";
 
@@ -121,7 +123,7 @@ export function loadRecent() {
   if (!s) return [];
   try {
     const raw = JSON.parse(s.getItem(RECENT_KEY) || "[]");
-    return (Array.isArray(raw) ? raw : []).map(normalizeHex).filter(Boolean).slice(0, 4);
+    return (Array.isArray(raw) ? raw : []).map(normalizeHex).filter(Boolean).slice(0, RECENT_MAX);
   } catch {
     return [];
   }
@@ -130,7 +132,7 @@ export function loadRecent() {
 export function pushRecent(raw) {
   const hex = normalizeHex(raw);
   const prev = loadRecent().filter((c) => c !== hex);
-  const next = hex ? [hex, ...prev].slice(0, 4) : prev;
+  const next = hex ? [hex, ...prev].slice(0, RECENT_MAX) : prev;
   const s = memory();
   if (s) s.setItem(RECENT_KEY, JSON.stringify(next));
   return next;

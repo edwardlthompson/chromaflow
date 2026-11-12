@@ -15,6 +15,14 @@
 
 ```
 
+### 2026-11-12 — Ship 1.0.3 without template Release Please
+
+- **Status:** Accepted
+- **Context:** Arena/Prime HID helper + Devices dedupe + picker layout (pickerFit, combined swatches) after `v1.0.2`. Template Release Please still wants `v1.14.0`. Local `upd audit --check` exit 6 on Medium `glib` / unmaintained RUSTSEC (no High/Critical). About feature-gate needs `FEATURE_GATE_TIMEOUT=600` locally.
+- **Decision:** Product tag `v1.0.3` from CHANGELOG/Cargo. Do not merge template Release Please. Do not apply bogus CodeQL `vcodeql-bundle-*` upd bumps. Keep Medium glib accepted. Use repo-relative bash script paths so Windows WSL bash does not mangle drive letters.
+- **Alternatives considered:** Merge Release Please 1.14.0 (rejected). Block ship on Medium glib (rejected: prior precedent). Force Git Bash for Linux support scripts (rejected: Windows Python lacks `grp`).
+- **Consequences:** GitHub Release `v1.0.3` should publish `.deb`; Windows install from local release GUI build until NSIS asset exists. PWM unchanged.
+
 ### 2026-11-12 — Ship 1.0.2 without template Release Please
 
 - **Status:** Accepted

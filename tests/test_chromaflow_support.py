@@ -22,7 +22,7 @@ class SupportDryRunTests(unittest.TestCase):
         env["CHROMAFLOW_DMI"] = "ASUS ROG"
         env["CHROMAFLOW_LOADED_MODULES"] = "nct6775"
         proc = subprocess.run(
-            ["bash", str(SCRIPT), "--dry-run"],
+            ["bash", "scripts/install-support.sh", "--dry-run"],
             check=False,
             capture_output=True,
             text=True,
@@ -71,7 +71,7 @@ class SupportDryRunTests(unittest.TestCase):
         env["CHROMAFLOW_DMI"] = "ASUS ROG"
         env["CHROMAFLOW_LOADED_MODULES"] = ""
         proc = subprocess.run(
-            ["bash", str(SCRIPT), "--dry-run"],
+            ["bash", "scripts/install-support.sh", "--dry-run"],
             check=False,
             capture_output=True,
             text=True,
@@ -87,7 +87,7 @@ class SupportDryRunTests(unittest.TestCase):
 
     def test_apply_refuses_from_repo(self) -> None:
         proc = subprocess.run(
-            ["bash", str(SCRIPT), "--apply"],
+            ["bash", "scripts/install-support.sh", "--apply"],
             check=False,
             capture_output=True,
             text=True,
@@ -100,7 +100,7 @@ class SupportDryRunTests(unittest.TestCase):
         env["PKEXEC_UID"] = "1000"
         env["CHROMAFLOW_POLKIT"] = "1"
         proc2 = subprocess.run(
-            ["bash", str(SCRIPT), "--apply"],
+            ["bash", "scripts/install-support.sh", "--apply"],
             check=False,
             capture_output=True,
             text=True,
@@ -152,7 +152,7 @@ class SupportDryRunTests(unittest.TestCase):
 
     def test_unknown_extra_is_rejected_before_pkexec(self) -> None:
         proc = subprocess.run(
-            ["bash", str(SCRIPT), "--apply", "--only", "nouveau"],
+            ["bash", "scripts/install-support.sh", "--apply", "--only", "nouveau"],
             check=False,
             capture_output=True,
             text=True,
@@ -334,7 +334,7 @@ console.log('ok');
         env["PATH"] = f"{trap}{os.pathsep}{env.get('PATH', '')}"
         env["CHROMAFLOW_CONFLICTS"] = "fancontrol,coolercontrold,openrazer-daemon"
         proc = subprocess.run(
-            ["bash", str(script), "--dry-run"],
+            ["bash", "scripts/manage-competitors.sh", "--dry-run"],
             check=False,
             capture_output=True,
             text=True,
@@ -353,7 +353,7 @@ console.log('ok');
         self.assertNotIn("openrgb", plan["would_remove"])
         self.assertTrue((trap / "apt-get.ran").read_text() == "")
         refused = subprocess.run(
-            ["bash", str(script), "--remove-apply"],
+            ["bash", "scripts/manage-competitors.sh", "--remove-apply"],
             check=False,
             capture_output=True,
             text=True,

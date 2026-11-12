@@ -146,9 +146,17 @@ class LightingHidTests(unittest.TestCase):
         self.assertIn("tools-rest", wheel)
         self.assertIn("--chip", (ROOT / "apps/desktop/src/app.css").read_text(encoding="utf-8"))
         wheel_src = (ROOT / "apps/desktop/src/lib/ColorWheel.svelte").read_text(encoding="utf-8")
-        self.assertIn("swatch-more", wheel_src)
-        self.assertLess(wheel_src.find("swatch-more"), wheel_src.find("tools-rest"))
-        self.assertIn("KELVIN_PRESETS", (ROOT / "apps/desktop/src/lib/ColorWheel.svelte").read_text(encoding="utf-8"))
+        color_src = (ROOT / "apps/desktop/src/lib/color.js").read_text(encoding="utf-8")
+        self.assertIn("KELVIN_PRESETS", wheel_src)
+        self.assertIn("swatch-recent", wheel_src)
+        self.assertIn("RECENT_MAX", wheel_src)
+        self.assertNotIn("kelvin-chips", wheel_src)
+        swatch = wheel_src.find('class="swatch-row"')
+        recent = wheel_src.find("swatch-recent")
+        kelvin = wheel_src.find("{#each KELVIN_PRESETS")
+        self.assertTrue(0 <= swatch < kelvin < recent)
+        self.assertIn("RECENT_MAX = 8", color_src)
+        self.assertIn("slice(0, RECENT_MAX)", color_src)
         self.assertIn("aspect-ratio: 1", (ROOT / "apps/desktop/src/app.css").read_text(encoding="utf-8"))
         self.assertIn("q6heKeys", (ROOT / "apps/desktop/src/lib/keyboard.js").read_text(encoding="utf-8"))
         self.assertIn("tune_mode", (ROOT / "crates/chromaflow-core/src/openrgb_parse.rs").read_text(encoding="utf-8"))
@@ -213,6 +221,11 @@ class LightingHidTests(unittest.TestCase):
         self.assertIn("picker-flow", (ROOT / "apps/desktop/src/lib/DeviceList.svelte").read_text(encoding="utf-8"))
         self.assertIn("picker-square", (ROOT / "apps/desktop/src/lib/ColorWheel.svelte").read_text(encoding="utf-8"))
         self.assertIn("picker-tools", (ROOT / "apps/desktop/src/lib/ColorWheel.svelte").read_text(encoding="utf-8"))
+        css = (ROOT / "apps/desktop/src/app.css").read_text(encoding="utf-8")
+        square = css.split(".picker-square {", 1)[1].split("}", 1)[0]
+        self.assertIn("aspect-ratio: 1 / 1", square)
+        self.assertIn("fitOpenPickerFlows", (ROOT / "apps/desktop/src/lib/DeviceList.svelte").read_text(encoding="utf-8"))
+        self.assertIn("PICKER_BASE_REM", (ROOT / "apps/desktop/src/lib/pickerFit.js").read_text(encoding="utf-8"))
         self.assertIn("tools-preview", (ROOT / "apps/desktop/src/lib/ColorWheel.svelte").read_text(encoding="utf-8"))
         css = (ROOT / "apps/desktop/src/app.css").read_text(encoding="utf-8")
         self.assertIn("3.4rem 1.3rem", css)
@@ -413,6 +426,12 @@ class LightingHidTests(unittest.TestCase):
         arena = (ROOT / "crates/chromaflow-core/src/arena_apply.rs").read_text(encoding="utf-8")
         self.assertIn("0x06", arena)
         self.assertNotIn("set_pwm", arena)
+        hidw = (ROOT / "scripts/windows/CfHidW.cs").read_text(encoding="utf-8")
+        self.assertIn("HidD_SetOutputReport", hidw)
+        self.assertIn(
+            "scripts/windows/CfHidW.cs",
+            (ROOT / "crates/chromaflow-core/src/windows/hid_write.rs").read_text(encoding="utf-8"),
+        )
         prime = (ROOT / "crates/chromaflow-core/src/prime_apply.rs").read_text(encoding="utf-8")
         self.assertIn("0x62", prime)
         self.assertIn("0x59", prime)
@@ -454,7 +473,7 @@ class LightingHidTests(unittest.TestCase):
         env["CHROMAFLOW_DMI"] = "Gigabyte Technology Co., Ltd. X570S AORUS MASTER"
         env["CHROMAFLOW_LOADED_MODULES"] = "gigabyte_wmi"
         proc = subprocess.run(
-            ["bash", str(ROOT / "scripts" / "install-support.sh"), "--dry-run", "--advanced"],
+            ["bash", "scripts/install-support.sh", "--dry-run", "--advanced"],
             check=False,
             capture_output=True,
             text=True,
@@ -930,12 +949,25 @@ class LightingHidTests(unittest.TestCase):
                 "node",
                 "--input-type=module",
                 "-e",
-                "import { lightingDevices } from './apps/desktop/src/lib/lighting.js';"
+                "import { lightingDevices, uniqueHidByVidPid } from './apps/desktop/src/lib/lighting.js';"
                 "const rows = lightingDevices({ hid_rgb: ["
                 "{ name: 'Keychron Q6 HE', vendor_id: '3434', product_id: '0b60', readable: true }"
                 "], openrgb: { controllers: [{ name: 'Keychron Q6 HE', leds: 108 }] } });"
                 "if (rows.filter((d) => /keychron|q6/i.test(d.name)).length !== 1) throw new Error('dup '+JSON.stringify(rows));"
                 "if (rows[0] && rows.find((d) => d.backend === 'keychron') == null) throw new Error('backend');"
+                "const winHid = lightingDevices({ hid_rgb: ["
+                "{ name: 'SteelSeries Arena 7', vendor_id: '1038', product_id: '1a00', readable: true, path: 'USB\\\\VID_1038&PID_1A00\\\\1' },"
+                "{ name: 'SteelSeries Arena 7', vendor_id: '1038', product_id: '1a00', readable: true, path: 'HID\\\\VID_1038&PID_1A00&MI_00\\\\2' },"
+                "{ name: 'SteelSeries Arena 7', vendor_id: '1038', product_id: '1a00', readable: true, path: 'HID\\\\VID_1038&PID_1A00&MI_04\\\\3' },"
+                "{ name: 'SteelSeries Prime Neo', vendor_id: '1038', product_id: '1856', readable: true, path: 'USB\\\\VID_1038&PID_1856\\\\1' },"
+                "{ name: 'SteelSeries Prime Neo', vendor_id: '1038', product_id: '1856', readable: true, path: 'HID\\\\VID_1038&PID_1856&MI_00\\\\2' },"
+                "{ name: 'Keychron keyboard', vendor_id: '3434', product_id: '0b60', readable: true, path: 'HID\\\\VID_3434&PID_0B60&MI_00&COL01\\\\1' },"
+                "{ name: 'Keychron keyboard', vendor_id: '3434', product_id: '0b60', readable: true, path: 'HID\\\\VID_3434&PID_0B60&MI_00&COL02\\\\2' }"
+                "], openrgb: { controllers: [] }, liquidctl_devices: [] });"
+                "if (winHid.filter((d) => d.backend === 'arena').length !== 1) throw new Error('arena dup '+JSON.stringify(winHid));"
+                "if (winHid.filter((d) => d.backend === 'prime').length !== 1) throw new Error('prime dup');"
+                "if (winHid.filter((d) => d.backend === 'keychron').length !== 1) throw new Error('keychron dup');"
+                "if (uniqueHidByVidPid([{ vendor_id: '1038', product_id: '1a00' }, { vendor_id: '1038', product_id: '1a00' }]).length !== 1) throw new Error('unique helper');"
                 "const fusion = lightingDevices({ liquidctl_devices: ['Gigabyte RGB Fusion 2.0 5702 Controller'], hid_rgb: [], openrgb: { controllers: [] } });"
                 "if (fusion.filter((d) => d.backend === 'liquidctl').length !== 2) throw new Error('fusion split');"
                 "if (!fusion.some((d) => d.name === 'CPU AIO')) throw new Error('aio');"

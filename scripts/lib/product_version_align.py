@@ -10,9 +10,9 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def changelog_version(root: Path) -> str:
-    script = root / "scripts" / "product-release-version.sh"
+    # Repo-relative path: absolute Windows drive paths break under WSL bash (exit 127).
     proc = subprocess.run(
-        ["bash", str(script)],
+        ["bash", "scripts/product-release-version.sh"],
         cwd=root,
         check=True,
         capture_output=True,

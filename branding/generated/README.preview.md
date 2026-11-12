@@ -64,7 +64,6 @@ ChromaFlow is a FOSS desktop app for cooling (fans, pumps, AIO) and RGB/LED cont
 | Gigabyte Fusion HID / liquidctl AIO | Tested | Untested | USB claim can empty hidraw |
 | AMD `amdgpu` hwmon PWM | Untested (this host is NVIDIA) | N/A | YAML allowlist only |
 | ASUS Armoury / Corsair iCUE exclusive HID | Conflict warning | Conflict warning | Quit competing apps first |
-
 Plainly **untested** on Windows today: Keychron, Arena/Prime, Fusion/liquidctl, and NVIDIA fan take-over. Lab hardware sign-off for those rows is still open — see `docs/HARDWARE.md` and `docs/features/windows-desktop.md`.
 
 ## Quick start
@@ -93,7 +92,7 @@ flowchart TD
 
 ## Install
 
-Primary targets are Linux Mint 21/22 (Cinnamon) and Windows 10/11 x64. We do not ship kernel modules. Inventory (`chromaflow sensors|devices|rescan`) works offline as an unprivileged user. Linux package: `bash scripts/build-chromaflow-deb.sh` then `sudo dpkg -i target/deb/chromaflow_1.0.2_amd64.deb`. Windows: NSIS via `scripts/build-chromaflow-nsis.ps1` / GitHub Release `ChromaFlow_*_x64-setup.exe` (arm64 row reserved). After udev or group changes (i2c, plugdev), log out on Linux.
+Primary targets are Linux Mint 21/22 (Cinnamon) and Windows 10/11 x64. We do not ship kernel modules. Inventory (`chromaflow sensors|devices|rescan`) works offline as an unprivileged user. Linux package: `bash scripts/build-chromaflow-deb.sh` then `sudo dpkg -i target/deb/chromaflow_1.0.3_amd64.deb`. Windows: NSIS via `scripts/build-chromaflow-nsis.ps1` / GitHub Release `ChromaFlow_*_x64-setup.exe` (arm64 row reserved). After udev or group changes (i2c, plugdev), log out on Linux.
 
 ## Usage
 

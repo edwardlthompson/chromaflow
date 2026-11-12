@@ -9,6 +9,16 @@ Bootstrapped from [agent-project-bootstrap](https://github.com/edwardlthompson/a
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-11-12
+
+### Fixed
+
+- Restore Windows Arena/Prime HID helper source (`scripts/windows/CfHidW.cs`) and fall back to a cached `CfHidW.exe` when the source path is missing
+- Deduplicate Windows HID lighting rows (Arena / Prime / Keychron) so each VID:PID appears once in Devices
+- Grow all lighting picker cards together as equal 1×1 squares when tools/gauges need more room (`pickerFit.js`)
+- Combine solid and kelvin swatches in one row; keep eight recent color slots for last picks
+- Invoke product version / packaging bash helpers with repo-relative paths so Windows WSL bash does not mangle drive letters
+
 ## [1.0.2] - 2026-11-12
 
 ### Added

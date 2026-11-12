@@ -2,6 +2,7 @@
   import { createEventDispatcher } from "svelte";
   import {
     SUGGESTED_HEX,
+    RECENT_MAX,
     hexToHsv,
     hsvToHex,
     hsvToRgb,
@@ -29,6 +30,7 @@
   let kelvinHeld = null;
   let recent = loadRecent();
   const chips = SUGGESTED_HEX;
+  const recentSlots = Array.from({ length: RECENT_MAX }, (_, i) => i);
 
   $: {
     const hsv = hexToHsv(hex);
@@ -198,8 +200,6 @@
       {#each chips as c}
         <button type="button" class="chip" style="background:{c}" aria-label={c} on:click={() => pickHex(c)}></button>
       {/each}
-    </div>
-    <div class="swatch-row swatch-more" role="group" aria-label={t["lighting.moreSwatches"]}>
       {#each KELVIN_PRESETS as k}
         <button
           type="button"
@@ -210,8 +210,9 @@
           on:click={() => pickHex(kelvinToHex(k))}
         ></button>
       {/each}
-      <span class="swatch-gap" aria-hidden="true"></span>
-      {#each [0, 1, 2, 3] as i}
+    </div>
+    <div class="swatch-row swatch-recent" role="group" aria-label={t["lighting.recent"]}>
+      {#each recentSlots as i}
         <button
           type="button"
           class="chip recent"
