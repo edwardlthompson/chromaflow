@@ -9,6 +9,16 @@ Bootstrapped from [agent-project-bootstrap](https://github.com/edwardlthompson/a
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-11-12
+
+### Added
+
+- Lighting boot one-shot reapply of last session colors after GUI start (`lightingBoot.js`), including Windows OpenRGB wait + Apply-all Keychron/GPU broadcast parity
+
+### Changed
+
+- Cleared stale Sacred HUMAN board/backlog rows for already-pruned example stacks; Sacred policy remains in upgrade docs
+
 ## [1.0.1] - 2026-11-12
 
 ### Fixed

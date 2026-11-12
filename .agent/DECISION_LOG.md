@@ -15,6 +15,14 @@
 
 ```
 
+### 2026-11-12 — Ship 1.0.2 without template Release Please
+
+- **Status:** Accepted
+- **Context:** Lighting boot reapply + Sacred HUMAN clear landed after `v1.0.1`. Template Release Please still wants `v1.14.0`. Local `upd audit --check` exit 6 on Medium `glib` / unmaintained RUSTSEC (no High/Critical). About feature-gate timed out once at 180s; passed at 600s.
+- **Decision:** Product tag `v1.0.2` from CHANGELOG/Cargo. Do not merge template Release Please. Do not apply bogus CodeQL `vcodeql-bundle-*` upd bumps. Keep Medium glib accepted.
+- **Alternatives considered:** Merge Release Please 1.14.0 (rejected). Block ship on Medium glib (rejected: prior precedent).
+- **Consequences:** GitHub Release `v1.0.2` should publish `.deb`; Windows install from local release GUI build until NSIS asset exists. PWM unchanged.
+
 ### 2026-11-12 — Ship 1.0.1 without template Release Please
 
 - **Status:** Accepted
