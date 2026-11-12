@@ -53,6 +53,7 @@ Cline is the first-run agent in Cursor: GitHub sign-in, FREE models, no API keys
 
 Golden Path Settings/About/Feedback are a route stack, not three booleans. Web History API and Android BackHandler pop one level; at home Back stays in the app. Persist key `gp.nav.v1` restores location after theme/crash/share-target (web) and rotation/process death (Android). Home chrome is Settings-only; theme, About, and donate live in sectioned Settings/About menus with dropdowns.
 
+| 2026-11-12 | Sprint 41–42 + lighting boot | SuperIO EasyTune seize + IsaBridge/ECIO Gigabyte latch; GUI one-shot `lightingBoot` reapply + Win broadcast Keychron/GPU | Never paste Fan Control; never save EEPROM every tick; never chromaflowd |
 | 2026-09-14 | Tab keep-alive | Four pages stay mounted; OpenRGB not on every rail click; Support dry-run on first visit | First Lighting visit still scans; never chromaflowd |
 | 2026-09-14 | Sprint 39 UX leftovers | Unused copy cut; scale/hit tokens; Support toolbox; Apply verb; per-row lighting toast; motion; first-run Quiet; alertdialog; About; calibrate bar | PWM still confirm-then-watchdog; no Golden Path teal |
 | 2026-09-14 | Sprint 38 UX audit | Copy/a11y; picker width; names-first rows; Profiles Apply; `--fc-*` tokens | PWM still confirm-then-watchdog; no Golden Path teal |

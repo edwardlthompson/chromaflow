@@ -62,6 +62,14 @@ fn push(host: bool, rgb: [u8; 3], hex: &str) -> Result<String, String> {
             Ok(msg) => notes.push(msg),
             Err(e) => errs.push(format!("prime: {e}")),
         }
+        match crate::keychron_apply::set_color(rgb) {
+            Ok(msg) => notes.push(msg),
+            Err(e) => errs.push(format!("keychron: {e}")),
+        }
+        match crate::gpu_apply::set_color(rgb) {
+            Ok(msg) => notes.push(msg),
+            Err(e) => errs.push(format!("gpu: {e}")),
+        }
         if notes.is_empty() {
             return Err(if errs.is_empty() {
                 "Lighting engine not reachable on 127.0.0.1:6742".into()

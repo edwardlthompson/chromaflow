@@ -956,6 +956,72 @@ class LightingHidTests(unittest.TestCase):
         )
         self.assertEqual(listed.strip(), "")
 
+    def test_lighting_boot_reapply(self) -> None:
+        boot = (ROOT / "apps/desktop/src/lib/lightingBoot.js").read_text(encoding="utf-8")
+        self.assertIn("reapplyFromInventory", boot)
+        self.assertIn("scheduleBootReapply", boot)
+        self.assertIn("lighting_broadcast", boot)
+        self.assertNotIn("set_pwm", boot)
+        app = (ROOT / "apps/desktop/src/App.svelte").read_text(encoding="utf-8")
+        self.assertIn("scheduleBootReapply", app)
+        self.assertIn("lightingBoot.js", app)
+        self.assertIn('invoke("inventory", { light: true })', app)
+        self.assertNotIn("set_pwm", app)
+        broadcast = (ROOT / "crates/chromaflow-core/src/lighting_broadcast.rs").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("keychron_apply::set_color", broadcast)
+        self.assertIn("gpu_apply::set_color", broadcast)
+        self.assertNotIn("set_pwm", broadcast)
+        spec = (ROOT / "docs/features/lighting-boot.md").read_text(encoding="utf-8")
+        self.assertIn("reapplyFromInventory", spec)
+        self.assertIn("scheduleBootReapply", spec)
+        out = subprocess.check_output(
+            [
+                "node",
+                "--input-type=module",
+                "-e",
+                "import { reapplyFromInventory, scheduleBootReapply, sharedSolidHex } from './apps/desktop/src/lib/lightingBoot.js';"
+                "const inv = { hid_rgb: ["
+                "{ name: 'Prime', vendor_id: '1038', product_id: '1856', readable: true },"
+                "{ name: 'Arena', vendor_id: '1038', product_id: '1a00', readable: true }"
+                "], openrgb: { controllers: [] }, liquidctl_devices: [] };"
+                "const calls = [];"
+                "const invoke = (cmd, args) => { calls.push([cmd, args]); return Promise.resolve({ ok: true }); };"
+                "await reapplyFromInventory(inv, { lastColor: {}, lastMode: {} }, invoke);"
+                "if (calls.length) throw new Error('empty session');"
+                "await reapplyFromInventory(inv, {"
+                " lastColor: { 'prime:Prime': '#ff0000', 'arena:Arena': '#ff0000' },"
+                " lastMode: { 'prime:Prime': 'Solid Color', 'arena:Arena': 'Solid Color' }"
+                "}, invoke);"
+                "if (calls.length !== 1 || calls[0][0] !== 'lighting_broadcast') throw new Error('broadcast '+JSON.stringify(calls));"
+                "if (calls[0][1].color !== '#ff0000') throw new Error('hex');"
+                "const hex = sharedSolidHex("
+                "[{ backend: 'prime', name: 'Prime' }, { backend: 'arena', name: 'Arena' }],"
+                "{ 'prime:Prime': '#00ff00', 'arena:Arena': '#00ff00' },"
+                "{ 'prime:Prime': 'Solid Color' }"
+                ");"
+                "if (hex !== '#00ff00') throw new Error('shared '+hex);"
+                "let gave = false;"
+                "await new Promise((resolve) => {"
+                " scheduleBootReapply({"
+                "  invoke,"
+                "  isTauri: () => true,"
+                "  getInventory: () => ({ hid_rgb: [], openrgb: { controllers: [] } }),"
+                "  getSession: () => ({ lastColor: { 'prime:Prime': '#fff' }, lastMode: {} }),"
+                "  maxAttempts: 2,"
+                "  delayMs: 20,"
+                " });"
+                " setTimeout(() => { gave = true; resolve(); }, 80);"
+                "});"
+                "if (!gave) throw new Error('give-up');"
+                "if (calls.length !== 1) throw new Error('no reapply on empty inv');",
+            ],
+            cwd=ROOT,
+            text=True,
+        )
+        self.assertEqual(out.strip(), "")
+
 
 if __name__ == "__main__":
     unittest.main()

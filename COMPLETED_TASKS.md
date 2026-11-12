@@ -2,6 +2,22 @@
 
 > Archive of finished BUILD_PLAN items.
 
+## Sacred HUMAN backlog clear (2026-11-12)
+
+- ✅ [HUMAN] Cleared stale Sacred board + `.agent/HUMAN_BACKLOG.md` rows (ghost blender/node/python after prune; confirmed ChromaFlow `AGENTS.md` / `docs/spec.md` / `docs/INITIALIZATION_PROMPT.md` + `examples/web`)
+
+## Sprint 42 — FC live SuperIO parity (ECIO) (2026-11-12)
+
+- ✅ [AGENT][LOCAL] Windows: probe-debug stages (LpcIO IDs, IsaBridge find, 0x947, ECIO) + Cooling/docs honesty vs FC ghost cards — scope: `crates/chromaflow-lpc/src/probe_debug.rs`, `docs/features/windows-lpc-bridge.md`, `docs/HARDWARE.md`, `apps/desktop/src/locales/en.json`
+- ✅ [AGENT][LOCAL] Windows: ECIO Gigabyte firmware-disable fallback when IsaBridge latch is 0xFF / IDs 0xFFFF, then retry ITE probe — scope: `crates/chromaflow-lpc/src/isa_bridge.rs`, `ecio.rs`, `server.rs`, tests
+- ✅ [AGENT][LOCAL] Windows: redeploy LPC helper, verify pipe probe / docs; keep EasyTune/FC autostart suppressed — scope: install path, `windows-lpc-bridge.md`
+
+## Sprint 41 — Windows SuperIO FC-parity (GPL-3) (2026-11-12)
+
+- ✅ [AGENT][LOCAL] Windows: suppress EasyTune/Fan Control autostart (services + tasks + Run) in seize + Install All probe — scope: `crates/chromaflow-core/src/windows/conflicts.rs`, `support.rs`, tests
+- ✅ [AGENT][LOCAL] Windows: Gigabyte EC firmware-disable via IsaBridgeEC MMIO (offset 0x947) then re-probe — scope: `crates/chromaflow-lpc/src/isa_bridge.rs`, `server.rs`, docs
+- ✅ [AGENT][LOCAL] Windows: first-run Install All keeps winget PawnIO + LPC/chromaflowd autostart; Cooling banner Install all CTA — scope: `support.rs`, `docs/features/windows-lpc-bridge.md`, `docs/HARDWARE.md`
+
 ## Sprint 40 — GitHub updates (2026-09-18)
 
 - ✅ [AGENT][LOCAL] Lock `docs/features/desktop-update.md` (launch check, Support button, pinned GitHub `.deb`, sha256, no daemon stop) — scope: docs/features/desktop-update.md

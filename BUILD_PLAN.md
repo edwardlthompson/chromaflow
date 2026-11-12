@@ -1,7 +1,7 @@
 # Build Plan
 
 <!-- remaining-tally -->
-**Remaining:** AGENT 0 · LOCAL 0 · CLOUD 0 · AUTO 0 · HUMAN 19 · ADB 0 · **19 open**
+**Remaining:** AGENT 0 · LOCAL 0 · CLOUD 0 · AUTO 0 · HUMAN 0 · ADB 0 · **0 open**
 <!-- /remaining-tally -->
 
 Live board for ChromaFlow. Finished work: [`COMPLETED_TASKS.md`](COMPLETED_TASKS.md). Catalog vs original brief: [`docs/PRODUCT_GAPS.md`](docs/PRODUCT_GAPS.md).
@@ -40,6 +40,8 @@ python3 scripts/agent-run.py smoke-sprint --require
 **First milestone:** Ship fan curves and lighting with no bundled kernel modules.
 <!-- product-brief-sync:end -->
 
+> **Sprint 42** archived in COMPLETED_TASKS.md @ `54307f3`.
+> **Sprint 41** archived in COMPLETED_TASKS.md @ `54307f3`.
 > **Sprint 40** archived in COMPLETED_TASKS.md @ `ac4c695`.
 > **Template 1.8.0 catch-up** archived in COMPLETED_TASKS.md @ `ac4c695`.
 > **Sprint 39** archived in COMPLETED_TASKS.md @ `e03b3da`.
@@ -64,29 +66,9 @@ _No open Dependabot or Release Please PRs._
 _No template gaps; .template-version matches upstream (or template maintainer N/A)._
 <!-- template-gaps-sync:end -->
 
-### Sacred files (human)
+### Sacred files (policy)
 
-These stay open. Do not copy them from the parent template. See `.agent/HUMAN_BACKLOG.md`.
-
-- 🔲 [HUMAN] Sacred: AGENTS.md (never blind-overwrite)
-- 🔲 [HUMAN] Sacred: docs/INITIALIZATION_PROMPT.md (never blind-overwrite)
-- 🔲 [HUMAN] Sacred: docs/spec.md (never blind-overwrite)
-- 🔲 [HUMAN] Sacred: examples/blender/.gitignore (never blind-overwrite)
-- 🔲 [HUMAN] Sacred: examples/blender/README.md (never blind-overwrite)
-- 🔲 [HUMAN] Sacred: examples/blender/blender.toml (never blind-overwrite)
-- 🔲 [HUMAN] Sacred: examples/blender/cli.py (never blind-overwrite)
-- 🔲 [HUMAN] Sacred: examples/blender/cycles_device.py (never blind-overwrite)
-- 🔲 [HUMAN] Sacred: examples/blender/fixtures/icon-manifest.sample.json (never blind-overwrite)
-- 🔲 [HUMAN] Sacred: examples/blender/manifest.py (never blind-overwrite)
-- 🔲 [HUMAN] Sacred: examples/blender/qa.py (never blind-overwrite)
-- 🔲 [HUMAN] Sacred: examples/blender/render_job.py (never blind-overwrite)
-- 🔲 [HUMAN] Sacred: examples/blender/scene.py (never blind-overwrite)
-- 🔲 [HUMAN] Sacred: examples/node/package-lock.json (never blind-overwrite)
-- 🔲 [HUMAN] Sacred: examples/node/package.json (never blind-overwrite)
-- 🔲 [HUMAN] Sacred: examples/python/pyproject.toml (never blind-overwrite)
-- 🔲 [HUMAN] Sacred: examples/python/uv.lock (never blind-overwrite)
-- 🔲 [HUMAN] Sacred: examples/web/package-lock.json (never blind-overwrite)
-- 🔲 [HUMAN] Sacred: examples/web/package.json (never blind-overwrite)
+Not open tasks. Never blind-overwrite product Sacred paths on `/upgrade` — see [`docs/UPGRADING_FROM_TEMPLATE.md`](docs/UPGRADING_FROM_TEMPLATE.md) and [`docs/help/UPGRADE.md`](docs/help/UPGRADE.md). Inactive example stacks (blender / node / python) stay pruned; `examples/web` remains Golden Path for stack `web`. Confirmed product Sacred: `AGENTS.md`, `docs/spec.md`, `docs/INITIALIZATION_PROMPT.md`.
 
 ### UX & UI inventory
 
@@ -95,36 +77,6 @@ Complete list from construction gaps and `/ux-review`. Status is only planned / 
 <!-- ux-inventory:begin -->
 _No UX inventory items._
 <!-- ux-inventory:end -->
-
-### Sprint 41 — Windows SuperIO FC-parity (GPL-3)
-
-Keep GPL-3.0-or-later (ADR-0023). No proprietary relicense. No reboot. Do not paste Fan Control / LHM sources. Official PawnIO stays a separate install (winget / PawnIO.Setup) — GPL-3 must not embed the proprietary driver binary in our package.
-
-### Sequential
-
-- ✅ [AGENT][LOCAL] Windows: suppress EasyTune/Fan Control autostart (services + tasks + Run) in seize + Install All probe — scope: `crates/chromaflow-core/src/windows/conflicts.rs`, `support.rs`, tests
-- ✅ [AGENT][LOCAL] Windows: Gigabyte EC firmware-disable via IsaBridgeEC MMIO (offset 0x947) then re-probe — scope: `crates/chromaflow-lpc/src/isa_bridge.rs`, `server.rs`, docs
-- ✅ [AGENT][LOCAL] Windows: first-run Install All keeps winget PawnIO + LPC/chromaflowd autostart; Cooling banner Install all CTA — scope: `support.rs`, `docs/features/windows-lpc-bridge.md`, `docs/HARDWARE.md`
-
-### Parallel
-
-<!-- parallel_exception: Sequential-only Windows SuperIO sprint; all AGENT rows complete -->
-_None until Sequential lock._
-
-### Sprint 42 — FC live SuperIO parity (ECIO)
-
-Fan Control UI shows saved `/lpc/it8689e` + `/lpc/it87952e` cards; FC log still reports those sensors missing. Same empty probe as ChromaFlow. Implement LHM-style ECIO Gigabyte fallback (original Rust, no paste). GPL-3. No reboot.
-
-### Sequential
-
-1. ✅ [AGENT][LOCAL] Windows: probe-debug stages (LpcIO IDs, IsaBridge find, 0x947, ECIO) + Cooling/docs honesty vs FC ghost cards — scope: `crates/chromaflow-lpc/src/probe_debug.rs`, `docs/features/windows-lpc-bridge.md`, `docs/HARDWARE.md`, `apps/desktop/src/locales/en.json`
-2. ✅ [AGENT][LOCAL] Windows: ECIO Gigabyte firmware-disable fallback when IsaBridge latch is 0xFF / IDs 0xFFFF, then retry ITE probe — scope: `crates/chromaflow-lpc/src/isa_bridge.rs`, `ecio.rs`, `server.rs`, tests
-3. ✅ [AGENT][LOCAL] Windows: redeploy LPC helper, verify pipe probe / docs; keep EasyTune/FC autostart suppressed — scope: install path, `windows-lpc-bridge.md`
-
-### Parallel
-
-<!-- parallel_exception: Sequential-only ECIO sprint; all AGENT rows complete -->
-_None until Sequential lock._
 
 ### Local agent (This Computer)
 
@@ -168,3 +120,5 @@ Finished sprints 0–29: [`COMPLETED_TASKS.md`](COMPLETED_TASKS.md).
 | 39 | 2026-09-14 | `COMPLETED_TASKS.md` |
 | Template 1.8.0 | 2026-09-18 | `COMPLETED_TASKS.md` |
 | 40 | 2026-09-18 | `COMPLETED_TASKS.md` |
+| 41 | 2026-11-12 | `COMPLETED_TASKS.md` |
+| 42 | 2026-11-12 | `COMPLETED_TASKS.md` |
