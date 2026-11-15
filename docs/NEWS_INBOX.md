@@ -14,7 +14,7 @@ A Cursor planning agent should review these items and fold the useful ones into 
 
 **Tasks for the planning agent**
 
-- [ ] Bump toolchain to Rust 1.100 and enable dependency cooldown — Cooldowns and the unused-deps lint harden supply chain; show_window removes console flashes for Windows helpers. Label: `[AGENT]` · Priority: P2 · https://blog.rust-lang.org/2026/11/12/Rust-1.100.0/
+- [x] Bump toolchain to Rust 1.100 and enable dependency cooldown — Cooldowns and the unused-deps lint harden supply chain; show_window removes console flashes for Windows helpers. Label: `[AGENT]` · Priority: P2 · https://blog.rust-lang.org/2026/11/12/Rust-1.100.0/ (synced to BUILD_PLAN)
 - [ ] Track NCT6686D/NCT6687D-R hwmon support in the device matrix — New writable fan curves on common Nuvoton chips enable hardware curves. Label: `[AGENT]` · Priority: P3 · https://lkml.indiana.edu/2611.1/10463.html
 - [ ] Add Dell Pro Precision 7 16 to dell-smm detection — Laptop gains manual PWM control in the kernel. Label: `[AGENT]` · Priority: P3 · https://lkml.indiana.edu/2611.1/16001.html
 
@@ -29,7 +29,19 @@ A Cursor planning agent should review these items and fold the useful ones into 
 
 **Tasks for the planning agent**
 
-- [ ] Audit the repo for wfx-loot IOCs — Checks for the wfx-docs branch/PR, .ci-*.sh files, build-audit-*.yml workflows and new npm lifecycle hooks, since the campaign steals CI secrets and Cursor credentials. Label: `[AGENT]` · Priority: P1 · https://blog.gitguardian.com/wfx-loot-a-ci-secret-stealer-pushed-with-stolen-github-credentials/
-- [ ] Port CoolerControl 5.1.2 safeguards — Hands-off unmanaged fans, RDNA3/4 Zero RPM handling and >100% rejection prevent real fan bugs. Label: `[AGENT]` · Priority: P2 · https://github.com/codifryed/coolercontrol/releases/tag/5.1.2
-- [ ] Clamp and validate every pwm value before sysfs writes — Tests that out-of-range input can never become 0% fan speed. Label: `[AGENT]` · Priority: P2 · https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/21355.html
+- [x] Audit the repo for wfx-loot IOCs — Checks for the wfx-docs branch/PR, .ci-*.sh files, build-audit-*.yml workflows and new npm lifecycle hooks, since the campaign steals CI secrets and Cursor credentials. Label: `[AGENT]` · Priority: P1 · https://blog.gitguardian.com/wfx-loot-a-ci-secret-stealer-pushed-with-stolen-github-credentials/ (synced to BUILD_PLAN)
+- [x] Port CoolerControl 5.1.2 safeguards — Hands-off unmanaged fans, RDNA3/4 Zero RPM handling and >100% rejection prevent real fan bugs. Label: `[AGENT]` · Priority: P2 · https://github.com/codifryed/coolercontrol/releases/tag/5.1.2 (synced to BUILD_PLAN)
+- [x] Clamp and validate every pwm value before sysfs writes — Tests that out-of-range input can never become 0% fan speed. Label: `[AGENT]` · Priority: P2 · https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/21355.html (synced to BUILD_PLAN)
 - [ ] Add the X600DC-ITX nct6683 quirk and nct6775 7.4-rc3 note to the support matrix — Keeps the hardware matrix accurate for Nuvoton boards. Label: `[AGENT]` · Priority: P3 · https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/21383.html
+
+## 2026-11-15
+
+**News and updates**
+
+- dasharo-acpi patch series adds hwmon fan PWM control and four-point EC fan curves (pwmN_enable, pwmN_auto_pointM_*); the EC silently keeps the old curve if a new one is invalid. [source](https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/18113.html)
+- acer-wmi v3 patch exposes the Acer Nitro AN515-58 4-zone RGB keyboard through the kernel LED multicolor interface. [source](https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/21570.html)
+
+**Tasks for the planning agent**
+
+- [ ] Support the hwmon pwmN_enable + pwmN_auto_point* EC-curve pattern — Switch to manual before duty writes and read back after a curve write to catch a silent EC reject (dasharo-acpi now, nct6683 later). Label: `[AGENT]` · Priority: P3 · https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/18113.html
+- [ ] Add a kernel LED-multicolor backend for laptop RGB keyboards — Driving /sys/class/leds/*/multi_intensity + brightness supports platform-driver keyboards without HID access. Label: `[AGENT]` · Priority: P3 · https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/21570.html

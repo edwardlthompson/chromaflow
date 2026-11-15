@@ -83,7 +83,10 @@ _No UX inventory items._
 Standing queue for This Computer. `/build` claims these only.
 
 <!-- local-agent-lane:begin -->
-_No local agent items._
+- 🔲 [AGENT][LOCAL] Bump toolchain to Rust 1.100 and enable dependency cooldown — scope: rust-toolchain.toml (news P2, 2026-11-13) https://blog.rust-lang.org/2026/11/12/Rust-1.100.0/
+- 🔲 [AGENT][LOCAL] Audit the repo for wfx-loot IOCs — scope: .github/ (news P1, 2026-11-14) https://blog.gitguardian.com/wfx-loot-a-ci-secret-stealer-pushed-with-stolen-github-credentials/
+- 🔲 [AGENT][LOCAL] Port CoolerControl 5.1.2 safeguards — scope: crates/chromaflow-core/src/ (news P2, 2026-11-14) https://github.com/codifryed/coolercontrol/releases/tag/5.1.2
+- 🔲 [AGENT][LOCAL] Clamp and validate every pwm value before sysfs writes — scope: crates/chromaflow-core/src/ (news P2, 2026-11-14) https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/21355.html
 <!-- local-agent-lane:end -->
 
 ### Cloud agent (Cursor Cloud)
