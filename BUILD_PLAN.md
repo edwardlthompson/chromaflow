@@ -87,6 +87,7 @@ Standing queue for This Computer. `/build` claims these only.
 - 🔲 [AGENT][LOCAL] Audit the repo for wfx-loot IOCs — scope: .github/ (news P1, 2026-11-14) https://blog.gitguardian.com/wfx-loot-a-ci-secret-stealer-pushed-with-stolen-github-credentials/
 - 🔲 [AGENT][LOCAL] Port CoolerControl 5.1.2 safeguards — scope: crates/chromaflow-core/src/ (news P2, 2026-11-14) https://github.com/codifryed/coolercontrol/releases/tag/5.1.2
 - 🔲 [AGENT][LOCAL] Clamp and validate every pwm value before sysfs writes — scope: crates/chromaflow-core/src/ (news P2, 2026-11-14) https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/21355.html
+- 🔲 [AGENT][LOCAL] Mark nct6683 NCT6686D fan control and NCT6687D-R writable curves as kernel 7.5+/hwmon-next and validate curve writes — scope: crates/chromaflow-core/src/, docs/HARDWARE.md (news P2, 2026-11-16) https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/22148.html
 <!-- local-agent-lane:end -->
 
 ### Cloud agent (Cursor Cloud)

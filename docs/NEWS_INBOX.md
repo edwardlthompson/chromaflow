@@ -45,3 +45,15 @@ A Cursor planning agent should review these items and fold the useful ones into 
 
 - [ ] Support the hwmon pwmN_enable + pwmN_auto_point* EC-curve pattern — Switch to manual before duty writes and read back after a curve write to catch a silent EC reject (dasharo-acpi now, nct6683 later). Label: `[AGENT]` · Priority: P3 · https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/18113.html
 - [ ] Add a kernel LED-multicolor backend for laptop RGB keyboards — Driving /sys/class/leds/*/multi_intensity + brightness supports platform-driver keyboards without HID access. Label: `[AGENT]` · Priority: P3 · https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/21570.html
+
+## 2026-11-16
+
+**News and updates**
+
+- nct6683 fan control for ASRock B850 Steel Legend WiFi / BC-250 (NCT6686D) and writable NCT6687D-R fan curves were applied to hwmon-next (likely Linux 7.5); curve points are writable only when the BIOS curve is non-decreasing with temps ≤127 °C. [source](https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/22148.html) · [B850](https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/22173.html)
+- asus-ec-sensors adds PRIME Z590-A, ROG CROSSHAIR X870E DARK HERO and ROG STRIX X670E-F GAMING WIFI (applied Nov 15). [source](https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/24631.html)
+
+**Tasks for the planning agent**
+
+- [x] Mark nct6683 NCT6686D fan control and NCT6687D-R writable curves as kernel 7.5+/hwmon-next and validate curve writes — The EC rejects decreasing duty curves, so check non-decreasing points with temp ≤127 °C before writing and keep the support matrix honest. Label: `[AGENT]` · Priority: P2 · https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/22148.html (synced to BUILD_PLAN)
+- [ ] Add the 3 new asus-ec-sensors boards to the hardware support matrix — Keeps EC temperature/fan readout support accurate for these ASUS boards. Label: `[AGENT]` · Priority: P3 · https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/24631.html
