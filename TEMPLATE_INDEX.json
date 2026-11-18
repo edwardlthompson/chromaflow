@@ -1,5 +1,5 @@
 {
-  "template_version": "1.13.0",
+  "template_version": "1.14.0",
   "project": {
     "name": "ChromaFlow",
     "purpose": "Linux Mint app for fan/pump curves and RGB/LED control: hwmon + OpenRGB SDK, polkit install-support, no bundled kernel modules",
