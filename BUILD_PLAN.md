@@ -1,7 +1,7 @@
 # Build Plan
 
 <!-- remaining-tally -->
-**Remaining:** AGENT 0 · LOCAL 0 · CLOUD 0 · AUTO 0 · HUMAN 0 · ADB 0 · **0 open**
+**Remaining:** AGENT 6 · LOCAL 6 · CLOUD 0 · AUTO 0 · HUMAN 0 · ADB 0 · **6 open**
 <!-- /remaining-tally -->
 
 Live board for ChromaFlow. Finished work: [`COMPLETED_TASKS.md`](COMPLETED_TASKS.md). Catalog vs original brief: [`docs/PRODUCT_GAPS.md`](docs/PRODUCT_GAPS.md).
@@ -88,6 +88,7 @@ Standing queue for This Computer. `/build` claims these only.
 - 🔲 [AGENT][LOCAL] Port CoolerControl 5.1.2 safeguards — scope: crates/chromaflow-core/src/ (news P2, 2026-11-14) https://github.com/codifryed/coolercontrol/releases/tag/5.1.2
 - 🔲 [AGENT][LOCAL] Clamp and validate every pwm value before sysfs writes — scope: crates/chromaflow-core/src/ (news P2, 2026-11-14) https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/21355.html
 - 🔲 [AGENT][LOCAL] Mark nct6683 NCT6686D fan control and NCT6687D-R writable curves as kernel 7.5+/hwmon-next and validate curve writes — scope: crates/chromaflow-core/src/, docs/HARDWARE.md (news P2, 2026-11-16) https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/22148.html
+- 🔲 [AGENT][LOCAL] Bump tauri 2.11.5 → 2.11.6+ (latest 2.12.7) in Cargo.lock and smoke the desktop app; High IPC channel-fetch ACL bypass that Dependabot can't see (GHSA-w28w-mhc8-qvjv) — scope: Cargo.toml,Cargo.lock,apps/desktop/src-tauri/ (news P2, 2026-11-20) https://github.com/tauri-apps/tauri/security/advisories/GHSA-w28w-mhc8-qvjv
 <!-- local-agent-lane:end -->
 
 ### Cloud agent (Cursor Cloud)
