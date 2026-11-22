@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Bootstrapped from [agent-project-bootstrap](https://github.com/edwardlthompson/agent-project-bootstrap) 1.4.0.
 
+## [Unreleased]
+
 ## [1.14.0](https://github.com/edwardlthompson/chromaflow/compare/v1.13.0...v1.14.0) (2026-11-22)
 
 
@@ -37,8 +39,6 @@ Bootstrapped from [agent-project-bootstrap](https://github.com/edwardlthompson/a
 * skip pruned-stack CI jobs on the product repo ([5fca2f7](https://github.com/edwardlthompson/chromaflow/commit/5fca2f78999c382b864fa9818f098aef8bdba227))
 * **test:** expect product-release-version 1.0.2 ([3ee819a](https://github.com/edwardlthompson/chromaflow/commit/3ee819afa865a35b044bf99864595de3a5d61d91))
 * **web:** drop settings About aria-label mismatch ([54307f3](https://github.com/edwardlthompson/chromaflow/commit/54307f32793e755f44ae5fa92c6f540820f8dc20))
-
-## [Unreleased]
 
 ## [1.0.3] - 2026-11-12
 
