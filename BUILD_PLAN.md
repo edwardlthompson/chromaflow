@@ -127,3 +127,19 @@ Finished sprints 0–29: [`COMPLETED_TASKS.md`](COMPLETED_TASKS.md).
 | 40 | 2026-09-18 | `COMPLETED_TASKS.md` |
 | 41 | 2026-11-12 | `COMPLETED_TASKS.md` |
 | 42 | 2026-11-12 | `COMPLETED_TASKS.md` |
+
+<!-- argus-portfolio-chores:start -->
+## Argus portfolio chores
+
+Synced from argus-runner (2026-11-18). Prefer YOLO maintain on the runner; keep these until cleared.
+
+| Status | Venue | Task |
+|--------|-------|------|
+| 🔲 | `[AUTO][CLOUD]` | Clear open Dependabot alerts (merge green PRs only; no Security/Trivy force-merge) |
+
+```text
+Repo: edwardlthompson/chromaflow
+Merge green Dependabot PRs with gh pr merge --squash. Rerun flaky Sync BUILD_PLAN once.
+Gate: open Dependabot alert count is 0.
+```
+<!-- argus-portfolio-chores:end -->
