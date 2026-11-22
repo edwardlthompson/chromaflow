@@ -8,6 +8,22 @@ export function hidList(inventory) {
   return Array.isArray(inventory && inventory.hid_rgb) ? inventory.hid_rgb : [];
 }
 
+/** One PnP row per VID:PID — Windows lists every MI_/COL interface. */
+export function uniqueHidByVidPid(rows) {
+  const seen = new Set();
+  const out = [];
+  for (const d of rows || []) {
+    const vid = String((d && d.vendor_id) || "").toLowerCase();
+    const pid = String((d && d.product_id) || "").toLowerCase();
+    if (!vid) continue;
+    const key = `${vid}:${pid}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(d);
+  }
+  return out;
+}
+
 export function liquidctlList(inventory) {
   return Array.isArray(inventory && inventory.liquidctl_devices)
     ? inventory.liquidctl_devices
@@ -68,7 +84,7 @@ export function sdkTargets(inventory) {
 }
 
 export function arenaTargets(inventory) {
-  return hidList(inventory)
+  return uniqueHidByVidPid(hidList(inventory))
     .filter((d) => d.readable && d.vendor_id === "1038" && d.product_id === "1a00")
     .map((d) => ({
       backend: "arena",
@@ -128,7 +144,7 @@ export function gpuTargets(inventory) {
 }
 
 export function primeTargets(inventory) {
-  return hidList(inventory)
+  return uniqueHidByVidPid(hidList(inventory))
     .filter((d) => d.readable && d.vendor_id === "1038" && d.product_id === "1856")
     .map((d) => ({
       backend: "prime",
@@ -145,7 +161,7 @@ export function primeTargets(inventory) {
 }
 
 export function keychronTargets(inventory) {
-  return hidList(inventory)
+  return uniqueHidByVidPid(hidList(inventory))
     .filter((d) => d.readable && d.vendor_id === "3434")
     .map((d) => ({
       backend: "keychron",
@@ -170,12 +186,19 @@ export function lightingDevices(inventory) {
     if (n.includes("suprim liquid") || (n.includes("msi") && n.includes("4090"))) return false;
     return true;
   });
-  return arenaTargets(inventory)
+  const rows = arenaTargets(inventory)
     .concat(primeTargets(inventory))
     .concat(nativeK)
     .concat(fusionTargets(inventory))
     .concat(gpuTargets(inventory))
     .concat(sdk);
+  const seen = new Set();
+  return rows.filter((d) => {
+    const k = deviceKey(d);
+    if (!k || seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
 }
 
 export { researchDevices, fusionUsbListed, hidHasBackend } from "./research.js";

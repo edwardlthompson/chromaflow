@@ -22,7 +22,7 @@ Spawning a localhost server is [ADR-0013](0013-bundled-openrgb-appimage.md) (sib
 ### Critique
 
 | Issue | Resolution |
-|-------|------------|
+| ------- | ------------ |
 | Empty device list | UI shows server missing vs no Linux backend; no fake LEDs |
 ## Consequences
 

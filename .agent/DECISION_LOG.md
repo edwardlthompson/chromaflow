@@ -15,6 +15,30 @@
 
 ```
 
+### 2026-11-12 — Ship 1.0.3 without template Release Please
+
+- **Status:** Accepted
+- **Context:** Arena/Prime HID helper + Devices dedupe + picker layout (pickerFit, combined swatches) after `v1.0.2`. Template Release Please still wants `v1.14.0`. Local `upd audit --check` exit 6 on Medium `glib` / unmaintained RUSTSEC (no High/Critical). About feature-gate needs `FEATURE_GATE_TIMEOUT=600` locally.
+- **Decision:** Product tag `v1.0.3` from CHANGELOG/Cargo. Do not merge template Release Please. Do not apply bogus CodeQL `vcodeql-bundle-*` upd bumps. Keep Medium glib accepted. Use repo-relative bash script paths so Windows WSL bash does not mangle drive letters.
+- **Alternatives considered:** Merge Release Please 1.14.0 (rejected). Block ship on Medium glib (rejected: prior precedent). Force Git Bash for Linux support scripts (rejected: Windows Python lacks `grp`).
+- **Consequences:** GitHub Release `v1.0.3` should publish `.deb`; Windows install from local release GUI build until NSIS asset exists. PWM unchanged.
+
+### 2026-11-12 — Ship 1.0.2 without template Release Please
+
+- **Status:** Accepted
+- **Context:** Lighting boot reapply + Sacred HUMAN clear landed after `v1.0.1`. Template Release Please still wants `v1.14.0`. Local `upd audit --check` exit 6 on Medium `glib` / unmaintained RUSTSEC (no High/Critical). About feature-gate timed out once at 180s; passed at 600s.
+- **Decision:** Product tag `v1.0.2` from CHANGELOG/Cargo. Do not merge template Release Please. Do not apply bogus CodeQL `vcodeql-bundle-*` upd bumps. Keep Medium glib accepted.
+- **Alternatives considered:** Merge Release Please 1.14.0 (rejected). Block ship on Medium glib (rejected: prior precedent).
+- **Consequences:** GitHub Release `v1.0.2` should publish `.deb`; Windows install from local release GUI build until NSIS asset exists. PWM unchanged.
+
+### 2026-11-12 — Ship 1.0.1 without template Release Please
+
+- **Status:** Accepted
+- **Context:** Open PR backlog cleared. Template Release Please wanted `v1.14.0` (bootstrap lineage), not product semver. `upd audit --check` still exit 6 on Medium `glib` / unmaintained RUSTSEC warnings (allowed in `cargo audit`). npm Highs cleared via patch bumps + `examples/web` overrides.
+- **Decision:** Product tag `v1.0.1` from CHANGELOG/Cargo. Do not merge template Release Please. Document remaining Medium glib as GTK/Tauri transitive.
+- **Alternatives considered:** Merge Release Please 1.14.0 (rejected: wrong product version). Block ship on Medium glib (rejected: prior 0.2.2 precedent).
+- **Consequences:** GitHub Release `v1.0.1` should publish `.deb` / NSIS via release workflow. PWM unchanged.
+
 ### 2026-09-18 — Ship 0.2.2 without merging template Release Please
 
 - **Status:** Accepted

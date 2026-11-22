@@ -22,7 +22,7 @@ Polkit must execute a **pinned, root-owned** path. An AppImage extracted under `
 ### Critique
 
 | Issue | Resolution |
-|-------|------------|
+| ------- | ------------ |
 | Developers cannot test apply without a package | Apply is stubbed; dry-run is the gate |
 ## Consequences
 

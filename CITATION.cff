@@ -18,5 +18,5 @@ keywords:
   - tauri
   - hwmon
 license: GPL-3.0-or-later
-version: 1.8.0
-date-released: 2026-09-18
+version: 1.13.0
+date-released: 2026-11-09

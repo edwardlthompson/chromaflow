@@ -9,6 +9,39 @@ Bootstrapped from [agent-project-bootstrap](https://github.com/edwardlthompson/a
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-11-12
+
+### Fixed
+
+- Restore Windows Arena/Prime HID helper source (`scripts/windows/CfHidW.cs`) and fall back to a cached `CfHidW.exe` when the source path is missing
+- Deduplicate Windows HID lighting rows (Arena / Prime / Keychron) so each VID:PID appears once in Devices
+- Grow all lighting picker cards together as equal 1×1 squares when tools/gauges need more room (`pickerFit.js`)
+- Combine solid and kelvin swatches in one row; keep eight recent color slots for last picks
+- Invoke product version / packaging bash helpers with repo-relative paths so Windows WSL bash does not mangle drive letters
+
+## [1.0.2] - 2026-11-12
+
+### Added
+
+- Lighting boot one-shot reapply of last session colors after GUI start (`lightingBoot.js`), including Windows OpenRGB wait + Apply-all Keychron/GPU broadcast parity
+
+### Changed
+
+- Cleared stale Sacred HUMAN board/backlog rows for already-pruned example stacks; Sacred policy remains in upgrade docs
+
+## [1.0.1] - 2026-11-12
+
+### Fixed
+
+- BUILD_PLAN sync reuses one stable PR when `main` is protected (no ci-sync spam)
+- Argus agent memory lives only under `.agent/` (root pointer removed)
+- npm High/Critical advisories in `examples/web` and `apps/desktop` via patch bumps and overrides
+- Stale bootstrap/UI gate assertions aligned with shipped cooling and lighting code
+
+### Changed
+
+- Bootstrap template lineage at 1.13.0 (Argus contract/rules pack)
+
 ## [1.0.0] - 2026-11-04
 
 ### Added

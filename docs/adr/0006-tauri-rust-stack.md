@@ -22,7 +22,7 @@ Keep `examples/web` for bootstrap feature-gate. Product UI lives in `apps/deskto
 ### Critique
 
 | Issue | Resolution |
-|-------|------------|
+| ------- | ------------ |
 | WebKit on Ubuntu 22.04 | `tauri-attempt` apt-installs `libwebkit2gtk-4.1-dev` on 22.04 (best-effort) and 24.04 (required). Product jobs exclude `chromaflow-desktop` so CLI tests stay green without GTK. |
 
 ## Consequences

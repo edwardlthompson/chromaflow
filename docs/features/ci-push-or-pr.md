@@ -4,7 +4,7 @@
 
 ## Acceptance criteria
 
-- ✅ User-visible behavior: after a BUILD_PLAN sync commit, CI tries `git push` to the default branch; on rejection it pushes a `chore/ci-sync-*` branch and opens a PR
+- ✅ User-visible behavior: after a BUILD_PLAN sync commit, CI tries `git push` to the default branch; on rejection it force-with-lease updates one stable `chore/ci-sync-<title-slug>` branch and opens or reuses a single PR (no per-run PR spam)
 - ✅ Offline/error behavior: no-op when BUILD_PLAN is unchanged; missing `gh` after a successful branch push still exits 0 only if the branch is on origin
 - ✅ Accessibility: N/A (CI)
 - ✅ i18n: N/A

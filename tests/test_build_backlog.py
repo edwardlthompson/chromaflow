@@ -18,6 +18,7 @@ class BuildBacklogTests(unittest.TestCase):
     def test_add_and_remove(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
+            (root / ".agent").mkdir()
             (root / ".agent/HUMAN_BACKLOG.md").write_text(HEADER, encoding="utf-8")
             self.assertTrue(add_item(root, "ADB", "nav smoke", "Waiting", "device"))
             self.assertFalse(add_item(root, "ADB", "nav smoke", "Waiting", "again"))

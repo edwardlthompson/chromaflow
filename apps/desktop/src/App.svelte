@@ -8,6 +8,7 @@
   import { isTauri, invoke } from "./lib/tauri.js";
   import { ui, pwmOn } from "./lib/ui.js";
   import { applySession, loadLocal, loadSession, persistSession } from "./lib/session.js";
+  import { scheduleBootReapply } from "./lib/lightingBoot.js";
   import { researchDevices } from "./lib/research.js";
   import { startGaugeTick } from "./lib/gaugesTick.js";
   import RailNav from "./lib/RailNav.svelte";
@@ -95,8 +96,25 @@
       }
     };
     runLoad = load;
-    loadSession().then((s) => {
+    loadSession().then(async (s) => {
       tab = s.tab;
+      try {
+        if (isTauri()) {
+          inventory = await invoke("inventory", { light: true });
+          lightInv = inventory;
+          lightReady = true;
+          source = "this machine";
+          loadError = "";
+        }
+      } catch (err) {
+        loadError = String(err);
+      }
+      scheduleBootReapply({
+        invoke,
+        isTauri,
+        getInventory: () => lightInv,
+        getSession: () => ({ lastColor: ui.lastColor, lastMode: ui.lastMode }),
+      });
       forceLoad = true;
       runLoad();
     });

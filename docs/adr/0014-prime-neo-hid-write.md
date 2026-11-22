@@ -29,7 +29,7 @@ Command bytes match the public rivalcfg Prime device profile; the write is our h
 ### Critique
 
 | Issue | Resolution |
-|-------|------------|
+| ------- | ------------ |
 | Wrong hidraw | Require `1038:1856` and descriptor `06 c0 ff`; skip mouse/keyboard nodes |
 | Null color | Same RRGGBB parse as ADR-0011; unit test report layout |
 | Busy device | 50ms before save; `Result` on write |

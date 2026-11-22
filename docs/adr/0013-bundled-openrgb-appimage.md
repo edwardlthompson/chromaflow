@@ -28,7 +28,7 @@ This supersedes “do not spawn” in [ADR-0008](0008-openrgb-localhost-probe.md
 ### Critique
 
 | Issue | Resolution |
-|-------|------------|
+| ------- | ------------ |
 | Null/empty binary | `ensure_sdk` no-op; Lighting shows `lighting.engineMissing`; research HID still lists |
 | Download timeout / hash | 60s, size cap, `.part`, sha256, delete on fail; never exec a partial file |
 | Inventory poll race | SDK mutex + `AtomicBool` + pid file; reuse live 6742 |

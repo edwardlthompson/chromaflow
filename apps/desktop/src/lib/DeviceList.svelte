@@ -1,5 +1,5 @@
 <script>
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, tick } from "svelte";
   import ColorWheel from "./ColorWheel.svelte";
   import GaugeMeter from "./GaugeMeter.svelte";
   import EffectList from "./EffectList.svelte";
@@ -8,6 +8,7 @@
   import { SHARED_MODES, deviceModes } from "./effectCatalog.js";
   import { layoutColors } from "./effectViz.js";
   import { mosaicDevice } from "./keyboard.js";
+  import { fitOpenPickerFlows } from "./pickerFit.js";
   import { ui } from "./ui.js";
   import t from "../locales/en.json";
 
@@ -22,6 +23,7 @@
   let rowHex = "#0052ff";
   let boards = {};
   let protoOpen = {};
+  let listEl;
 
   $: totalLeds = devices.reduce((n, d) => n + (Number(d.leds) || 0), 0);
   $: allSize = totalLeds ? `${totalLeds} LEDs` : t["lighting.sizeUnknown"];
@@ -31,6 +33,16 @@
   $: ui.liveBoard =
     (openId === "all" && Boolean(boards.all)) ||
     devices.some((d) => openId === deviceKey(d) && Boolean(boards[deviceKey(d)]));
+  $: openId, devices, boards, allModes, void refitPickers();
+
+  async function refitPickers() {
+    await tick();
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(() => fitOpenPickerFlows(listEl));
+    } else {
+      fitOpenPickerFlows(listEl);
+    }
+  }
 
   function allLive() {
     const cols = devices.flatMap((d) => layoutColors(d));
@@ -65,7 +77,7 @@
   }
 </script>
 
-<ul class="devices">
+<ul class="devices" bind:this={listEl}>
   <li>
     <div class="device-row">
       <button
