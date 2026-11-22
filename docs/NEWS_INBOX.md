@@ -57,3 +57,13 @@ A Cursor planning agent should review these items and fold the useful ones into 
 
 - [x] Mark nct6683 NCT6686D fan control and NCT6687D-R writable curves as kernel 7.5+/hwmon-next and validate curve writes — The EC rejects decreasing duty curves, so check non-decreasing points with temp ≤127 °C before writing and keep the support matrix honest. Label: `[AGENT]` · Priority: P2 · https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/22148.html (synced to BUILD_PLAN)
 - [ ] Add the 3 new asus-ec-sensors boards to the hardware support matrix — Keeps EC temperature/fan readout support accurate for these ASUS boards. Label: `[AGENT]` · Priority: P3 · https://lkml.indiana.edu/hypermail/linux/kernel/2611.1/24631.html
+
+## 2026-11-20
+
+**News and updates**
+
+- Tauri GHSA-w28w-mhc8-qvjv (High, Sep 26): in tauri ≤2.11.5 the internal channel-fetch IPC command skips the ACL check and serves queued large channel responses by a sequential id, so any WebView that can call invoke can read (and drain) payloads meant for another WebView. Fixed in 2.11.6 (latest 2.12.7). It's a repository-only advisory missing from the Global Advisory DB, so Dependabot raises no alert. This repo's Cargo.lock resolves tauri 2.11.5; exposure is low because the app loads only its own local UI in one webview. [advisory](https://github.com/tauri-apps/tauri/security/advisories/GHSA-w28w-mhc8-qvjv)
+
+**Tasks for the planning agent**
+
+- [x] Bump tauri to 2.11.6 or later (latest 2.12.7) in Cargo.toml/Cargo.lock and smoke the desktop app — the High-severity IPC ACL bypass affects the locked 2.11.5 and Dependabot can't see it. Label: `[AGENT][LOCAL]` · Priority: P2 · https://github.com/tauri-apps/tauri/security/advisories/GHSA-w28w-mhc8-qvjv (synced to BUILD_PLAN)
