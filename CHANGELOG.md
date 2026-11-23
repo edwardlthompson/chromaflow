@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Bootstrapped from [agent-project-bootstrap](https://github.com/edwardlthompson/agent-project-bootstrap) 1.4.0.
 
+## [1.0.4](https://github.com/edwardlthompson/chromaflow/compare/v1.0.3...v1.0.4) (2026-11-23)
+
+
+### Fixed
+
+* **ci:** align Cargo workspace 1.0.3 changelog and 1.13.1 template metadata ([#110](https://github.com/edwardlthompson/chromaflow/issues/110)) ([9538910](https://github.com/edwardlthompson/chromaflow/commit/95389104592a8635fd42e925db3aa4a3fe46a764))
+* **ci:** update AGENT_MEMORY.md path to .agent/AGENT_MEMORY.md in release-please.yml ([#109](https://github.com/edwardlthompson/chromaflow/issues/109)) ([68f8774](https://github.com/edwardlthompson/chromaflow/commit/68f8774fbc8b9ba9297fd3dd7327af70e556615b))
+
 ## [Unreleased]
 
 ### Added
