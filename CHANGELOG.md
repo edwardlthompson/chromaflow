@@ -9,9 +9,6 @@ Bootstrapped from [agent-project-bootstrap](https://github.com/edwardlthompson/a
 
 ## [Unreleased]
 
-## [1.14.0](https://github.com/edwardlthompson/chromaflow/compare/v1.13.0...v1.14.0) (2026-11-22)
-
-
 ### Added
 
 * land Unreleased rail icons, Fusion HID apply, and product SBOM tags ([e03b3da](https://github.com/edwardlthompson/chromaflow/commit/e03b3daddb4c3275ad704cf13d66c223d1614054))
