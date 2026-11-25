@@ -67,3 +67,9 @@ A Cursor planning agent should review these items and fold the useful ones into 
 **Tasks for the planning agent**
 
 - [x] Bump tauri to 2.11.6 or later (latest 2.12.7) in Cargo.toml/Cargo.lock and smoke the desktop app — the High-severity IPC ACL bypass affects the locked 2.11.5 and Dependabot can't see it. Label: `[AGENT][LOCAL]` · Priority: P2 · https://github.com/tauri-apps/tauri/security/advisories/GHSA-w28w-mhc8-qvjv (synced to BUILD_PLAN)
+
+## 2026-11-25
+
+**News and updates**
+
+- Better Stack compared the same desktop chat app built in GPUI (the Rust, GPU-drawn UI framework Discord is moving its desktop app to), Tauri, and Electron, looking at memory, app size, frame rate and CPU. Useful background if this repo is choosing or revisiting a desktop shell; I did not run their comparison. [GPUI](https://gpui.rs) · [Better Stack](https://www.youtube.com/shorts/PbNB0MHO0eA)
