@@ -73,3 +73,11 @@ A Cursor planning agent should review these items and fold the useful ones into 
 **News and updates**
 
 - Better Stack compared the same desktop chat app built in GPUI (the Rust, GPU-drawn UI framework Discord is moving its desktop app to), Tauri, and Electron, looking at memory, app size, frame rate and CPU. Useful background if this repo is choosing or revisiting a desktop shell; I did not run their comparison. [GPUI](https://gpui.rs) · [Better Stack](https://www.youtube.com/shorts/PbNB0MHO0eA)
+
+## 2026-11-26
+
+**News and updates**
+
+- Vite 8.4.0 (Nov 26) adds an opt-in `server.fs.strict: 'extended'` for wider dev-server file-access checks, plugin names in hook errors, worker chunks in the manifest, CSS preload retries and compressed wasm in preview. This repo is on `^8.3.x`, so Dependabot will bring it in; no action needed. [v8.4.0](https://github.com/vitejs/vite/releases/tag/v8.4.0) · [support policy](https://vite.dev/releases)
+
+- Conductor moved its agent-workspace desktop app from Tauri to Electron (0.95.0, Nov 16; numbers posted Nov 24), keeping its Rust local server: workspaces open 71% faster, startup-to-render is 4.6x faster and RAM is 35% lower, while the download grew from about 200 MB to about 500 MB. A real-world counterpoint to "Tauri is always lighter": measure cold start and RAM on the real WebView (WebKitGTK on Linux, WebView2 on Windows) rather than assume. [Conductor 0.95.0](https://www.conductor.build/changelog/0.95.0-agents-that-manage-your-local-workspaces) · [X post](https://x.com/charlieholtz/status/2125351294965805147)
